@@ -551,7 +551,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      checkout_cart: {
+        Args: { p_delivery_address: Json; p_delivery_fee?: number }
+        Returns: string
+      }
+      increment_product_views: {
+        Args: { p_product_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       order_status:
