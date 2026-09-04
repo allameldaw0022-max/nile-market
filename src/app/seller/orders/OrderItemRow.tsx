@@ -32,6 +32,7 @@ export type SellerOrderItem = {
   order_source: OrderSource;
   marketer_id: string | null;
   commission_amount: number;
+  platform_commission_amount: number;
   created_at: string;
   products: { name: string } | null;
   orders: {
@@ -63,6 +64,8 @@ export function OrderItemRow({ item }: { item: SellerOrderItem }) {
   const customerLabel = item.orders?.guest_customer_name
     ? `${item.orders.guest_customer_name} — ${item.orders.guest_customer_phone}`
     : "عميل مسجّل";
+  const netToSeller =
+    item.unit_price * item.quantity - item.commission_amount - item.platform_commission_amount;
 
   return (
     <div className="bg-white rounded-2xl border border-black/5 p-4">
@@ -71,6 +74,12 @@ export function OrderItemRow({ item }: { item: SellerOrderItem }) {
           <p className="text-sm font-bold text-navy">{item.products?.name}</p>
           <p className="text-xs text-neutral-400">
             الكمية: {item.quantity} — {(item.unit_price * item.quantity).toLocaleString("ar")} SDG
+          </p>
+          <p className="text-[11px] text-neutral-400 mt-0.5">
+            صافي لك: <span className="font-bold text-primary">{netToSeller.toLocaleString("ar")} SDG</span>
+            {item.platform_commission_amount > 0 && (
+              <span> (بعد عمولة المنصة {item.platform_commission_amount.toLocaleString("ar")} SDG)</span>
+            )}
           </p>
           <p className="text-xs text-neutral-400 mt-1">{customerLabel}</p>
           {address && (

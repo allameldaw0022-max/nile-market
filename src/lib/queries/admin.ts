@@ -23,9 +23,15 @@ export async function getAllStores() {
   const supabase = await createClient();
   const { data } = await supabase
     .from("stores")
-    .select("id, name, slug, status, created_at")
+    .select("id, name, slug, status, platform_commission_rate, created_at")
     .order("created_at", { ascending: false });
   return data ?? [];
+}
+
+export async function getPlatformSettings() {
+  const supabase = await createClient();
+  const { data } = await supabase.from("platform_settings").select("*").single();
+  return data;
 }
 
 export async function getAllPlans() {

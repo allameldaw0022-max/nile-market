@@ -1,4 +1,4 @@
-import { ShoppingBag, Package, Wallet, Clock } from "lucide-react";
+import { ShoppingBag, Package, Wallet, Clock, PiggyBank } from "lucide-react";
 import { getMyStoreContext, getStoreStats } from "@/lib/queries/seller";
 import { CreateStoreForm } from "./CreateStoreForm";
 
@@ -28,7 +28,7 @@ export default async function SellerDashboardPage() {
         <p className="text-xs text-neutral-400 -mt-3 mb-4">أنت تدخل كموظف في هذا المتجر</p>
       )}
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 gap-3">
         <div className="bg-white rounded-2xl border border-black/5 p-4 text-center">
           <Package className="mx-auto text-primary mb-1" size={20} />
           <p className="font-extrabold text-navy">{stats.productsCount}</p>
@@ -42,9 +42,19 @@ export default async function SellerDashboardPage() {
         <div className="bg-white rounded-2xl border border-black/5 p-4 text-center">
           <Wallet className="mx-auto text-primary mb-1" size={20} />
           <p className="font-extrabold text-navy">{stats.revenue.toLocaleString("ar")}</p>
-          <p className="text-[11px] text-neutral-400">المبيعات (SDG)</p>
+          <p className="text-[11px] text-neutral-400">إجمالي المبيعات (SDG)</p>
+        </div>
+        <div className="bg-white rounded-2xl border border-black/5 p-4 text-center">
+          <PiggyBank className="mx-auto text-primary mb-1" size={20} />
+          <p className="font-extrabold text-navy">{stats.netEarnings.toLocaleString("ar")}</p>
+          <p className="text-[11px] text-neutral-400">صافي أرباحك (SDG)</p>
         </div>
       </div>
+      {isOwner && (
+        <p className="text-[11px] text-neutral-400 mt-2 text-center">
+          نسبة عمولة المنصة على متجرك: <span className="font-bold text-navy">{store.platform_commission_rate}%</span>
+        </p>
+      )}
 
       {store.status === "pending" && (
         <div className="flex items-start gap-2 bg-amber-500/10 text-amber-700 rounded-2xl p-4 mt-4 text-xs">

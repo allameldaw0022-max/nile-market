@@ -43,15 +43,24 @@ export async function getStoreStats(storeId: string) {
   const [{ count: productsCount }, { count: ordersCount }, { data: revenueRows }] = await Promise.all([
     supabase.from("products").select("id", { count: "exact", head: true }).eq("store_id", storeId),
     supabase.from("order_items").select("id", { count: "exact", head: true }).eq("store_id", storeId),
-    supabase.from("order_items").select("unit_price, quantity").eq("store_id", storeId).eq("status", "delivered"),
+    supabase
+      .from("order_items")
+      .select("unit_price, quantity, commission_amount, platform_commission_amount")
+      .eq("store_id", storeId)
+      .eq("status", "delivered"),
   ]);
 
   const revenue = (revenueRows ?? []).reduce((sum, r) => sum + r.unit_price * r.quantity, 0);
+  const netEarnings = (revenueRows ?? []).reduce(
+    (sum, r) => sum + (r.unit_price * r.quantity - r.commission_amount - r.platform_commission_amount),
+    0
+  );
 
   return {
     productsCount: productsCount ?? 0,
     ordersCount: ordersCount ?? 0,
     revenue,
+    netEarnings,
   };
 }
 
@@ -131,7 +140,7 @@ export async function getStoreOrderItems(storeId: string) {
   const { data } = await supabase
     .from("order_items")
     .select(
-      "id, quantity, unit_price, status, created_at, order_source, marketer_id, commission_amount, products(name), orders(delivery_address, customer_id, guest_customer_name, guest_customer_phone), profiles:marketer_id(full_name)"
+      "id, quantity, unit_price, status, created_at, order_source, marketer_id, commission_amount, platform_commission_amount, products(name), orders(delivery_address, customer_id, guest_customer_name, guest_customer_phone), profiles:marketer_id(full_name)"
     )
     .eq("store_id", storeId)
     .order("created_at", { ascending: false });

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { LayoutDashboard, Store, Layers, Receipt, Star, Wallet, Users, ClipboardList, Package, Bell, UserCog } from "lucide-react";
+import { LayoutDashboard, Store, Layers, Receipt, Star, Wallet, Users, ClipboardList, Package, Bell, UserCog, Settings } from "lucide-react";
 import { getCurrentUser } from "@/lib/supabase/queries";
 
 const TABS = [
@@ -15,6 +15,7 @@ const TABS = [
   { href: "/admin/marketers-50", label: "مسوّقو الـ50", icon: Star },
   { href: "/admin/employees", label: "الموظفون", icon: UserCog },
   { href: "/admin/notifications", label: "الإشعارات", icon: Bell },
+  { href: "/admin/settings", label: "الإعدادات", icon: Settings },
 ];
 
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {

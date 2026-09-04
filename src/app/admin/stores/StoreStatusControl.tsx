@@ -17,11 +17,20 @@ const STATUS_META: Record<StoreStatus, { label: string; className: string }> = {
 export function StoreStatusControl({
   store,
 }: {
-  store: { id: string; name: string; slug: string; status: StoreStatus; created_at: string };
+  store: {
+    id: string;
+    name: string;
+    slug: string;
+    status: StoreStatus;
+    platform_commission_rate: number;
+    created_at: string;
+  };
 }) {
   const router = useRouter();
   const [status, setStatus] = useState(store.status);
   const [saving, setSaving] = useState(false);
+  const [rate, setRate] = useState(String(store.platform_commission_rate));
+  const [savingRate, setSavingRate] = useState(false);
 
   async function setStoreStatus(next: StoreStatus) {
     setSaving(true);
@@ -32,6 +41,16 @@ export function StoreStatusControl({
       setStatus(next);
       router.refresh();
     }
+  }
+
+  async function saveRate() {
+    const value = Number(rate);
+    if (Number.isNaN(value) || value < 0 || value > 100) return;
+    setSavingRate(true);
+    const supabase = createClient();
+    await supabase.from("stores").update({ platform_commission_rate: value }).eq("id", store.id);
+    setSavingRate(false);
+    router.refresh();
   }
 
   const meta = STATUS_META[status];
@@ -45,6 +64,25 @@ export function StoreStatusControl({
         <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full inline-block mt-1 ${meta.className}`}>
           {meta.label}
         </span>
+        <div className="flex items-center gap-1.5 mt-2">
+          <span className="text-[11px] text-neutral-400">عمولة المنصة %</span>
+          <input
+            type="number"
+            min="0"
+            max="100"
+            step="0.5"
+            value={rate}
+            onChange={(e) => setRate(e.target.value)}
+            className="w-16 text-xs font-bold rounded-lg border border-black/10 px-2 py-1 outline-none focus:border-primary"
+          />
+          <button
+            disabled={savingRate}
+            onClick={saveRate}
+            className="text-[11px] font-bold bg-navy/5 text-navy px-2 py-1 rounded-lg disabled:opacity-50"
+          >
+            حفظ
+          </button>
+        </div>
       </div>
       <div className="flex gap-1.5 shrink-0">
         {status !== "active" && (

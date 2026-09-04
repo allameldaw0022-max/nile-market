@@ -201,6 +201,8 @@ export type Database = {
           options: Json
           order_id: string
           order_source: Database["public"]["Enums"]["order_source"]
+          platform_commission_amount: number
+          platform_commission_rate: number
           product_id: string
           quantity: number
           status: Database["public"]["Enums"]["order_status"]
@@ -217,6 +219,8 @@ export type Database = {
           options?: Json
           order_id: string
           order_source?: Database["public"]["Enums"]["order_source"]
+          platform_commission_amount?: number
+          platform_commission_rate?: number
           product_id: string
           quantity: number
           status?: Database["public"]["Enums"]["order_status"]
@@ -233,6 +237,8 @@ export type Database = {
           options?: Json
           order_id?: string
           order_source?: Database["public"]["Enums"]["order_source"]
+          platform_commission_amount?: number
+          platform_commission_rate?: number
           product_id?: string
           quantity?: number
           status?: Database["public"]["Enums"]["order_status"]
@@ -362,6 +368,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      platform_settings: {
+        Row: {
+          default_platform_commission_rate: number
+          id: boolean
+          updated_at: string
+        }
+        Insert: {
+          default_platform_commission_rate?: number
+          id?: boolean
+          updated_at?: string
+        }
+        Update: {
+          default_platform_commission_rate?: number
+          id?: boolean
+          updated_at?: string
+        }
+        Relationships: []
       }
       product_marketer_clicks: {
         Row: {
@@ -638,6 +662,7 @@ export type Database = {
           marketer_payout_cycle: string
           name: string
           owner_id: string
+          platform_commission_rate: number
           slug: string
           status: Database["public"]["Enums"]["store_status"]
           updated_at: string
@@ -651,6 +676,7 @@ export type Database = {
           marketer_payout_cycle?: string
           name: string
           owner_id: string
+          platform_commission_rate?: number
           slug: string
           status?: Database["public"]["Enums"]["store_status"]
           updated_at?: string
@@ -664,6 +690,7 @@ export type Database = {
           marketer_payout_cycle?: string
           name?: string
           owner_id?: string
+          platform_commission_rate?: number
           slug?: string
           status?: Database["public"]["Enums"]["store_status"]
           updated_at?: string
@@ -794,10 +821,7 @@ export type Database = {
         }
         Returns: string
       }
-      find_profile_id_by_email: {
-        Args: { p_email: string }
-        Returns: string
-      }
+      find_profile_id_by_email: { Args: { p_email: string }; Returns: string }
       increment_product_views: {
         Args: { p_product_id: string }
         Returns: undefined
@@ -806,10 +830,7 @@ export type Database = {
         Args: { p_payment_reference?: string; p_request_id: string }
         Returns: undefined
       }
-      resolve_marketer_code: {
-        Args: { p_code: string }
-        Returns: string
-      }
+      resolve_marketer_code: { Args: { p_code: string }; Returns: string }
     }
     Enums: {
       order_source: "direct" | "affiliate_link" | "affiliate_assisted"
