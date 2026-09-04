@@ -2,15 +2,25 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, X } from "lucide-react";
+import { Check, X, Store, Megaphone } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import type { Database } from "@/lib/supabase/database.types";
+
+type WalletOwnerType = Database["public"]["Enums"]["wallet_owner_type"];
 
 export type WithdrawalRow = {
   id: string;
+  owner_type: WalletOwnerType;
   amount: number;
-  status: string;
+  payout_details: string | null;
   created_at: string;
-  profiles: { full_name: string | null } | null;
+  ownerName: string;
+  payout_methods: { name: string } | null;
+};
+
+const OWNER_META: Record<string, { label: string; icon: typeof Store }> = {
+  seller: { label: "متجر", icon: Store },
+  marketer: { label: "مسوّق", icon: Megaphone },
 };
 
 export function WithdrawalRequestRow({ request }: { request: WithdrawalRow }) {
@@ -37,12 +47,9 @@ export function WithdrawalRequestRow({ request }: { request: WithdrawalRow }) {
     setBusy(true);
     setError(null);
     const supabase = createClient();
-    const { error: updateError } = await supabase
-      .from("marketer_withdrawal_requests")
-      .update({ status: "rejected", reviewed_at: new Date().toISOString() })
-      .eq("id", request.id);
+    const { error: rpcError } = await supabase.rpc("reject_withdrawal_request", { p_request_id: request.id });
     setBusy(false);
-    if (updateError) {
+    if (rpcError) {
       setError("تعذّر الرفض.");
       return;
     }
@@ -52,12 +59,21 @@ export function WithdrawalRequestRow({ request }: { request: WithdrawalRow }) {
 
   if (handled) return null;
 
+  const meta = OWNER_META[request.owner_type];
+
   return (
     <div className="bg-white rounded-2xl border border-black/5 p-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-bold text-navy">{request.profiles?.full_name ?? "—"}</p>
+        <div className="flex items-center gap-1.5">
+          <meta.icon size={14} className="text-neutral-400" />
+          <p className="text-sm font-bold text-navy">{request.ownerName}</p>
+          <span className="text-[10px] text-neutral-400">({meta.label})</span>
+        </div>
         <span className="text-primary font-extrabold text-sm">{request.amount.toLocaleString("ar")} SDG</span>
       </div>
+      <p className="text-xs text-neutral-400 mt-1.5">
+        {request.payout_methods?.name} — {request.payout_details}
+      </p>
       {error && <p className="text-xs text-red-500 font-bold mt-2">{error}</p>}
       <div className="flex gap-2 mt-3">
         <button

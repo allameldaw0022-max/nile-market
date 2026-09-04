@@ -102,54 +102,6 @@ export type Database = {
           },
         ]
       }
-      marketer_withdrawal_requests: {
-        Row: {
-          amount: number
-          created_at: string
-          id: string
-          marketer_id: string
-          payment_reference: string | null
-          reviewed_at: string | null
-          reviewed_by: string | null
-          status: Database["public"]["Enums"]["withdrawal_status"]
-        }
-        Insert: {
-          amount: number
-          created_at?: string
-          id?: string
-          marketer_id: string
-          payment_reference?: string | null
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          status?: Database["public"]["Enums"]["withdrawal_status"]
-        }
-        Update: {
-          amount?: number
-          created_at?: string
-          id?: string
-          marketer_id?: string
-          payment_reference?: string | null
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          status?: Database["public"]["Enums"]["withdrawal_status"]
-        }
-        Relationships: [
-          {
-            foreignKeyName: "marketer_withdrawal_requests_marketer_id_fkey"
-            columns: ["marketer_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "marketer_withdrawal_requests_reviewed_by_fkey"
-            columns: ["reviewed_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       notifications: {
         Row: {
           body: string | null
@@ -336,6 +288,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      payout_methods: {
+        Row: {
+          created_at: string
+          id: string
+          instructions: string | null
+          is_active: boolean
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          instructions?: string | null
+          is_active?: boolean
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          instructions?: string | null
+          is_active?: boolean
+          name?: string
+        }
+        Relationships: []
       }
       platform_marketers: {
         Row: {
@@ -796,6 +772,104 @@ export type Database = {
           },
         ]
       }
+      wallet_ledger: {
+        Row: {
+          amount: number
+          created_at: string
+          entry_type: Database["public"]["Enums"]["ledger_entry_type"]
+          id: string
+          note: string | null
+          order_item_id: string | null
+          owner_id: string | null
+          owner_type: Database["public"]["Enums"]["wallet_owner_type"]
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          entry_type: Database["public"]["Enums"]["ledger_entry_type"]
+          id?: string
+          note?: string | null
+          order_item_id?: string | null
+          owner_id?: string | null
+          owner_type: Database["public"]["Enums"]["wallet_owner_type"]
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          entry_type?: Database["public"]["Enums"]["ledger_entry_type"]
+          id?: string
+          note?: string | null
+          order_item_id?: string | null
+          owner_id?: string | null
+          owner_type?: Database["public"]["Enums"]["wallet_owner_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_ledger_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      withdrawal_requests: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          owner_id: string
+          owner_type: Database["public"]["Enums"]["wallet_owner_type"]
+          payment_reference: string | null
+          payout_details: string | null
+          payout_method_id: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["withdrawal_status"]
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          owner_id: string
+          owner_type: Database["public"]["Enums"]["wallet_owner_type"]
+          payment_reference?: string | null
+          payout_details?: string | null
+          payout_method_id?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["withdrawal_status"]
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          owner_id?: string
+          owner_type?: Database["public"]["Enums"]["wallet_owner_type"]
+          payment_reference?: string | null
+          payout_details?: string | null
+          payout_method_id?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["withdrawal_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "withdrawal_requests_payout_method_id_fkey"
+            columns: ["payout_method_id"]
+            isOneToOne: false
+            referencedRelation: "payout_methods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "withdrawal_requests_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -830,9 +904,28 @@ export type Database = {
         Args: { p_payment_reference?: string; p_request_id: string }
         Returns: undefined
       }
+      reject_withdrawal_request: {
+        Args: { p_request_id: string }
+        Returns: undefined
+      }
+      request_withdrawal: {
+        Args: {
+          p_amount: number
+          p_owner_id: string
+          p_owner_type: Database["public"]["Enums"]["wallet_owner_type"]
+          p_payout_details?: string
+          p_payout_method_id: string
+        }
+        Returns: string
+      }
       resolve_marketer_code: { Args: { p_code: string }; Returns: string }
     }
     Enums: {
+      ledger_entry_type:
+        | "seller_earning"
+        | "marketer_commission"
+        | "platform_revenue"
+        | "withdrawal_paid"
       order_source: "direct" | "affiliate_link" | "affiliate_assisted"
       order_status:
         | "pending"
@@ -846,6 +939,7 @@ export type Database = {
       subscription_request_status: "pending" | "approved" | "rejected"
       subscription_status: "active" | "expired" | "cancelled"
       user_role: "customer" | "seller" | "admin" | "marketer"
+      wallet_owner_type: "seller" | "marketer" | "platform"
       withdrawal_status: "pending" | "approved" | "rejected" | "paid"
     }
     CompositeTypes: {
@@ -974,6 +1068,12 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      ledger_entry_type: [
+        "seller_earning",
+        "marketer_commission",
+        "platform_revenue",
+        "withdrawal_paid",
+      ],
       order_source: ["direct", "affiliate_link", "affiliate_assisted"],
       order_status: [
         "pending",
@@ -988,6 +1088,7 @@ export const Constants = {
       subscription_request_status: ["pending", "approved", "rejected"],
       subscription_status: ["active", "expired", "cancelled"],
       user_role: ["customer", "seller", "admin", "marketer"],
+      wallet_owner_type: ["seller", "marketer", "platform"],
       withdrawal_status: ["pending", "approved", "rejected", "paid"],
     },
   },

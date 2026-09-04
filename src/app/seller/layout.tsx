@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { LayoutDashboard, Package, ClipboardList, CreditCard, Megaphone, Settings, Users } from "lucide-react";
+import { LayoutDashboard, Package, ClipboardList, CreditCard, Megaphone, Settings, Users, Wallet } from "lucide-react";
 import { getCurrentUser } from "@/lib/supabase/queries";
 import { getMyStoreContext } from "@/lib/queries/seller";
 
@@ -21,6 +21,7 @@ export default async function SellerLayout({ children }: LayoutProps<"/seller">)
     ...(isOwner
       ? [
           { href: "/seller/marketers", label: "مسوّقو متجري", icon: Megaphone },
+          { href: "/seller/wallet", label: "المحفظة", icon: Wallet },
           { href: "/seller/employees", label: "الموظفون", icon: Users },
           { href: "/seller/subscription", label: "الاشتراك", icon: CreditCard },
           { href: "/seller/settings", label: "الإعدادات", icon: Settings },

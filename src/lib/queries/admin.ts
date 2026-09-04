@@ -34,6 +34,12 @@ export async function getPlatformSettings() {
   return data;
 }
 
+export async function getAllPayoutMethods() {
+  const supabase = await createClient();
+  const { data } = await supabase.from("payout_methods").select("*").order("created_at");
+  return data ?? [];
+}
+
 export async function getAllPlans() {
   const supabase = await createClient();
   const { data } = await supabase
@@ -106,11 +112,29 @@ export async function getEligibleMarketerProfiles() {
 export async function getPendingWithdrawalRequests() {
   const supabase = await createClient();
   const { data } = await supabase
-    .from("marketer_withdrawal_requests")
-    .select("id, amount, status, created_at, profiles!marketer_id(full_name)")
+    .from("withdrawal_requests")
+    .select("id, owner_type, owner_id, amount, status, payout_details, created_at, payout_methods(name)")
     .in("status", ["pending", "approved"])
     .order("created_at", { ascending: true });
-  return data ?? [];
+
+  const rows = data ?? [];
+  const storeIds = rows.filter((r) => r.owner_type === "seller").map((r) => r.owner_id);
+  const marketerIds = rows.filter((r) => r.owner_type === "marketer").map((r) => r.owner_id);
+
+  const [{ data: stores }, { data: marketers }] = await Promise.all([
+    storeIds.length
+      ? supabase.from("stores").select("id, name").in("id", storeIds)
+      : Promise.resolve({ data: [] as { id: string; name: string }[] }),
+    marketerIds.length
+      ? supabase.from("profiles").select("id, full_name").in("id", marketerIds)
+      : Promise.resolve({ data: [] as { id: string; full_name: string | null }[] }),
+  ]);
+
+  const nameById = new Map<string, string>();
+  for (const s of stores ?? []) nameById.set(s.id, s.name);
+  for (const m of marketers ?? []) nameById.set(m.id, m.full_name ?? "مسوّق");
+
+  return rows.map((row) => ({ ...row, ownerName: nameById.get(row.owner_id) ?? "—" }));
 }
 
 export async function getPendingSubscriptionRequests() {

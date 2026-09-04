@@ -59,7 +59,6 @@ export default async function MarketerOrdersPage() {
                 </span>
                 <span className="font-bold text-primary">
                   عمولة: {item.commission_amount.toLocaleString("ar")} SDG
-                  {item.commission_paid ? " (مدفوعة)" : ""}
                 </span>
               </div>
             </div>

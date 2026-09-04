@@ -1,42 +1,32 @@
-import { Wallet, Clock } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+import { Wallet } from "lucide-react";
+import { getMyStoreContext } from "@/lib/queries/seller";
 import { getWalletBalance, getWalletLedger, getActivePayoutMethods, getMyWithdrawalRequests } from "@/lib/queries/wallet";
-import { getMarketerPendingCommission } from "@/lib/queries/marketer";
 import { WithdrawalRequestForm } from "@/components/wallet/WithdrawalRequestForm";
 import { WalletLedgerList } from "@/components/wallet/WalletLedgerList";
 
-export default async function MarketerEarningsPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+export default async function SellerWalletPage() {
+  const context = await getMyStoreContext();
+  if (!context || !context.isOwner) redirect("/seller");
+  const { store } = context;
 
-  const [balance, pendingCommission, ledger, payoutMethods, withdrawals] = await Promise.all([
-    getWalletBalance("marketer", user.id),
-    getMarketerPendingCommission(),
-    getWalletLedger("marketer", user.id),
+  const [balance, ledger, payoutMethods, withdrawals] = await Promise.all([
+    getWalletBalance("seller", store.id),
+    getWalletLedger("seller", store.id),
     getActivePayoutMethods(),
-    getMyWithdrawalRequests("marketer", user.id),
+    getMyWithdrawalRequests("seller", store.id),
   ]);
 
   const hasPending = withdrawals.some((w) => w.status === "pending" || w.status === "approved");
 
   return (
     <main className="flex-1 max-w-2xl mx-auto w-full p-4">
-      <h1 className="font-bold text-xl text-navy mb-4">أرباحي ومحفظتي</h1>
+      <h1 className="font-bold text-xl text-navy mb-4">محفظة متجري</h1>
 
-      <div className="grid grid-cols-2 gap-3 mb-4">
-        <div className="bg-navy rounded-2xl p-5 text-center">
-          <Wallet className="mx-auto text-gold mb-1.5" size={20} />
-          <p className="font-extrabold text-white text-xl">{balance.toLocaleString("ar")}</p>
-          <p className="text-[11px] text-white/60">رصيدك القابل للسحب</p>
-        </div>
-        <div className="bg-white rounded-2xl border border-black/5 p-5 text-center">
-          <Clock className="mx-auto text-amber-500 mb-1.5" size={20} />
-          <p className="font-extrabold text-navy text-xl">{pendingCommission.toLocaleString("ar")}</p>
-          <p className="text-[11px] text-neutral-400">عمولات طلبات لم تُسلَّم بعد</p>
-        </div>
+      <div className="bg-navy rounded-2xl p-5 text-center mb-4">
+        <Wallet className="mx-auto text-gold mb-1.5" size={22} />
+        <p className="font-extrabold text-white text-2xl">{balance.toLocaleString("ar")}</p>
+        <p className="text-[11px] text-white/60">رصيدك القابل للسحب (SDG)</p>
       </div>
 
       {hasPending ? (
@@ -45,8 +35,8 @@ export default async function MarketerEarningsPage() {
         </div>
       ) : (
         <WithdrawalRequestForm
-          ownerType="marketer"
-          ownerId={user.id}
+          ownerType="seller"
+          ownerId={store.id}
           availableBalance={balance}
           payoutMethods={payoutMethods}
         />

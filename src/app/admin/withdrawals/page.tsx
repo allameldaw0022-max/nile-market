@@ -1,13 +1,13 @@
 import { Wallet } from "lucide-react";
 import { getPendingWithdrawalRequests } from "@/lib/queries/admin";
-import { WithdrawalRequestRow, type WithdrawalRow } from "./WithdrawalRequestRow";
+import { WithdrawalRequestRow } from "./WithdrawalRequestRow";
 
 export default async function AdminWithdrawalsPage() {
-  const requests = (await getPendingWithdrawalRequests()) as unknown as WithdrawalRow[];
+  const requests = await getPendingWithdrawalRequests();
 
   return (
     <main className="flex-1 max-w-3xl mx-auto w-full p-4">
-      <h1 className="font-bold text-xl text-navy mb-4">طلبات سحب المسوّقين</h1>
+      <h1 className="font-bold text-xl text-navy mb-4">طلبات السحب</h1>
 
       {requests.length === 0 ? (
         <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-black/10">
