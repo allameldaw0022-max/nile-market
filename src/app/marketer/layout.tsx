@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Megaphone, ClipboardList, Wallet } from "lucide-react";
+import { Megaphone, ClipboardList, Wallet, Share2 } from "lucide-react";
 import { getCurrentUser } from "@/lib/supabase/queries";
 
 const TABS = [
+  { href: "/marketer/products", label: "سوّق واربح", icon: Share2 },
   { href: "/marketer", label: "طلب جديد", icon: Megaphone },
   { href: "/marketer/orders", label: "طلباتي", icon: ClipboardList },
   { href: "/marketer/earnings", label: "أرباحي", icon: Wallet },

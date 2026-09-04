@@ -40,9 +40,14 @@ export default async function SellerMarketersPage() {
                   <p className="text-[10px] text-neutral-400">إجمالي المبيعات</p>
                 </div>
               </div>
-              <p className="text-xs text-neutral-400 mt-2">
-                إجمالي عمولاته: <span className="font-bold text-navy">{m.commission.toLocaleString("ar")} SDG</span>
-              </p>
+              <div className="flex items-center justify-between mt-2">
+                <p className="text-xs text-neutral-400">
+                  إجمالي عمولاته: <span className="font-bold text-navy">{m.commission.toLocaleString("ar")} SDG</span>
+                </p>
+                <p className="text-[10px] text-neutral-400">
+                  عبر رابط: {m.viaLink} — طلب مباشر: {m.viaAssisted}
+                </p>
+              </div>
             </div>
           ))}
         </div>

@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Megaphone } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { Database } from "@/lib/supabase/database.types";
 
 type OrderStatus = Database["public"]["Enums"]["order_status"];
+type OrderSource = Database["public"]["Enums"]["order_source"];
 
 const STATUS_OPTIONS: { value: OrderStatus; label: string }[] = [
   { value: "pending", label: "قيد الانتظار" },
@@ -16,14 +18,29 @@ const STATUS_OPTIONS: { value: OrderStatus; label: string }[] = [
   { value: "cancelled", label: "ملغي" },
 ];
 
+const SOURCE_LABELS: Record<OrderSource, string> = {
+  direct: "طلب عميل مباشر",
+  affiliate_link: "عن طريق رابط مسوّق",
+  affiliate_assisted: "سجّله المسوّق للعميل",
+};
+
 export type SellerOrderItem = {
   id: string;
   quantity: number;
   unit_price: number;
   status: OrderStatus;
+  order_source: OrderSource;
+  marketer_id: string | null;
+  commission_amount: number;
   created_at: string;
   products: { name: string } | null;
-  orders: { delivery_address: unknown; customer_id: string } | null;
+  orders: {
+    delivery_address: unknown;
+    customer_id: string | null;
+    guest_customer_name: string | null;
+    guest_customer_phone: string | null;
+  } | null;
+  profiles: { full_name: string | null } | null;
 };
 
 export function OrderItemRow({ item }: { item: SellerOrderItem }) {
@@ -43,6 +60,9 @@ export function OrderItemRow({ item }: { item: SellerOrderItem }) {
   }
 
   const address = item.orders?.delivery_address as { state?: string; city?: string; details?: string } | null;
+  const customerLabel = item.orders?.guest_customer_name
+    ? `${item.orders.guest_customer_name} — ${item.orders.guest_customer_phone}`
+    : "عميل مسجّل";
 
   return (
     <div className="bg-white rounded-2xl border border-black/5 p-4">
@@ -52,6 +72,7 @@ export function OrderItemRow({ item }: { item: SellerOrderItem }) {
           <p className="text-xs text-neutral-400">
             الكمية: {item.quantity} — {(item.unit_price * item.quantity).toLocaleString("ar")} SDG
           </p>
+          <p className="text-xs text-neutral-400 mt-1">{customerLabel}</p>
           {address && (
             <p className="text-xs text-neutral-400 mt-1">
               {address.state} — {address.city} {address.details ? `— ${address.details}` : ""}
@@ -71,6 +92,14 @@ export function OrderItemRow({ item }: { item: SellerOrderItem }) {
           ))}
         </select>
       </div>
+
+      {item.marketer_id && (
+        <div className="flex items-center gap-1.5 bg-gold/10 text-gold-dark text-[11px] font-bold px-2.5 py-1.5 rounded-xl mt-2">
+          <Megaphone size={12} />
+          {SOURCE_LABELS[item.order_source]} — {item.profiles?.full_name ?? "مسوّق"} — عمولة{" "}
+          {item.commission_amount.toLocaleString("ar")} SDG
+        </div>
+      )}
     </div>
   );
 }

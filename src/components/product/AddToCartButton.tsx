@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ShoppingCart, Check } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { getStoredReferralCode } from "@/lib/referral";
 
 export function AddToCartButton({ productId, outOfStock }: { productId: string; outOfStock: boolean }) {
   const router = useRouter();
@@ -29,9 +30,18 @@ export function AddToCartButton({ productId, outOfStock }: { productId: string; 
       .eq("options", {})
       .maybeSingle();
 
+    let referredByMarketerId: string | null = null;
+    const refCode = getStoredReferralCode();
+    if (refCode) {
+      const { data } = await supabase.rpc("resolve_marketer_code", { p_code: refCode });
+      referredByMarketerId = data ?? null;
+    }
+
     const { error } = existing
       ? await supabase.from("cart_items").update({ quantity: existing.quantity + 1 }).eq("id", existing.id)
-      : await supabase.from("cart_items").insert({ customer_id: user.id, product_id: productId, quantity: 1 });
+      : await supabase
+          .from("cart_items")
+          .insert({ customer_id: user.id, product_id: productId, quantity: 1, referred_by_marketer_id: referredByMarketerId });
 
     setState(error ? "error" : "done");
     if (!error) router.refresh();

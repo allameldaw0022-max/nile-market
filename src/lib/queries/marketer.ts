@@ -16,9 +16,9 @@ export async function getMarketerOrderItems() {
   const { data } = await supabase
     .from("order_items")
     .select(
-      "id, quantity, unit_price, status, commission_amount, commission_paid, created_at, products(name), stores(name), orders!inner(guest_customer_name, guest_customer_phone, placed_by_marketer_id)"
+      "id, quantity, unit_price, status, commission_amount, commission_paid, order_source, created_at, products(name), stores(name), orders(guest_customer_name, guest_customer_phone)"
     )
-    .eq("orders.placed_by_marketer_id", user.id)
+    .eq("marketer_id", user.id)
     .order("created_at", { ascending: false });
 
   return data ?? [];

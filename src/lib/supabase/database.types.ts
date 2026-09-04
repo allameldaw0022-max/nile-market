@@ -22,6 +22,7 @@ export type Database = {
           options: Json
           product_id: string
           quantity: number
+          referred_by_marketer_id: string | null
         }
         Insert: {
           created_at?: string
@@ -30,6 +31,7 @@ export type Database = {
           options?: Json
           product_id: string
           quantity?: number
+          referred_by_marketer_id?: string | null
         }
         Update: {
           created_at?: string
@@ -38,6 +40,7 @@ export type Database = {
           options?: Json
           product_id?: string
           quantity?: number
+          referred_by_marketer_id?: string | null
         }
         Relationships: [
           {
@@ -52,6 +55,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cart_items_referred_by_marketer_id_fkey"
+            columns: ["referred_by_marketer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -187,8 +197,10 @@ export type Database = {
           commission_paid: boolean
           created_at: string
           id: string
+          marketer_id: string | null
           options: Json
           order_id: string
+          order_source: Database["public"]["Enums"]["order_source"]
           product_id: string
           quantity: number
           status: Database["public"]["Enums"]["order_status"]
@@ -201,8 +213,10 @@ export type Database = {
           commission_paid?: boolean
           created_at?: string
           id?: string
+          marketer_id?: string | null
           options?: Json
           order_id: string
+          order_source?: Database["public"]["Enums"]["order_source"]
           product_id: string
           quantity: number
           status?: Database["public"]["Enums"]["order_status"]
@@ -215,8 +229,10 @@ export type Database = {
           commission_paid?: boolean
           created_at?: string
           id?: string
+          marketer_id?: string | null
           options?: Json
           order_id?: string
+          order_source?: Database["public"]["Enums"]["order_source"]
           product_id?: string
           quantity?: number
           status?: Database["public"]["Enums"]["order_status"]
@@ -225,6 +241,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "order_items_marketer_id_fkey"
+            columns: ["marketer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "order_items_order_id_fkey"
             columns: ["order_id"]
@@ -340,6 +363,45 @@ export type Database = {
           },
         ]
       }
+      product_marketer_clicks: {
+        Row: {
+          created_at: string
+          id: string
+          marketer_id: string
+          product_id: string
+          visitor_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          marketer_id: string
+          product_id: string
+          visitor_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          marketer_id?: string
+          product_id?: string
+          visitor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_marketer_clicks_marketer_id_fkey"
+            columns: ["marketer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_marketer_clicks_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_reviews: {
         Row: {
           comment: string | null
@@ -447,6 +509,7 @@ export type Database = {
           created_at: string
           full_name: string | null
           id: string
+          marketer_code: string | null
           phone: string | null
           referred_by_marketer_id: string | null
           role: Database["public"]["Enums"]["user_role"]
@@ -457,6 +520,7 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           id: string
+          marketer_code?: string | null
           phone?: string | null
           referred_by_marketer_id?: string | null
           role?: Database["public"]["Enums"]["user_role"]
@@ -467,6 +531,7 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           id?: string
+          marketer_code?: string | null
           phone?: string | null
           referred_by_marketer_id?: string | null
           role?: Database["public"]["Enums"]["user_role"]
@@ -741,8 +806,13 @@ export type Database = {
         Args: { p_payment_reference?: string; p_request_id: string }
         Returns: undefined
       }
+      resolve_marketer_code: {
+        Args: { p_code: string }
+        Returns: string
+      }
     }
     Enums: {
+      order_source: "direct" | "affiliate_link" | "affiliate_assisted"
       order_status:
         | "pending"
         | "processing"
@@ -883,6 +953,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      order_source: ["direct", "affiliate_link", "affiliate_assisted"],
       order_status: [
         "pending",
         "processing",

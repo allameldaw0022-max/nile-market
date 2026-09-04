@@ -10,6 +10,11 @@ const STATUS_LABELS: Record<string, string> = {
   cancelled: "ملغي",
 };
 
+const SOURCE_LABELS: Record<string, { label: string; className: string }> = {
+  affiliate_link: { label: "عن طريق رابطك", className: "bg-gold/20 text-gold-dark" },
+  affiliate_assisted: { label: "طلب سجّلته بنفسك", className: "bg-primary/10 text-primary" },
+};
+
 export default async function MarketerOrdersPage() {
   const items = await getMarketerOrderItems();
 
@@ -24,7 +29,9 @@ export default async function MarketerOrdersPage() {
         </div>
       ) : (
         <div className="space-y-2">
-          {items.map((item) => (
+          {items.map((item) => {
+            const sourceMeta = SOURCE_LABELS[item.order_source];
+            return (
             <div key={item.id} className="bg-white rounded-2xl border border-black/5 p-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -32,13 +39,20 @@ export default async function MarketerOrdersPage() {
                     {(item.products as { name: string } | null)?.name} — {(item.stores as { name: string } | null)?.name}
                   </p>
                   <p className="text-xs text-neutral-400">
-                    {item.orders?.guest_customer_name} — {item.orders?.guest_customer_phone}
+                    {item.orders?.guest_customer_name
+                      ? `${item.orders.guest_customer_name} — ${item.orders.guest_customer_phone}`
+                      : "طلب عميل عبر رابطك"}
                   </p>
                 </div>
                 <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-neutral-100 text-neutral-600 shrink-0">
                   {STATUS_LABELS[item.status] ?? item.status}
                 </span>
               </div>
+              {sourceMeta && (
+                <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full mt-1.5 ${sourceMeta.className}`}>
+                  {sourceMeta.label}
+                </span>
+              )}
               <div className="flex items-center justify-between mt-2 text-xs text-neutral-400">
                 <span>
                   {item.quantity} × {item.unit_price.toLocaleString("ar")} SDG
@@ -49,7 +63,8 @@ export default async function MarketerOrdersPage() {
                 </span>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </main>

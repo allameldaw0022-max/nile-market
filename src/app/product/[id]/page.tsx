@@ -1,9 +1,12 @@
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Package } from "lucide-react";
 import { getProduct } from "@/lib/queries/catalog";
 import { AddToCartButton } from "@/components/product/AddToCartButton";
+import { MarketerShareBar } from "@/components/product/MarketerShareBar";
+import { ReferralCapture } from "@/components/product/ReferralCapture";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function ProductPage({ params }: PageProps<"/product/[id]">) {
@@ -44,8 +47,12 @@ export default async function ProductPage({ params }: PageProps<"/product/[id]">
           <div className="mt-5">
             <AddToCartButton productId={product.id} outOfStock={product.stock === 0} />
           </div>
+          <MarketerShareBar productId={product.id} productName={product.name} />
         </div>
       </div>
+      <Suspense fallback={null}>
+        <ReferralCapture productId={product.id} />
+      </Suspense>
     </main>
   );
 }

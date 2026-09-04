@@ -69,35 +69,50 @@ export async function getStoreMarketerStats(storeId: string) {
   const supabase = await createClient();
   const { data } = await supabase
     .from("order_items")
-    .select("quantity, unit_price, status, commission_amount, orders!inner(placed_by_marketer_id, profiles:placed_by_marketer_id(full_name))")
+    .select("quantity, unit_price, status, commission_amount, marketer_id, order_source, profiles:marketer_id(full_name)")
     .eq("store_id", storeId)
-    .not("orders.placed_by_marketer_id", "is", null);
+    .not("marketer_id", "is", null);
 
   type Row = {
     quantity: number;
     unit_price: number;
     status: string;
     commission_amount: number;
-    orders: { placed_by_marketer_id: string; profiles: { full_name: string | null } | null };
+    marketer_id: string;
+    order_source: string;
+    profiles: { full_name: string | null } | null;
   };
 
   const byMarketer = new Map<
     string,
-    { name: string; orders: number; completed: number; cancelled: number; totalSales: number; commission: number }
+    {
+      name: string;
+      orders: number;
+      completed: number;
+      cancelled: number;
+      totalSales: number;
+      commission: number;
+      viaLink: number;
+      viaAssisted: number;
+    }
   >();
 
   for (const row of (data ?? []) as unknown as Row[]) {
-    const marketerId = row.orders.placed_by_marketer_id;
+    const marketerId = row.marketer_id;
     if (!marketerId) continue;
     const entry = byMarketer.get(marketerId) ?? {
-      name: row.orders.profiles?.full_name ?? "مسوّق",
+      name: row.profiles?.full_name ?? "مسوّق",
       orders: 0,
       completed: 0,
       cancelled: 0,
       totalSales: 0,
       commission: 0,
+      viaLink: 0,
+      viaAssisted: 0,
     };
     entry.orders += 1;
+    if (row.order_source === "affiliate_link") entry.viaLink += 1;
+    if (row.order_source === "affiliate_assisted") entry.viaAssisted += 1;
     if (row.status === "delivered") {
       entry.completed += 1;
       entry.totalSales += row.unit_price * row.quantity;
@@ -115,7 +130,9 @@ export async function getStoreOrderItems(storeId: string) {
   const supabase = await createClient();
   const { data } = await supabase
     .from("order_items")
-    .select("id, quantity, unit_price, status, created_at, products(name), orders(delivery_address, customer_id)")
+    .select(
+      "id, quantity, unit_price, status, created_at, order_source, marketer_id, commission_amount, products(name), orders(delivery_address, customer_id, guest_customer_name, guest_customer_phone), profiles:marketer_id(full_name)"
+    )
     .eq("store_id", storeId)
     .order("created_at", { ascending: false });
   return data ?? [];
