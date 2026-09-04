@@ -92,6 +92,54 @@ export type Database = {
           },
         ]
       }
+      marketer_withdrawal_requests: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          marketer_id: string
+          payment_reference: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["withdrawal_status"]
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          marketer_id: string
+          payment_reference?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["withdrawal_status"]
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          marketer_id?: string
+          payment_reference?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["withdrawal_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketer_withdrawal_requests_marketer_id_fkey"
+            columns: ["marketer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketer_withdrawal_requests_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           body: string | null
@@ -135,6 +183,8 @@ export type Database = {
       }
       order_items: {
         Row: {
+          commission_amount: number
+          commission_paid: boolean
           created_at: string
           id: string
           options: Json
@@ -147,6 +197,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          commission_amount?: number
+          commission_paid?: boolean
           created_at?: string
           id?: string
           options?: Json
@@ -159,6 +211,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          commission_amount?: number
+          commission_paid?: boolean
           created_at?: string
           id?: string
           options?: Json
@@ -197,33 +251,42 @@ export type Database = {
       orders: {
         Row: {
           created_at: string
-          customer_id: string
+          customer_id: string | null
           delivery_address: Json
           delivery_fee: number
           discount: number
+          guest_customer_name: string | null
+          guest_customer_phone: string | null
           id: string
+          placed_by_marketer_id: string | null
           subtotal: number
           total: number
           updated_at: string
         }
         Insert: {
           created_at?: string
-          customer_id: string
+          customer_id?: string | null
           delivery_address?: Json
           delivery_fee?: number
           discount?: number
+          guest_customer_name?: string | null
+          guest_customer_phone?: string | null
           id?: string
+          placed_by_marketer_id?: string | null
           subtotal?: number
           total?: number
           updated_at?: string
         }
         Update: {
           created_at?: string
-          customer_id?: string
+          customer_id?: string | null
           delivery_address?: Json
           delivery_fee?: number
           discount?: number
+          guest_customer_name?: string | null
+          guest_customer_phone?: string | null
           id?: string
+          placed_by_marketer_id?: string | null
           subtotal?: number
           total?: number
           updated_at?: string
@@ -233,6 +296,45 @@ export type Database = {
             foreignKeyName: "orders_customer_id_fkey"
             columns: ["customer_id"]
             isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_placed_by_marketer_id_fkey"
+            columns: ["placed_by_marketer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_marketers: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          profile_id: string
+          referral_code: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          profile_id: string
+          referral_code: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          profile_id?: string
+          referral_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_marketers_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -346,6 +448,7 @@ export type Database = {
           full_name: string | null
           id: string
           phone: string | null
+          referred_by_marketer_id: string | null
           role: Database["public"]["Enums"]["user_role"]
           updated_at: string
         }
@@ -355,6 +458,7 @@ export type Database = {
           full_name?: string | null
           id: string
           phone?: string | null
+          referred_by_marketer_id?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
         }
@@ -364,10 +468,19 @@ export type Database = {
           full_name?: string | null
           id?: string
           phone?: string | null
+          referred_by_marketer_id?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_referred_by_marketer_id_fkey"
+            columns: ["referred_by_marketer_id"]
+            isOneToOne: false
+            referencedRelation: "platform_marketers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       seller_subscriptions: {
         Row: {
@@ -420,6 +533,8 @@ export type Database = {
           description: string | null
           id: string
           logo_url: string | null
+          marketer_commission_rate: number
+          marketer_payout_cycle: string
           name: string
           owner_id: string
           slug: string
@@ -431,6 +546,8 @@ export type Database = {
           description?: string | null
           id?: string
           logo_url?: string | null
+          marketer_commission_rate?: number
+          marketer_payout_cycle?: string
           name: string
           owner_id: string
           slug: string
@@ -442,6 +559,8 @@ export type Database = {
           description?: string | null
           id?: string
           logo_url?: string | null
+          marketer_commission_rate?: number
+          marketer_payout_cycle?: string
           name?: string
           owner_id?: string
           slug?: string
@@ -562,8 +681,24 @@ export type Database = {
         Args: { p_delivery_address: Json; p_delivery_fee?: number }
         Returns: string
       }
+      create_marketer_order: {
+        Args: {
+          p_delivery_address: Json
+          p_guest_name: string
+          p_guest_phone: string
+          p_options?: Json
+          p_product_id: string
+          p_quantity: number
+          p_store_id: string
+        }
+        Returns: string
+      }
       increment_product_views: {
         Args: { p_product_id: string }
+        Returns: undefined
+      }
+      mark_withdrawal_paid: {
+        Args: { p_payment_reference?: string; p_request_id: string }
         Returns: undefined
       }
     }
@@ -579,7 +714,8 @@ export type Database = {
       store_status: "pending" | "active" | "suspended"
       subscription_request_status: "pending" | "approved" | "rejected"
       subscription_status: "active" | "expired" | "cancelled"
-      user_role: "customer" | "seller" | "admin"
+      user_role: "customer" | "seller" | "admin" | "marketer"
+      withdrawal_status: "pending" | "approved" | "rejected" | "paid"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -719,7 +855,8 @@ export const Constants = {
       store_status: ["pending", "active", "suspended"],
       subscription_request_status: ["pending", "approved", "rejected"],
       subscription_status: ["active", "expired", "cancelled"],
-      user_role: ["customer", "seller", "admin"],
+      user_role: ["customer", "seller", "admin", "marketer"],
+      withdrawal_status: ["pending", "approved", "rejected", "paid"],
     },
   },
 } as const

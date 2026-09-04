@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Suspense, useEffect, useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { LogIn, UserPlus, MailCheck, Store, User } from "lucide-react";
+import { LogIn, UserPlus, MailCheck, Store, User, Megaphone } from "lucide-react";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 import { createClient } from "@/lib/supabase/client";
 import { describeSignInError, describeSignUpError } from "@/lib/auth/errors";
@@ -24,8 +24,9 @@ function LoginPageInner() {
   const initialMode = searchParams.get("mode") === "signup" ? "signup" : "signin";
 
   const [mode, setMode] = useState<"signin" | "signup">(initialMode);
-  const [accountType, setAccountType] = useState<"customer" | "seller">("customer");
+  const [accountType, setAccountType] = useState<"customer" | "seller" | "marketer">("customer");
   const [fullName, setFullName] = useState("");
+  const [referralCode, setReferralCode] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -61,7 +62,7 @@ function LoginPageInner() {
       email,
       password,
       options: {
-        data: { full_name: fullName, role: accountType },
+        data: { full_name: fullName, role: accountType, referral_code: referralCode.trim() || undefined },
         emailRedirectTo: `${window.location.origin}/login`,
       },
     });
@@ -103,7 +104,7 @@ function LoginPageInner() {
         <p className="text-xs text-neutral-400 text-center mb-6">سوق النيل</p>
 
         {mode === "signup" && (
-          <div className="grid grid-cols-2 gap-2 mb-4">
+          <div className="grid grid-cols-3 gap-2 mb-4">
             <button
               type="button"
               onClick={() => setAccountType("customer")}
@@ -125,6 +126,17 @@ function LoginPageInner() {
               }`}
             >
               <Store size={18} /> تاجر
+            </button>
+            <button
+              type="button"
+              onClick={() => setAccountType("marketer")}
+              className={`flex flex-col items-center gap-1 rounded-xl border p-3 text-xs font-bold transition-colors ${
+                accountType === "marketer"
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-black/10 text-neutral-500"
+              }`}
+            >
+              <Megaphone size={18} /> مسوّق
             </button>
           </div>
         )}
@@ -154,6 +166,14 @@ function LoginPageInner() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
+          {mode === "signup" && accountType === "customer" && (
+            <input
+              placeholder="كود الإحالة (اختياري)"
+              value={referralCode}
+              onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+              className="w-full rounded-xl border border-black/10 bg-white px-4 py-3 text-sm outline-none focus:border-primary"
+            />
+          )}
 
           {error && <p className="text-xs text-red-500 font-bold">{error}</p>}
 

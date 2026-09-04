@@ -38,6 +38,35 @@ export async function getAllPlans() {
   return data ?? [];
 }
 
+export async function getPlatformMarketers() {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("platform_marketers")
+    .select("id, profile_id, referral_code, is_active, created_at, profiles(full_name)")
+    .order("created_at", { ascending: false });
+  return data ?? [];
+}
+
+export async function getEligibleMarketerProfiles() {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("profiles")
+    .select("id, full_name")
+    .eq("role", "marketer")
+    .order("full_name");
+  return data ?? [];
+}
+
+export async function getPendingWithdrawalRequests() {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("marketer_withdrawal_requests")
+    .select("id, amount, status, created_at, profiles!marketer_id(full_name)")
+    .in("status", ["pending", "approved"])
+    .order("created_at", { ascending: true });
+  return data ?? [];
+}
+
 export async function getPendingSubscriptionRequests() {
   const supabase = await createClient();
   const { data } = await supabase

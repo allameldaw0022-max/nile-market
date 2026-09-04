@@ -5,7 +5,7 @@ export type CurrentUser = {
   id: string;
   email: string | null;
   fullName: string | null;
-  role: "customer" | "seller" | "admin";
+  role: "customer" | "seller" | "marketer" | "admin";
 };
 
 // cache() so however many server components ask "who's signed in?" during

@@ -6,7 +6,8 @@ import { SITE_NAME } from "@/lib/site";
 
 export async function Header() {
   const user = await getCurrentUser();
-  const dashboardHref = user?.role === "admin" ? "/admin" : user?.role === "seller" ? "/seller" : "/account";
+  const dashboardHref =
+    user?.role === "admin" ? "/admin" : user?.role === "seller" ? "/seller" : user?.role === "marketer" ? "/marketer" : "/account";
 
   return (
     <header className="sticky top-0 z-40 bg-navy text-white">

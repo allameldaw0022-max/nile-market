@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { LayoutDashboard, Store, Layers, Receipt } from "lucide-react";
+import { LayoutDashboard, Store, Layers, Receipt, Star, Wallet } from "lucide-react";
 import { getCurrentUser } from "@/lib/supabase/queries";
 
 const TABS = [
@@ -8,6 +8,8 @@ const TABS = [
   { href: "/admin/stores", label: "المتاجر", icon: Store },
   { href: "/admin/plans", label: "الباقات", icon: Layers },
   { href: "/admin/subscription-requests", label: "طلبات الاشتراك", icon: Receipt },
+  { href: "/admin/withdrawals", label: "طلبات السحب", icon: Wallet },
+  { href: "/admin/marketers-50", label: "مسوّقو الـ50", icon: Star },
 ];
 
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
