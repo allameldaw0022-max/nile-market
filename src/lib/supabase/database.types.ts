@@ -465,6 +465,7 @@ export type Database = {
           features: Json
           id: string
           is_active: boolean
+          is_trial: boolean
           name: string
           price: number
         }
@@ -474,6 +475,7 @@ export type Database = {
           features?: Json
           id?: string
           is_active?: boolean
+          is_trial?: boolean
           name: string
           price?: number
         }
@@ -483,6 +485,7 @@ export type Database = {
           features?: Json
           id?: string
           is_active?: boolean
+          is_trial?: boolean
           name?: string
           price?: number
         }
@@ -551,6 +554,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_subscription_request: {
+        Args: { p_request_id: string }
+        Returns: undefined
+      }
       checkout_cart: {
         Args: { p_delivery_address: Json; p_delivery_fee?: number }
         Returns: string

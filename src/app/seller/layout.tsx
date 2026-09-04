@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { LayoutDashboard, Package, ClipboardList } from "lucide-react";
+import { LayoutDashboard, Package, ClipboardList, CreditCard } from "lucide-react";
 import { getCurrentUser } from "@/lib/supabase/queries";
 
 const TABS = [
   { href: "/seller", label: "لوحتي", icon: LayoutDashboard },
   { href: "/seller/products", label: "المنتجات", icon: Package },
   { href: "/seller/orders", label: "الطلبات", icon: ClipboardList },
+  { href: "/seller/subscription", label: "الاشتراك", icon: CreditCard },
 ];
 
 export default async function SellerLayout({ children }: LayoutProps<"/seller">) {
