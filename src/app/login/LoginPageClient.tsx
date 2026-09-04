@@ -29,6 +29,7 @@ function LoginPageInner() {
   const [referralCode, setReferralCode] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [screen, setScreen] = useState<"form" | "check-email">("form");
@@ -44,6 +45,12 @@ function LoginPageInner() {
     e.preventDefault();
     setError(null);
     setLoading(true);
+    if (mode === "signup" && password !== confirmPassword) {
+      setLoading(false);
+      setError("كلمة المرور وتأكيدها غير متطابقين.");
+      return;
+    }
+
     const supabase = createClient();
 
     if (mode === "signin") {
@@ -95,50 +102,68 @@ function LoginPageInner() {
     );
   }
 
+  const ROLE_OPTIONS = [
+    { value: "customer" as const, label: "عميل", icon: User, description: "للتسوق وشراء المنتجات" },
+    { value: "seller" as const, label: "تاجر", icon: Store, description: "لإنشاء متجر وعرض منتجاتك" },
+    { value: "marketer" as const, label: "مسوّق", icon: Megaphone, description: "لتسويق منتجات المتاجر والحصول على عمولات" },
+  ];
+
+  function switchMode(next: "signin" | "signup") {
+    setMode(next);
+    setError(null);
+  }
+
   return (
     <main className="flex-1 flex items-center justify-center p-6">
       <div className="max-w-sm w-full bg-white rounded-2xl border border-black/5 p-8">
-        <h1 className="font-bold text-xl text-navy mb-1 text-center">
-          {mode === "signin" ? "تسجيل الدخول" : "إنشاء حساب جديد"}
-        </h1>
-        <p className="text-xs text-neutral-400 text-center mb-6">سوق النيل</p>
+        <p className="text-xs text-neutral-400 text-center mb-4">سوق النيل</p>
+
+        <div className="grid grid-cols-2 gap-2 mb-6 bg-neutral-50 rounded-xl p-1">
+          <button
+            type="button"
+            onClick={() => switchMode("signin")}
+            className={`flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-bold transition-colors ${
+              mode === "signin" ? "bg-white text-navy shadow-sm" : "text-neutral-400"
+            }`}
+          >
+            <LogIn size={15} /> تسجيل الدخول
+          </button>
+          <button
+            type="button"
+            onClick={() => switchMode("signup")}
+            className={`flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-bold transition-colors ${
+              mode === "signup" ? "bg-white text-navy shadow-sm" : "text-neutral-400"
+            }`}
+          >
+            <UserPlus size={15} /> حساب جديد
+          </button>
+        </div>
 
         {mode === "signup" && (
-          <div className="grid grid-cols-3 gap-2 mb-4">
-            <button
-              type="button"
-              onClick={() => setAccountType("customer")}
-              className={`flex flex-col items-center gap-1 rounded-xl border p-3 text-xs font-bold transition-colors ${
-                accountType === "customer"
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-black/10 text-neutral-500"
-              }`}
-            >
-              <User size={18} /> عميل
-            </button>
-            <button
-              type="button"
-              onClick={() => setAccountType("seller")}
-              className={`flex flex-col items-center gap-1 rounded-xl border p-3 text-xs font-bold transition-colors ${
-                accountType === "seller"
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-black/10 text-neutral-500"
-              }`}
-            >
-              <Store size={18} /> تاجر
-            </button>
-            <button
-              type="button"
-              onClick={() => setAccountType("marketer")}
-              className={`flex flex-col items-center gap-1 rounded-xl border p-3 text-xs font-bold transition-colors ${
-                accountType === "marketer"
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-black/10 text-neutral-500"
-              }`}
-            >
-              <Megaphone size={18} /> مسوّق
-            </button>
-          </div>
+          <>
+            <p className="text-xs font-bold text-neutral-500 mb-2">نوع الحساب</p>
+            <div className="grid grid-cols-3 gap-2 mb-4">
+              {ROLE_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setAccountType(option.value)}
+                  title={option.description}
+                  className={`flex flex-col items-center gap-1 rounded-xl border p-3 text-xs font-bold transition-colors ${
+                    accountType === option.value
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-black/10 text-neutral-500"
+                  }`}
+                >
+                  <option.icon size={18} />
+                  {option.label}
+                </button>
+              ))}
+            </div>
+            <p className="text-[11px] text-neutral-400 text-center -mt-2 mb-4">
+              {ROLE_OPTIONS.find((o) => o.value === accountType)?.description}
+            </p>
+          </>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-3">
@@ -166,6 +191,15 @@ function LoginPageInner() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
+          {mode === "signup" && (
+            <PasswordInput
+              required
+              minLength={6}
+              placeholder="تأكيد كلمة المرور"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+          )}
           {mode === "signup" && accountType === "customer" && (
             <input
               placeholder="كود الإحالة (اختياري)"
@@ -187,22 +221,7 @@ function LoginPageInner() {
           </button>
         </form>
 
-        <button
-          type="button"
-          onClick={() => {
-            setMode(mode === "signin" ? "signup" : "signin");
-            setError(null);
-          }}
-          className="w-full text-center text-xs text-neutral-500 mt-4"
-        >
-          {mode === "signin" ? (
-            <>ليس لديك حساب؟ <span className="text-primary font-bold">أنشئ حسابًا</span></>
-          ) : (
-            <>لديك حساب بالفعل؟ <span className="text-primary font-bold">سجّل الدخول</span></>
-          )}
-        </button>
-
-        <Link href="/" className="block text-center text-xs text-neutral-400 mt-2">
+        <Link href="/" className="block text-center text-xs text-neutral-400 mt-4">
           العودة للرئيسية
         </Link>
       </div>
