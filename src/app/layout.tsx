@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Cairo } from "next/font/google";
 import "./globals.css";
+import { Header } from "@/components/layout/Header";
 import { SITE_URL, SITE_NAME, SITE_NAME_EN } from "@/lib/site";
 
 const cairo = Cairo({
@@ -38,7 +39,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ar" dir="rtl" className={`${cairo.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-bg text-navy">{children}</body>
+      <body className="min-h-full flex flex-col bg-bg text-navy">
+        <Header />
+        {children}
+      </body>
     </html>
   );
 }
