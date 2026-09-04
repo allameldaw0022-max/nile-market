@@ -38,6 +38,46 @@ export async function getAllPlans() {
   return data ?? [];
 }
 
+export async function getCustomers() {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("profiles")
+    .select("id, full_name, phone, created_at")
+    .eq("role", "customer")
+    .order("created_at", { ascending: false })
+    .limit(200);
+  return data ?? [];
+}
+
+export async function getAllOrders() {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("order_items")
+    .select("id, quantity, unit_price, status, created_at, products(name), stores(name), orders(guest_customer_name, customer_id)")
+    .order("created_at", { ascending: false })
+    .limit(200);
+  return data ?? [];
+}
+
+export async function getAllProducts() {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("products")
+    .select("id, name, price, currency, status, stock, stores(name)")
+    .order("created_at", { ascending: false })
+    .limit(200);
+  return data ?? [];
+}
+
+export async function getAllStoreEmployees() {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("store_employees")
+    .select("id, created_at, stores(name), profiles(full_name)")
+    .order("created_at", { ascending: false });
+  return data ?? [];
+}
+
 export async function getPlatformMarketers() {
   const supabase = await createClient();
   const { data } = await supabase

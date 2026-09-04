@@ -1,27 +1,38 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { LayoutDashboard, Package, ClipboardList, CreditCard, Megaphone, Settings } from "lucide-react";
+import { LayoutDashboard, Package, ClipboardList, CreditCard, Megaphone, Settings, Users } from "lucide-react";
 import { getCurrentUser } from "@/lib/supabase/queries";
-
-const TABS = [
-  { href: "/seller", label: "لوحتي", icon: LayoutDashboard },
-  { href: "/seller/products", label: "المنتجات", icon: Package },
-  { href: "/seller/orders", label: "الطلبات", icon: ClipboardList },
-  { href: "/seller/marketers", label: "مسوّقو متجري", icon: Megaphone },
-  { href: "/seller/subscription", label: "الاشتراك", icon: CreditCard },
-  { href: "/seller/settings", label: "الإعدادات", icon: Settings },
-];
+import { getMyStoreContext } from "@/lib/queries/seller";
 
 export default async function SellerLayout({ children }: LayoutProps<"/seller">) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
-  if (user.role !== "seller" && user.role !== "admin") redirect("/account");
+
+  const context = await getMyStoreContext();
+  const hasStoreAccess = context !== null;
+  if (user.role !== "seller" && user.role !== "admin" && !hasStoreAccess) redirect("/account");
+
+  const isOwner = context?.isOwner ?? (user.role === "seller" || user.role === "admin");
+
+  const tabs = [
+    { href: "/seller", label: "لوحتي", icon: LayoutDashboard },
+    { href: "/seller/products", label: "المنتجات", icon: Package },
+    { href: "/seller/orders", label: "الطلبات", icon: ClipboardList },
+    ...(isOwner
+      ? [
+          { href: "/seller/marketers", label: "مسوّقو متجري", icon: Megaphone },
+          { href: "/seller/employees", label: "الموظفون", icon: Users },
+          { href: "/seller/subscription", label: "الاشتراك", icon: CreditCard },
+          { href: "/seller/settings", label: "الإعدادات", icon: Settings },
+        ]
+      : []),
+  ];
 
   return (
     <div className="flex-1 flex flex-col">
       <nav className="bg-white border-b border-black/5">
         <div className="max-w-4xl mx-auto flex gap-1 px-4 overflow-x-auto no-scrollbar">
-          {TABS.map((tab) => (
+          {tabs.map((tab) => (
             <Link
               key={tab.href}
               href={tab.href}

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Package, Plus } from "lucide-react";
-import { getMyStore, getStoreProductsAdmin } from "@/lib/queries/seller";
+import { getMyStoreContext, getStoreProductsAdmin } from "@/lib/queries/seller";
 import { redirect } from "next/navigation";
 
 const STATUS_LABELS: Record<string, { label: string; className: string }> = {
@@ -10,8 +10,9 @@ const STATUS_LABELS: Record<string, { label: string; className: string }> = {
 };
 
 export default async function SellerProductsPage() {
-  const store = await getMyStore();
-  if (!store) redirect("/seller");
+  const context = await getMyStoreContext();
+  if (!context) redirect("/seller");
+  const { store } = context;
 
   const products = await getStoreProductsAdmin(store.id);
 

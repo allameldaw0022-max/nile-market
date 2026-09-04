@@ -527,6 +527,42 @@ export type Database = {
           },
         ]
       }
+      store_employees: {
+        Row: {
+          created_at: string
+          id: string
+          profile_id: string
+          store_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          profile_id: string
+          store_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          profile_id?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_employees_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_employees_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stores: {
         Row: {
           created_at: string
@@ -691,6 +727,10 @@ export type Database = {
           p_quantity: number
           p_store_id: string
         }
+        Returns: string
+      }
+      find_profile_id_by_email: {
+        Args: { p_email: string }
         Returns: string
       }
       increment_product_views: {

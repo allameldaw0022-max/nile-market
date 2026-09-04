@@ -1,12 +1,13 @@
 import { notFound, redirect } from "next/navigation";
-import { getMyStore } from "@/lib/queries/seller";
+import { getMyStoreContext } from "@/lib/queries/seller";
 import { createClient } from "@/lib/supabase/server";
 import { ProductForm } from "../../ProductForm";
 
 export default async function EditProductPage({ params }: PageProps<"/seller/products/[id]/edit">) {
   const { id } = await params;
-  const store = await getMyStore();
-  if (!store) redirect("/seller");
+  const context = await getMyStoreContext();
+  if (!context) redirect("/seller");
+  const { store } = context;
 
   const supabase = await createClient();
   const { data: product } = await supabase

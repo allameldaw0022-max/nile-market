@@ -1,13 +1,13 @@
 import { redirect } from "next/navigation";
 import { ClipboardList } from "lucide-react";
-import { getMyStore, getStoreOrderItems } from "@/lib/queries/seller";
+import { getMyStoreContext, getStoreOrderItems } from "@/lib/queries/seller";
 import { OrderItemRow, type SellerOrderItem } from "./OrderItemRow";
 
 export default async function SellerOrdersPage() {
-  const store = await getMyStore();
-  if (!store) redirect("/seller");
+  const context = await getMyStoreContext();
+  if (!context) redirect("/seller");
 
-  const items = (await getStoreOrderItems(store.id)) as unknown as SellerOrderItem[];
+  const items = (await getStoreOrderItems(context.store.id)) as unknown as SellerOrderItem[];
 
   return (
     <main className="flex-1 max-w-4xl mx-auto w-full p-4">

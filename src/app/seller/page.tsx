@@ -1,5 +1,5 @@
 import { ShoppingBag, Package, Wallet, Clock } from "lucide-react";
-import { getMyStore, getStoreStats } from "@/lib/queries/seller";
+import { getMyStoreContext, getStoreStats } from "@/lib/queries/seller";
 import { CreateStoreForm } from "./CreateStoreForm";
 
 const STORE_STATUS_LABELS: Record<string, { label: string; className: string }> = {
@@ -9,8 +9,9 @@ const STORE_STATUS_LABELS: Record<string, { label: string; className: string }> 
 };
 
 export default async function SellerDashboardPage() {
-  const store = await getMyStore();
-  if (!store) return <CreateStoreForm />;
+  const context = await getMyStoreContext();
+  if (!context) return <CreateStoreForm />;
+  const { store, isOwner } = context;
 
   const stats = await getStoreStats(store.id);
   const statusMeta = STORE_STATUS_LABELS[store.status];
@@ -23,6 +24,9 @@ export default async function SellerDashboardPage() {
           {statusMeta.label}
         </span>
       </div>
+      {!isOwner && (
+        <p className="text-xs text-neutral-400 -mt-3 mb-4">أنت تدخل كموظف في هذا المتجر</p>
+      )}
 
       <div className="grid grid-cols-3 gap-3">
         <div className="bg-white rounded-2xl border border-black/5 p-4 text-center">

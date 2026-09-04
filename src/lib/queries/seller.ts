@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import type { Tables } from "@/lib/supabase/database.types";
 
 export async function getMyStore() {
   const supabase = await createClient();
@@ -9,6 +10,31 @@ export async function getMyStore() {
 
   const { data } = await supabase.from("stores").select("*").eq("owner_id", user.id).maybeSingle();
   return data;
+}
+
+// Resolves the store this user can operate on, whether they own it or are
+// a granted employee of it (see store_employees). Employees never see
+// financial/settings pages -- callers must check isOwner before rendering
+// those.
+export async function getMyStoreContext() {
+  const owned = await getMyStore();
+  if (owned) return { store: owned, isOwner: true as const };
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data: employeeRow } = await supabase
+    .from("store_employees")
+    .select("stores(*)")
+    .eq("profile_id", user.id)
+    .maybeSingle();
+
+  const store = employeeRow?.stores as Tables<"stores"> | undefined;
+  if (!store) return null;
+  return { store, isOwner: false as const };
 }
 
 export async function getStoreStats(storeId: string) {
