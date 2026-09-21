@@ -80,12 +80,14 @@ rollback;
 
 \echo '── D31: بوابة الإطلاق التجاري ──'
 begin;
-select t.reset();
+select t.login(:'adminOwner');
 select t.ok((select not complete from plan_configuration_status()),
             'الإعداد غير مكتمل ما دامت حدود الباقات غير مضبوطة');
 select t.ok((select array_length(unconfigured_features, 1) > 0 from plan_configuration_status()),
             'وتُعرض قائمة الميزات غير المضبوطة');
-
+select t.login(:'custA');
+select t.throws('select * from plan_configuration_status()',
+                'مستخدم عادي لا يرى حالة إعداد المنصة');
 select t.login(:'adminOwner');
 select t.throws('update platform_settings set commercial_launch_enabled = true where id = true',
                 '★ تفعيل الإطلاق التجاري مرفوض والإعداد ناقص');
@@ -94,9 +96,9 @@ select t.throws('update platform_settings set commercial_launch_enabled = true w
 select t.reset();
 update plans set price = 50000 where code = 'pro';
 update plan_entitlements set limit_value = 100 where limit_value is null and bool_value is null;
+select t.login(:'adminOwner');
 select t.ok((select complete from plan_configuration_status()),
             'بعد ضبط الأسعار والحدود (وحسابا Admin) يكتمل الإعداد');
-select t.login(:'adminOwner');
 update platform_settings set commercial_launch_enabled = true where id = true;
 select t.ok((select commercial_launch_enabled from platform_settings),
             'ويُسمح بتفعيل الإطلاق التجاري');
@@ -110,9 +112,9 @@ update plan_entitlements set limit_value = 100 where limit_value is null and boo
 update admin_members set status = 'suspended'
  where id in ('ad000000-0000-0000-0000-00000000000b','ad000000-0000-0000-0000-00000000000c',
               'ad000000-0000-0000-0000-00000000000d');
+select t.login(:'adminOwner');
 select t.ok((select active_admins = 1 and not admins_sufficient from plan_configuration_status()),
             'حساب Admin واحد ⇒ غير كافٍ');
-select t.login(:'adminOwner');
 select t.throws('update platform_settings set commercial_launch_enabled = true where id = true',
                 '★ الإطلاق مرفوض بحساب Admin واحد (فصل المهام مستحيل)');
 rollback;
