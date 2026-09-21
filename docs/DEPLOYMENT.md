@@ -25,9 +25,9 @@ NEXT_PUBLIC_ROOT_DOMAIN       # nilemarket.online
 ```
 SUPABASE_SERVICE_ROLE_KEY     # يتجاوز RLS — server-only
 CRON_SECRET                   # حماية /api/v1/cron/*
-EMAIL_PROVIDER_API_KEY        # حسب Q10
+RESEND_API_KEY                # مزوّد البريد المعتمد (D24)
 EMAIL_FROM
-VERCEL_API_TOKEN              # إدارة الدومينات — حسب Q7
+HOSTING_PROVIDER_TOKEN        # إدارة الدومينات عبر HostingProvider (D21)
 VERCEL_PROJECT_ID
 VERCEL_TEAM_ID
 ```
@@ -140,5 +140,5 @@ push إلى main
 - [ ] الباقات والحدود مُدخلة (بعد Q4)
 - [ ] الصفحات القانونية منشورة
 - [ ] **لا بيانات Mock في الإنتاج**
-- [ ] حساب Admin الأول منشأ بـ2FA (حسب Q14)
+- [ ] **حسابا Admin نشطان على الأقل** بـ2FA مفعّل — يلزمهما فصل المهام (D23/D28، راجع C1)
 - [ ] Sitemap وrobots يعملان للمنصة ولكل متجر

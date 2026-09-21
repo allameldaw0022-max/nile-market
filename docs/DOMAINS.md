@@ -33,7 +33,7 @@ GET https://ahmadstore.com/products/abc
             ├─ لا نتيجة            → Store Not Found (404)
             ├─ stores.status=suspended → Store Suspended
             ├─ stores.status=closed    → Store Closed
-            ├─ الاشتراك منتهٍ          → وضع محدود (حسب Q2)
+            ├─ الاشتراك منتهٍ          → زيارة فقط، Checkout معطّل (D14)
             └─ نجاح → StoreContext { storeId, slug, primaryHost, theme, … }
 ```
 
@@ -124,7 +124,7 @@ GET https://ahmadstore.com/products/abc
 | باقة لا تسمح بالدومين | منع الإضافة برسالة واضحة + زر ترقية (**لا فشل غامض**) |
 | Downgrade | الدومين → `suspended`، **لا يُحذف**؛ المتجر يعود للنطاق الفرعي |
 | Upgrade بعد ذلك | يعود `active` **بلا إعادة تحقق** (الملكية مثبتة سابقًا) |
-| انتهاء الاشتراك | الدومين يبقى مسجّلًا؛ سلوك الواجهة حسب Q2 |
+| انتهاء الاشتراك | الدومين يبقى مسجّلًا؛ المتجر قابل للزيارة والشراء معطّل (D14) |
 
 > **النطاق الفرعي المجاني لا يتأثر بأي من ذلك** — جزء أساسي من المتجر.
 
@@ -146,7 +146,7 @@ GET https://ahmadstore.com/products/abc
 
 1. `stores.slug` يتغير ⇒ يُنشأ صف `store_domains` جديد للنطاق الفرعي الجديد.
 2. القديم يبقى بحالة `active` مع `redirect_to_primary` ⇒ **301** (المدة
-   وسياسة الحجز — سؤال **Q13**).
+   **301 + حجز الـslug القديم 12 شهرًا** — D27، راجع C5).
 3. لا تُفقد أي بيانات؛ وتُبطَّل الـcaches ويُحدَّث الـsitemap.
 4. يُسجَّل التغيير في `audit_logs` ويتطلب `settings:update`.
 

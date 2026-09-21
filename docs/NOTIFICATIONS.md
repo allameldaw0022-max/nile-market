@@ -33,7 +33,8 @@ export interface EmailProvider {
               locale: 'ar' }): Promise<{ id: string }>;
 }
 ```
-> المزوّد الفعلي في v1 — سؤال **Q10**. القوالب بالعربية RTL مع نسخة نصية.
+> المزوّد المعتمد في v1: **Resend** (D24)، ويُضبط أيضًا كـCustom SMTP
+> داخل Supabase Auth. القوالب بالعربية RTL مع نسخة نصية.
 
 ## 14.3 أنواع الإشعارات
 

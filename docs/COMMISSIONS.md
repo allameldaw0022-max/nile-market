@@ -39,7 +39,7 @@ Admin ينشئ شريكًا (اسم·بريد·هاتف·حالة)
              ↑ كوكي خادمي فقط — لا localStorage (لا يُعدَّل من الواجهة)
 
 التاجر يسجّل ثم ينشئ متجرًا
-   └─ create_store() تقرأ الكوكي **خادميًا** وتطبّق قاعدة الإسناد (Q5)
+   └─ create_store() تقرأ الكوكي **خادميًا** وتطبّق قاعدة الإسناد **Last-touch / 30 يومًا** (D19)
         └─ referrals(partner_id, store_id)  ← unique على store_id
              + stores.referred_by_partner_id  ← لا يُعدَّل من واجهة التاجر
 
@@ -54,7 +54,7 @@ Admin ينشئ شريكًا (اسم·بريد·هاتف·حالة)
         └─ INSERT ledger_entries (debit platform / credit partner)
 
 الشريك يطلب الصرف → partner_payouts(pending_review)
-   └─ Admin يعتمد (بمستخدم مختلف إن فُعِّل فصل المهام — Q9)
+   └─ Admin يعتمد **بمستخدم مختلف عن الطالب — إلزامي (D23)**
         └─ mark_payout_paid() داخل معاملة واحدة:
              ├─ يربط صفوف commission_ledger المحددة بـpayout_id
              ├─ يحوّلها إلى status='paid'

@@ -107,7 +107,7 @@ src/
                   ├─ استعلام واحد: store_domains ⋈ stores  (أو slug للنطاق الفرعي)
                   ├─ لا نتيجة        → صفحة Store Not Found
                   ├─ status=suspended → صفحة Store Suspended
-                  ├─ اشتراك منتهٍ     → وضع «للعرض فقط» (حسب Q2)
+                  ├─ اشتراك منتهٍ     → زيارة فقط، Checkout معطّل (D14)
                   └─ نجاح            → StoreContext { storeId, ... } مُمرَّر عبر cache()
 ```
 

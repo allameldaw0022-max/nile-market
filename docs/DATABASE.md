@@ -315,7 +315,7 @@ nullable (كوكي HttpOnly) · `status` (`active`,`converted`,`abandoned`) ·
 `id` · `payment_id` → payments · `order_id`/`subscription_id` ·
 `amount numeric(14,2) check > 0` · `reason` not null ·
 `status` (`pending_review, approved, rejected, completed`) ·
-`requested_by` · `approved_by` (**≠ requested_by** إن فُعِّل فصل المهام — Q9) ·
+`requested_by` · `approved_by` — **قيد `check (approved_by is distinct from requested_by)`** (D23) ·
 `approved_at` · `completed_at` · `idempotency_key` unique
 · check: `sum(refunds.amount) <= payments.amount` بـtrigger
 
@@ -398,7 +398,7 @@ default 50.00` 🔒 · `payout_notes` · `created_by` · `created_at`
 
 ### `referral_visits`
 `id` · `partner_id` · `visitor_token` · `landing_path` · `ip_hash` ·
-`user_agent` · `created_at` — لتطبيق قاعدة الإسناد (Q5) خادميًا.
+`user_agent` · `created_at` — لتطبيق قاعدة الإسناد Last-touch/30 يومًا (D19) خادميًا.
 
 ### `referrals`
 الربط الدائم بين الشريك والمتجر.
@@ -430,7 +430,7 @@ default 50.00` 🔒 · `payout_notes` · `created_by` · `created_at`
 ### `partner_payouts`
 `id` · `partner_id` · `amount numeric(14,2)` · `method` ·
 `reference` (رقم الحوالة) · `status` (`pending_review, approved,
-rejected, paid`) · `requested_by` · `approved_by` (**≠ requested_by** — Q9) ·
+rejected, paid`) · `requested_by` · `approved_by` — **قيد `check (approved_by is distinct from requested_by)`** (D23) ·
 `paid_at` · `note` · `idempotency_key` unique · `created_at`
 
 **الذرّية:** `mark_payout_paid()` يربط صفوف `commission_ledger` المحددة
@@ -556,7 +556,8 @@ customer, system`) · `store_id` nullable · `action` text
 صف واحد: `maintenance_mode` · `maintenance_message` ·
 `default_partner_rate numeric(5,2) default 50` · `default_trial_days` ·
 `grace_period_days` · `support_email` · `updated_by` · `updated_at`
-> القيم الرقمية هنا **بانتظار Q3/Q4** — لن تُملأ بأرقام مخترعة.
+> `grace_period_days = 7` · `expiring_warning_days = 7` · `auto_renew_enabled = false`
+> (D16/D17). أسعار الباقات وحدودها **لا تُملأ بأرقام مخترعة** (D18).
 
 ---
 
@@ -574,4 +575,4 @@ customer, system`) · `store_id` nullable · `action` text
 | `subscription_requests` | يُبقى ويُوسَّع (خصم + مبلغ صافٍ + idempotency) |
 | `store_employees` | → `store_members` (بأدوار) |
 | `platform_settings` | يُبقى ويُوسَّع |
-| `wallet_ledger`, `payout_methods`, `marketer_withdrawal_requests`, `platform_marketers`, `product_marketer_clicks`, أعمدة `marketer_*`/`platform_commission_*` | **بانتظار Q1** — لا يُحذف شيء قبل قرارك |
+| `wallet_ledger`, `payout_methods`, `marketer_withdrawal_requests`, `platform_marketers`, `product_marketer_clicks`, أعمدة `marketer_*`/`platform_commission_*` | **خارج V1 (D11)** — تبقى كما هي بلا حذف، خلف Feature Flag، ولا يقرؤها أي مسار |
