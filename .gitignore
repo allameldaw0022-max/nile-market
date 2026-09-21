@@ -49,3 +49,6 @@ android/build/
 android/app/build/
 android/*/build/
 android/node_modules/
+
+# Local DB test artifacts
+/tmp-pg/
