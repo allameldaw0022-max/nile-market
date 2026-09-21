@@ -1,7 +1,7 @@
 import 'server-only';
 import { cache } from 'react';
 import { unstable_cache } from 'next/cache';
-import { createClient } from '@/lib/supabase/server';
+import { createPublicClient } from '@/lib/supabase/public';
 
 export type StoreContext = {
   storeId: string;
@@ -23,7 +23,9 @@ export type StoreContext = {
  * هذا هو جدار منع IDOR الأول قبل RLS.
  */
 async function lookup(host: string): Promise<StoreContext | null> {
-  const supabase = await createClient();
+  // عميل بلا كوكيز: النتيجة عامة وقابلة للمشاركة بين كل الزوار،
+  // ولا يجوز أن تلمس دالة مخزَّنة جلسةَ مستخدم بعينه.
+  const supabase = createPublicClient();
   const { data, error } = await supabase
     .rpc('resolve_store_by_host', { p_host: host })
     .maybeSingle();
