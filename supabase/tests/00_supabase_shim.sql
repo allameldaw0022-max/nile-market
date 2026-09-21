@@ -69,3 +69,7 @@ $$;
 
 grant usage on schema auth to anon, authenticated, service_role;
 grant select on auth.users to service_role;
+
+-- كما تفعل Supabase: service_role يملك كل شيء ويتجاوز RLS.
+-- ضروري لاختبار أن قيود CHECK تصمد أمامه فعلًا.
+alter default privileges in schema public grant all on tables to service_role;

@@ -11,7 +11,8 @@ insert into auth.users (id, email, email_confirmed_at) values
   ('88888888-8888-8888-8888-888888888888','adminOwner@test.local', now()),
   ('99999999-9999-9999-9999-999999999999','adminSupport@test.local', now()),
   ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa','adminFinance@test.local', now()),
-  ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb','partner1@test.local', now());
+  ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb','partner1@test.local', now()),
+  ('cccccccc-cccc-cccc-cccc-cccccccccccc','adminOps@test.local', now());
 
 insert into public.stores (id, owner_id, name, slug, status, published_at) values
   ('a0000000-0000-0000-0000-00000000000a','11111111-1111-1111-1111-111111111111',
@@ -34,7 +35,8 @@ insert into public.store_members (store_id, profile_id, role, status, accepted_a
 insert into public.admin_members (id, profile_id, display_name, is_owner, status) values
   ('ad000000-0000-0000-0000-00000000000a','88888888-8888-8888-8888-888888888888','Admin Owner', true, 'active'),
   ('ad000000-0000-0000-0000-00000000000b','99999999-9999-9999-9999-999999999999','Support Staff', false, 'active'),
-  ('ad000000-0000-0000-0000-00000000000c','aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa','Finance Staff', false, 'active');
+  ('ad000000-0000-0000-0000-00000000000c','aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa','Finance Staff', false, 'active'),
+  ('ad000000-0000-0000-0000-00000000000d','cccccccc-cccc-cccc-cccc-cccccccccccc','Ops Staff', false, 'active');
 
 insert into public.admin_permissions (admin_member_id, section, level) values
   ('ad000000-0000-0000-0000-00000000000b','support','manage'),
@@ -42,7 +44,9 @@ insert into public.admin_permissions (admin_member_id, section, level) values
   ('ad000000-0000-0000-0000-00000000000c','payments','approve'),
   ('ad000000-0000-0000-0000-00000000000c','commissions','approve'),
   ('ad000000-0000-0000-0000-00000000000c','payouts','approve'),
-  ('ad000000-0000-0000-0000-00000000000c','subscriptions','approve');
+  ('ad000000-0000-0000-0000-00000000000c','subscriptions','approve'),
+  ('ad000000-0000-0000-0000-00000000000d','partners','edit'),
+  ('ad000000-0000-0000-0000-00000000000d','stores','edit');
 
 insert into public.delivery_zones (store_id, name, fee) values
   ('a0000000-0000-0000-0000-00000000000a','الخرطوم', 2000),
@@ -73,3 +77,17 @@ insert into public.inventory_movements (store_id, product_id, delta, reason) val
 
 insert into public.coupons (id, store_id, code, type, value) values
   ('e1000000-0000-0000-0000-000000000001','a0000000-0000-0000-0000-00000000000a','SAVE5000','fixed', 5000);
+
+-- شريك + إحالة لمتجر أ
+insert into public.partners (id, profile_id, name, email, status, referral_code) values
+  ('9a000000-0000-0000-0000-00000000000a','bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+   'الشريك الأول','partner1@test.local','active','P1CODE');
+
+insert into public.referrals (partner_id, store_id, attribution_source) values
+  ('9a000000-0000-0000-0000-00000000000a','a0000000-0000-0000-0000-00000000000a','link');
+
+update public.stores set referred_by_partner_id = '9a000000-0000-0000-0000-00000000000a'
+ where id = 'a0000000-0000-0000-0000-00000000000a';
+
+-- اضبط سعر الباقة الأساسية لاختبار المال (Admin هو من يضبطها في الإنتاج)
+update public.plans set price = 20000, price_configured_at = now() where code = 'basic';

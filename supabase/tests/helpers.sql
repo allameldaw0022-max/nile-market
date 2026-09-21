@@ -76,3 +76,25 @@ exception
 end $$;
 
 grant execute on all functions in schema t to anon, authenticated;
+grant usage on schema t to service_role;
+grant execute on all functions in schema t to service_role;
+grant all on all tables in schema public to service_role;
+grant all on all sequences in schema public to service_role;
+grant usage on schema app to service_role;
+grant execute on all functions in schema app to service_role;
+
+create or replace function t.throws_check(p_sql text, p_label text)
+returns text language plpgsql as $$
+begin
+  begin
+    execute p_sql;
+  exception
+    when check_violation then
+      return '  ✓ ' || p_label || ' (قيد CHECK: 23514)';
+    when others then
+      raise exception 'FAIL: % — رُفض بـ% وليس بقيد CHECK', p_label, sqlstate;
+  end;
+  raise exception 'FAIL: % — نجح وكان يجب أن يُرفض', p_label;
+end $$;
+
+grant execute on all functions in schema t to anon, authenticated, service_role;
