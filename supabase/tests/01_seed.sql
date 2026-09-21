@@ -19,9 +19,9 @@ insert into public.stores (id, owner_id, name, slug, status, published_at) value
   ('b0000000-0000-0000-0000-00000000000b','22222222-2222-2222-2222-222222222222',
    'متجر ب','store-b','active', now());
 
-insert into public.store_settings (store_id) values
-  ('a0000000-0000-0000-0000-00000000000a'),
-  ('b0000000-0000-0000-0000-00000000000b');
+insert into public.store_settings (store_id, cod_enabled, order_prefix) values
+  ('a0000000-0000-0000-0000-00000000000a', true, 'A'),
+  ('b0000000-0000-0000-0000-00000000000b', true, 'B');
 
 insert into public.store_members (store_id, profile_id, role, status, accepted_at) values
   ('a0000000-0000-0000-0000-00000000000a','11111111-1111-1111-1111-111111111111','owner','active',now()),
@@ -52,3 +52,24 @@ insert into public.delivery_zones (store_id, name, fee) values
 insert into public.store_payment_settings (store_id, bank_accounts) values
   ('a0000000-0000-0000-0000-00000000000a','[{"bank":"بنك الخرطوم","account":"A-111"}]'::jsonb),
   ('b0000000-0000-0000-0000-00000000000b','[{"bank":"بنك النيلين","account":"B-222"}]'::jsonb);
+
+-- كتالوج متجر أ
+insert into public.categories (id, store_id, name, slug) values
+  ('c1000000-0000-0000-0000-000000000001','a0000000-0000-0000-0000-00000000000a','ملابس','clothes');
+
+insert into public.products (id, store_id, category_id, name, slug, price, compare_at_price, cost_price, sku, status, published_at) values
+  ('d1000000-0000-0000-0000-000000000001','a0000000-0000-0000-0000-00000000000a',
+   'c1000000-0000-0000-0000-000000000001','قميص قطن','cotton-shirt', 20000, 25000, 12000, 'SH-001','active', now()),
+  ('d1000000-0000-0000-0000-000000000002','a0000000-0000-0000-0000-00000000000a',
+   'c1000000-0000-0000-0000-000000000001','بنطلون','pants', 30000, null, 18000, 'PN-001','active', now());
+
+insert into public.products (id, store_id, name, slug, price, status, published_at) values
+  ('d2000000-0000-0000-0000-000000000001','b0000000-0000-0000-0000-00000000000b','منتج متجر ب','b-product', 9000,'active', now());
+
+insert into public.inventory_movements (store_id, product_id, delta, reason) values
+  ('a0000000-0000-0000-0000-00000000000a','d1000000-0000-0000-0000-000000000001', 50,'initial'),
+  ('a0000000-0000-0000-0000-00000000000a','d1000000-0000-0000-0000-000000000002', 10,'initial'),
+  ('b0000000-0000-0000-0000-00000000000b','d2000000-0000-0000-0000-000000000001', 5,'initial');
+
+insert into public.coupons (id, store_id, code, type, value) values
+  ('e1000000-0000-0000-0000-000000000001','a0000000-0000-0000-0000-00000000000a','SAVE5000','fixed', 5000);
