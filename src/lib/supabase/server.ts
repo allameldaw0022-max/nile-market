@@ -1,7 +1,12 @@
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
-import type { Database } from "./database.types";
+import 'server-only';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
+import type { Database } from '@/types/database';
 
+/**
+ * عميل الخادم بمفتاح anon — يخضع لـRLS بالكامل.
+ * هذا هو العميل الافتراضي لكل قراءة وكتابة يبدأها مستخدم.
+ */
 export async function createClient() {
   const cookieStore = await cookies();
 
@@ -10,19 +15,17 @@ export async function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet) {
+        getAll: () => cookieStore.getAll(),
+        setAll(list) {
           try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
+            list.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options),
             );
           } catch {
-            // called from a Server Component - safe to ignore when middleware refreshes sessions
+            // استُدعي من Server Component — الـproxy يجدّد الجلسة بدلًا منه
           }
         },
       },
-    }
+    },
   );
 }

@@ -1,41 +1,115 @@
 @import "tailwindcss";
 
-:root {
-  --color-primary: #1e4fa3;
-  --color-primary-dark: #163b7a;
-  --color-primary-light: #e5edfa;
-  --color-gold: #d4af37;
-  --color-gold-dark: #b3901f;
-  --color-navy: #0b1f3a;
-  --color-bg: #f4f6fa;
-  --color-white: #ffffff;
-}
+/* =====================================================================
+   Design System — نايل ماركت
+   الألوان المعتمدة في المواصفات (§4) — لا تُغيَّر:
+   Nile Blue #0B5ED7 · Deep Navy #0B1F3A · White #FFFFFF
+   Light Gray #F5F7FA · Gold #D9A441 (Accent فقط)
+   ===================================================================== */
+@theme {
+  --color-nile-50:  #EBF2FE;
+  --color-nile-100: #D6E4FD;
+  --color-nile-200: #AEC9FB;
+  --color-nile-300: #7FA8F6;
+  --color-nile-400: #4080E6;
+  --color-nile-500: #0B5ED7;   /* ★ الأساسي */
+  --color-nile-600: #094DB0;
+  --color-nile-700: #073A85;
+  --color-nile-800: #062C64;
+  --color-nile-900: #041E45;
 
-@theme inline {
-  --color-primary: var(--color-primary);
-  --color-primary-dark: var(--color-primary-dark);
-  --color-primary-light: var(--color-primary-light);
-  --color-gold: var(--color-gold);
-  --color-gold-dark: var(--color-gold-dark);
-  --color-navy: var(--color-navy);
-  --color-bg: var(--color-bg);
-  --font-sans: var(--font-cairo);
+  --color-navy-500: #2C4A6B;
+  --color-navy-700: #16324F;
+  --color-navy-900: #0B1F3A;   /* ★ النصوص والترويسات */
+
+  --color-sand-50:  #F5F7FA;   /* ★ خلفية الصفحة */
+  --color-sand-100: #EDF0F5;
+  --color-sand-200: #DDE3EC;
+  --color-sand-300: #C6CFDD;
+  --color-sand-400: #9AA5B5;
+  --color-sand-600: #5A6675;
+  --color-sand-800: #2A333F;
+
+  --color-gold-400: #E4BC6E;
+  --color-gold-500: #D9A441;   /* ★ Accent فقط — لا خلفيات واسعة */
+  --color-gold-600: #B8862C;
+
+  --color-success: #0F9D58;
+  --color-success-bg: #E6F4EC;
+  --color-warning: #E8A33D;
+  --color-warning-bg: #FDF3E4;
+  --color-danger:  #D64545;
+  --color-danger-bg: #FBEAEA;
+  --color-info:    #0B5ED7;
+  --color-info-bg: #EBF2FE;
+
+  --font-sans: var(--font-cairo), Tahoma, Arial, sans-serif;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  --shadow-card: 0 1px 2px rgb(11 31 58 / 0.06);
+  --shadow-raised: 0 4px 12px rgb(11 31 58 / 0.08);
+  --shadow-overlay: 0 12px 32px rgb(11 31 58 / 0.12);
 }
 
 @layer base {
+  html {
+    /* حجم مريح على الهاتف بلا تكبير تلقائي في iOS */
+    -webkit-text-size-adjust: 100%;
+  }
   body {
-    background: var(--color-bg);
-    color: var(--color-navy);
-    font-family: var(--font-sans), Tahoma, Arial, sans-serif;
+    background: var(--color-sand-50);
+    color: var(--color-navy-900);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  /* كل الأرقام بعرض ثابت — الجداول المالية لا ترتجف */
+  .tabular, table, .money { font-variant-numeric: tabular-nums; }
+
+  /* الحقول اللاتينية داخل واجهة RTL */
+  input[type="email"], input[type="tel"], input[type="url"],
+  input[type="password"], input[dir="ltr"] {
+    direction: ltr;
+    text-align: right;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-nile-500);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
 
 @layer utilities {
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* الأيقونات الاتجاهية تُعكس في RTL، وغير الاتجاهية لا تُعكس */
+  .flip-rtl { transform: scaleX(-1); }
+
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--color-sand-100) 25%,
+      var(--color-sand-200) 37%,
+      var(--color-sand-100) 63%
+    );
+    background-size: 400% 100%;
+    animation: shimmer 1.4s ease infinite;
   }
-  .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+  @keyframes shimmer {
+    0% { background-position: 100% 50%; }
+    100% { background-position: 0 50%; }
   }
 }
