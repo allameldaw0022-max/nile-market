@@ -32,6 +32,10 @@ P0 الأساس ─┬─▶ P1 الهوية ─┬─▶ P2 القاعدة وRL
 ---
 
 ## P0 · الأساس والحوكمة
+**أول خطوة (D34، ✅ منفَّذة):** الـ21 migration القديمة في
+`supabase/legacy-migrations/` بلا حذف أو تعديل، و`supabase/migrations/`
+فارغ ويبدأ من `0001` — **ممنوع الخلط أو التطبيق**.
+
 `npm install` · **قراءة `node_modules/next/dist/docs/`** · تحديث
 Design Tokens إلى ألوان المواصفات · هيكل المجلدات · `proxy.ts` بحل
 المستأجر · `server-only` على الطبقات الحساسة · Vitest + Playwright +
@@ -190,6 +194,9 @@ PWA وOffline وAutosave · Lighthouse CI.
 - [ ] Migrations مطبَّقة ومراجَعة
 - [ ] نسخ احتياطي يعمل و**استعادة مختبَرة**
 - [ ] Monitoring وSystem Health فعّالان
+- [ ] **حسابا Admin نشطان بـMFA** (D29) وإلا تعذّر كل استرداد وصرف
+- [ ] **`commercial_launch_enabled = true`** بعد اكتمال أسعار وحدود
+      الباقات (D31)
 - [ ] Maintenance Mode يعمل بلا إسقاط المتاجر
 - [ ] الصفحات القانونية منشورة
 - [ ] **لا بيانات Mock ولا أزرار معطّلة ولا صفحات وهمية في الإنتاج**

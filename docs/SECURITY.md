@@ -126,7 +126,16 @@ Rate Limiting متدرّج (§12.6) · Pagination إجباري بسقف 100 · �
 ## 16.13 نظام الموافقات (§11 من الإضافات)
 `Pending Review → Approved | Rejected` مع تسجيل المنفّذ والتاريخ والسبب،
 على: Refund · Partner Payout · تعديل عمولة · تعطيل متجر · تغييرات مالية
-استثنائية. فصل المهام — **Q9**.
+استثنائية.
+
+**فصل المهام (D29/D30) — بلا استثناء:**
+- `approved_by ≠ requested_by ≠ initiated_by` مفروض بقيد **`CHECK`**،
+  وهو يُطبَّق على **كل** الأدوار بما فيها `service_role` (تجاوز RLS **لا**
+  يتجاوز القيود) ⇒ لا bypass من الواجهة ولا من الخادم.
+- trigger مكمّل يتحقق من أن الطرفين `admin_members` نشطان بـMFA.
+- إجباري في **Refund** و**Partner Payout**؛ وقابل للتفعيل من Admin
+  (`platform_settings.sod_enabled`) لبقية العمليات الحساسة.
+- يستلزم **حسابَي Admin نشطين بـMFA** — بوابة تُفحص قبل الإطلاق.
 
 ## 16.14 قائمة فحص ما قبل الإطلاق
 - [ ] `get_advisors` على Supabase (security + performance) = **صفر تحذيرات حرجة**

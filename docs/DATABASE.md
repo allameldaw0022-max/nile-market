@@ -92,8 +92,14 @@
 **فهارس:** `unique(lower(slug))`, `(owner_id)`, `(status)`, `(referred_by_partner_id)`
 
 ### `reserved_slugs`
-`slug citext PK` — `admin, app, api, support, help, www, mail, blog, cdn,
-static, assets, dashboard, partner, account, login, signup, status, docs…`
+`slug citext PK` · `reserved_until timestamptz null` · `reason` ·
+`store_id` nullable
+
+- أسماء النظام المحجوزة دائمًا (`reserved_until = null`): `admin, app,
+  api, support, help, www, mail, blog, cdn, static, assets, dashboard,
+  partner, account, login, signup, status, docs…`
+- **D33:** عند تغيير slug متجر يُضاف صف بـ`reserved_until = now() + 12
+  months` ⇒ الـ301 تعمل ما دام الحجز ساريًا، وبعده يُحرَّر الاسم.
 
 ### `store_settings`
 صف واحد لكل متجر (1:1) — يمنع تضخّم `stores`.
@@ -314,9 +320,18 @@ nullable (كوكي HttpOnly) · `status` (`active`,`converted`,`abandoned`) ·
 ### `refunds`
 `id` · `payment_id` → payments · `order_id`/`subscription_id` ·
 `amount numeric(14,2) check > 0` · `reason` not null ·
-`status` (`pending_review, approved, rejected, completed`) ·
-`requested_by` · `approved_by` — **قيد `check (approved_by is distinct from requested_by)`** (D23) ·
+`status` (`submitted, pending_review, approved, rejected, completed`) ·
+**`initiated_by`** (العميل/التاجر) + `initiated_by_kind` ·
+**`requested_by`** (موظف Admin يسجّل) · **`approved_by`** (موظف Admin آخر) ·
 `approved_at` · `completed_at` · `idempotency_key` unique
+
+```sql
+-- D29/D30: يُفرض على كل الأدوار بما فيها service_role
+alter table refunds add constraint refunds_sod check (
+  approved_by is distinct from requested_by
+  and approved_by is distinct from initiated_by
+);
+```
 · check: `sum(refunds.amount) <= payments.amount` بـtrigger
 
 ### `ledger_entries` (Append-only — قلب النظام المالي)
@@ -353,9 +368,14 @@ nullable (كوكي HttpOnly) · `status` (`active`,`converted`,`abandoned`) ·
 
 ### `plan_entitlements`
 **صف لكل ميزة/حد** — يجعل الباقات قابلة للتعديل من Admin دون نشر كود.
-`id` · `plan_id` · `feature_key` text · `limit_value int nullable`
-(`null` = بلا حد) · `bool_value boolean nullable` ·
+`id` · `plan_id` · `feature_key` text · `limit_value int nullable` ·
+`bool_value boolean nullable` · **`configured_at timestamptz null`** ·
 **unique `(plan_id, feature_key)`**
+
+> **D31:** `configured_at = null` تعني **«لم يُضبط بعد»**، وليست «بلا حد».
+> Admin يضبط كل مفتاح صراحةً إلى رقم أو «بلا حد» فتُختم `configured_at`
+> ⇒ نميّز القرار عن الإهمال **بلا افتراض أي رقم**. بوابة الإطلاق
+> التجاري تفحص هذا العمود.
 
 مفاتيح الميزات المعتمدة: `products.max`, `employees.max`,
 `storage.mb`, `coupons.max_active`, `promotions.max_active`,
@@ -429,9 +449,19 @@ default 50.00` 🔒 · `payout_notes` · `created_by` · `created_at`
 
 ### `partner_payouts`
 `id` · `partner_id` · `amount numeric(14,2)` · `method` ·
-`reference` (رقم الحوالة) · `status` (`pending_review, approved,
-rejected, paid`) · `requested_by` · `approved_by` — **قيد `check (approved_by is distinct from requested_by)`** (D23) ·
-`paid_at` · `note` · `idempotency_key` unique · `created_at`
+`reference` (رقم الحوالة) · `status` (**`submitted`**, `pending_review,
+approved, rejected, paid`) · **`initiated_by`** (الشريك) +
+`initiated_by_kind` · **`requested_by`** (موظف Admin يسجّل) ·
+**`approved_by`** (موظف Admin آخر) · `paid_at` · `note` ·
+`idempotency_key` unique · `created_at`
+
+```sql
+-- D29/D30: طلب الشريك وحده لا يحرّك مالًا
+alter table partner_payouts add constraint payouts_sod check (
+  approved_by is distinct from requested_by
+  and approved_by is distinct from initiated_by
+);
+```
 
 **الذرّية:** `mark_payout_paid()` يربط صفوف `commission_ledger` المحددة
 بـ`payout_id` ويحوّلها إلى `paid` داخل نفس المعاملة ⇒ **استحالة الصرف
@@ -554,10 +584,15 @@ customer, system`) · `store_id` nullable · `action` text
 
 ### `platform_settings`
 صف واحد: `maintenance_mode` · `maintenance_message` ·
-`default_partner_rate numeric(5,2) default 50` · `default_trial_days` ·
-`grace_period_days` · `support_email` · `updated_by` · `updated_at`
-> `grace_period_days = 7` · `expiring_warning_days = 7` · `auto_renew_enabled = false`
-> (D16/D17). أسعار الباقات وحدودها **لا تُملأ بأرقام مخترعة** (D18).
+`default_partner_rate numeric(5,2) default 50` ·
+`grace_period_days = 7` · `expiring_warning_days = 7` ·
+`auto_renew_enabled = false` · `min_payout_amount null` ·
+`slug_reservation_months = 12` · **`commercial_launch_enabled bool default false`** ·
+`sod_enabled jsonb` · `maintenance_mode` · `support_email` ·
+`updated_by` · `updated_at`
+
+> القيم أعلاه مثبّتة بقرارات D16/D17/D25/D27/D31/D23.
+> أسعار الباقات وحدودها **لا تُملأ بأرقام مخترعة** (D18).
 
 ---
 

@@ -53,9 +53,12 @@ Admin ينشئ شريكًا (اسم·بريد·هاتف·حالة)
         │     ↑ unique(payment_id) حيث entry_kind='commission'
         └─ INSERT ledger_entries (debit platform / credit partner)
 
-الشريك يطلب الصرف → partner_payouts(pending_review)
-   └─ Admin يعتمد **بمستخدم مختلف عن الطالب — إلزامي (D23)**
-        └─ mark_payout_paid() داخل معاملة واحدة:
+الشريك ينشئ طلب صرف → partner_payouts(status='submitted', initiated_by=partner)
+   ↑ طلب الشريك وحده لا يحرّك مالًا أبدًا (D30)
+   └─ موظف Admin يسجّل ويعالج → requested_by, status='pending_review'
+        └─ موظف Admin **آخر** يعتمد → approved_by
+             ↑ CHECK: approved_by ≠ requested_by ≠ initiated_by (D29/D30)
+             └─ mark_payout_paid() داخل معاملة واحدة:
              ├─ يربط صفوف commission_ledger المحددة بـpayout_id
              ├─ يحوّلها إلى status='paid'
              └─ ledger_entries (debit partner · partner_payout)

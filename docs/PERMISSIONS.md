@@ -86,6 +86,10 @@
 | commissions | manage | none | **approve** | **none** |
 | partners | manage | view | edit | none |
 | payouts | manage | none | **approve** | **none** |
+
+> **D29/D30:** امتلاك `approve` لا يكفي وحده — القيد في القاعدة يمنع
+> اعتماد طلب شارك المستخدم في تسجيله أو إنشائه، فيلزم **موظفا Admin
+> مختلفان** لكل استرداد وكل صرف شريك.
 | domains | manage | edit | none | view |
 | notifications | manage | create | none | create |
 | support | manage | view | none | **manage** |

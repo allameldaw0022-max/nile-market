@@ -217,9 +217,12 @@ idempotency_key)` في القاعدة ⇒ الضغط المزدوج يعيد **�
 
 ## 7.6 الاستردادات
 
-1. طلب (Admin بصلاحية `payments:approve` أو تاجر عبر الدعم) — سبب إلزامي.
-2. `refunds(status='pending_review')`.
-3. اعتماد بمستخدم **مختلف** عن الطالب إن فُعِّل فصل المهام (**Q9**).
+1. **الطلب الأصلي** من العميل أو التاجر (عبر الدعم) — سبب إلزامي ⇒
+   `initiated_by` + `status='submitted'`. **لا يحرّك مالًا بذاته.**
+2. **موظف Admin يسجّل ويعالج** ⇒ `requested_by` + `status='pending_review'`.
+3. **موظف Admin آخر يعتمد** ⇒ `approved_by`، ويجب أن يختلف عن
+   `requested_by` **وعن** `initiated_by` — مفروض بقيد `CHECK` لا
+   يتجاوزه أي دور بما فيه `service_role` (D29/D30).
 4. عند الاعتماد، في **معاملة واحدة**: `refunds→completed` ·
    `payments→refunded|partially_refunded` · قيود Ledger عكسية ·
    `reverse_commission()` بالنسبة المقابلة · إشعار + بريد + audit.
