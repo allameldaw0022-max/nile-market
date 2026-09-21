@@ -1,0 +1,65 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: 'npm' }
+      - run: npm ci
+      - name: فحص الأنواع
+        run: npm run typecheck
+      - name: فحص الكود
+        run: npm run lint
+      - name: ★ منع استيراد العميل الخدمي خارج مسارات النظام
+        run: |
+          set -e
+          HITS=$(grep -rln "supabase/service" src/ \
+            --include='*.ts' --include='*.tsx' \
+            | grep -v '^src/lib/supabase/service.ts$' \
+            | grep -v '^src/app/api/v1/cron/' \
+            | grep -v '^src/app/api/v1/webhooks/' \
+            | grep -v '^src/lib/jobs/' \
+            | grep -v '^src/app/(platform)/(auth)/actions.ts$' || true)
+          if [ -n "$HITS" ]; then
+            echo "❌ العميل الخدمي يتجاوز RLS ومستورَد في ملفات غير مصرّح بها:"
+            echo "$HITS"; exit 1
+          fi
+          echo "✓ لا استيراد غير مصرّح به"
+      - name: ★ منع تسريب الأسرار
+        run: |
+          set -e
+          if grep -rn "SUPABASE_SERVICE_ROLE_KEY" src/ --include='*.tsx' ; then
+            echo "❌ مفتاح الخدمة مذكور في مكوّن قد يصل المتصفح"; exit 1
+          fi
+          if git ls-files | grep -E '^\.env(\..*)?$' | grep -v '\.example$'; then
+            echo "❌ ملف بيئة حقيقي داخل المستودع"; exit 1
+          fi
+          echo "✓ لا أسرار في المستودع"
+      - name: بناء الإنتاج
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: dummy-anon-key-for-build
+
+  database:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env: { POSTGRES_PASSWORD: postgres }
+        options: >-
+          --health-cmd pg_isready --health-interval 10s
+          --health-timeout 5s --health-retries 5
+        ports: ['5433:5432']
+    steps:
+      - uses: actions/checkout@v4
+      - name: ★ اختبارات RLS وعزل المتاجر
+        env:
+          PGH: localhost
+          PGP: '5433'
+          PGPASSWORD: postgres
+        run: ./scripts/test-db.sh
