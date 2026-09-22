@@ -1,6 +1,6 @@
 import 'server-only';
 import type { PostgrestError, SupabaseClient } from '@supabase/supabase-js';
-import type { Database } from '@/types/database';
+import type { Database, Json } from '@/types/database';
 
 /**
  * توقيعات دوال القاعدة المضافة بعد آخر توليد للأنواع.
@@ -29,6 +29,61 @@ export type ImportRow = {
 };
 
 export type ImportError = { row: number; name: string; message: string };
+
+/** ناتج `system_health()` — أرقام مجمّعة لا صفوفًا. */
+export type SystemHealth = {
+  email: {
+    queued: number; sending: number; failed: number; sent_24h: number;
+    oldest_queued_at: string | null; last_error: string | null;
+  };
+  jobs: { pending: number; failed: number; stuck: number };
+  subscriptions: { grace: number; expiring: number; stale_sweep: number };
+  domains: { pending: number };
+  storage_mb: number;
+  maintenance_mode: boolean;
+  checks: {
+    component: string; status: string; latency_ms: number | null;
+    detail: string | null; checked_at: string;
+  }[];
+  generated_at: string;
+};
+
+export type SeriesPoint = { date: string; count?: number; amount?: number };
+
+/** ناتج `platform_reports()`. */
+export type PlatformReports = {
+  days: number;
+  from: string;
+  revenue_series: SeriesPoint[];
+  stores_series: SeriesPoint[];
+  orders_series: SeriesPoint[];
+  by_plan: { plan: string; count: number; amount: number }[];
+  commissions: { accrued: number; payable: number; paid_period: number };
+  totals: { revenue: number; stores: number; orders: number; gmv: number };
+  top_stores: { store: string; orders: number; amount: number }[];
+};
+
+/** ناتج `support_ticket_admin()` — الملاحظات الداخلية في مفتاح منفصل. */
+export type AdminTicket = {
+  id: string; ticket_number: string; subject: string;
+  category: string; status: string; priority: string;
+  created_at: string; last_message_at: string;
+  first_response_at: string | null; reopened_count: number;
+  assigned_to: string | null;
+  requester_name: string | null;
+  store_id: string | null; store_name: string | null;
+  messages: {
+    id: string; author_kind: string; body: string;
+    author_name: string | null; created_at: string;
+  }[];
+  notes: {
+    id: string; body: string; created_at: string; author_name: string | null;
+  }[];
+  events: {
+    event: string; from_value: string | null; to_value: string | null;
+    created_at: string; actor_name: string | null;
+  }[];
+};
 
 export type RpcMap = {
   create_store: {
@@ -120,6 +175,32 @@ export type RpcMap = {
       total: number; coupon_valid: boolean; coupon_message: string | null;
       can_checkout: boolean; out_of_stock: boolean; item_count: number;
     }[];
+  };
+  admin_overview: {
+    args: Record<string, never>;
+    returns: Record<string, number>;
+  };
+  review_subscription_request: {
+    args: { p_request_id: string; p_action: 'approve' | 'reject';
+            p_reason?: string | null };
+    returns: { status: string; payment_id?: string };
+  };
+  review_payout: {
+    args: { p_payout_id: string; p_action: 'record' | 'approve' | 'reject';
+            p_reason?: string | null };
+    returns: { status: string };
+  };
+  set_store_status: {
+    args: { p_store_id: string; p_status: string; p_reason?: string | null };
+    returns: void;
+  };
+  mark_payout_paid: {
+    args: { p_payout_id: string; p_reference?: string | null };
+    returns: number;
+  };
+  run_daily_maintenance: {
+    args: Record<string, never>;
+    returns: Record<string, unknown>;
   };
   create_order: {
     args: {
@@ -278,6 +359,127 @@ export type RpcMap = {
   import_products: {
     args: { p_store_id: string; p_rows: ImportRow[]; p_dry_run: boolean };
     returns: { imported: number; failed: number; errors: ImportError[] }[];
+  };
+
+  // ── أقسام لوحة الإدارة (0030) ──────────────────────────────────────
+  payments_page: {
+    args: { p_status?: string | null; p_kind?: string | null;
+            p_search?: string | null; p_limit?: number; p_offset?: number };
+    returns: {
+      payment_id: string; kind: string; method: string; status: string;
+      amount: number; reference: string | null; store_id: string | null;
+      store_name: string | null; order_number: string | null;
+      paid_at: string | null; created_at: string; total_count: number;
+    }[];
+  };
+  platform_users: {
+    args: { p_search?: string | null; p_status?: string | null;
+            p_limit?: number; p_offset?: number };
+    returns: {
+      profile_id: string; full_name: string | null; email: string | null;
+      phone: string | null; account_status: string; is_staff: boolean;
+      stores_count: number; created_at: string; last_seen_at: string | null;
+      total_count: number;
+    }[];
+  };
+  set_account_status: {
+    args: { p_profile_id: string; p_status: string; p_reason?: string | null };
+    returns: void;
+  };
+  audit_log_page: {
+    args: { p_action?: string | null; p_resource?: string | null;
+            p_actor?: string | null; p_limit?: number; p_offset?: number };
+    returns: {
+      log_id: string; created_at: string; actor_id: string | null;
+      actor_name: string | null; actor_kind: string; action: string;
+      resource_type: string | null; resource_id: string | null;
+      store_id: string | null; store_name: string | null;
+      before: Json; after: Json; total_count: number;
+    }[];
+  };
+  system_health: {
+    args: Record<string, never>;
+    returns: SystemHealth;
+  };
+  platform_reports: {
+    args: { p_days?: number };
+    returns: PlatformReports;
+  };
+  partner_admin_list: {
+    args: { p_status?: string | null; p_search?: string | null;
+            p_limit?: number; p_offset?: number };
+    returns: {
+      partner_id: string; name: string; email: string; phone: string | null;
+      status: string; referral_code: string; commission_rate: number;
+      is_linked: boolean; referrals_count: number; stores_active: number;
+      payable: number; paid: number; created_at: string; total_count: number;
+    }[];
+  };
+  invite_partner: {
+    args: { p_name: string; p_email: string; p_phone?: string | null };
+    returns: { partner_id: string; referral_code: string; token: string }[];
+  };
+  accept_partner_invitation: {
+    args: { p_token: string };
+    returns: { partner_id: string; name: string; referral_code: string }[];
+  };
+  set_partner_status: {
+    args: { p_partner_id: string; p_status: string };
+    returns: void;
+  };
+  set_partner_rate: {
+    args: { p_partner_id: string; p_rate: number };
+    returns: void;
+  };
+  support_queue: {
+    args: { p_status?: string | null; p_mine?: boolean;
+            p_search?: string | null; p_limit?: number; p_offset?: number };
+    returns: {
+      ticket_id: string; ticket_number: string; subject: string;
+      category: string; status: string; priority: string;
+      requester_name: string | null; store_name: string | null;
+      assigned_to: string | null; assigned_name: string | null;
+      last_message_at: string; created_at: string; total_count: number;
+    }[];
+  };
+  support_ticket_admin: {
+    args: { p_ticket_id: string };
+    returns: AdminTicket;
+  };
+  set_ticket_status: {
+    args: { p_ticket_id: string; p_status: string | null;
+            p_priority?: string | null };
+    returns: void;
+  };
+  assign_ticket: {
+    args: { p_ticket_id: string; p_member_id?: string | null };
+    returns: void;
+  };
+  add_internal_note: {
+    args: { p_ticket_id: string; p_body: string };
+    returns: string;
+  };
+  assignable_admins: {
+    args: Record<string, never>;
+    returns: { member_id: string; display_name: string }[];
+  };
+  upsert_admin_member: {
+    args: { p_profile_id: string; p_display_name: string;
+            p_is_owner?: boolean; p_permissions?: Record<string, string> };
+    returns: string;
+  };
+  suspend_admin_member: {
+    args: { p_member_id: string };
+    returns: void;
+  };
+  admin_access_matrix: {
+    args: Record<string, never>;
+    returns: {
+      member_id: string; profile_id: string; display_name: string;
+      is_owner: boolean; status: string; mfa_required: boolean;
+      last_active_at: string | null;
+      permissions: Record<string, string>;
+    }[];
   };
 };
 

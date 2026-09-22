@@ -2137,6 +2137,8 @@ export type Database = {
       platform_settings: {
         Row: {
           auto_renew_enabled: boolean
+          bank_accounts: Json
+          bankak_number: string | null
           commercial_launch_enabled: boolean
           default_partner_rate: number
           expiring_warning_days: number
@@ -2145,6 +2147,7 @@ export type Database = {
           maintenance_message: string | null
           maintenance_mode: boolean
           min_payout_amount: number | null
+          payment_instructions: string | null
           retention_days_personal: number
           retention_months_tickets: number
           slug_reservation_months: number
@@ -2155,6 +2158,8 @@ export type Database = {
         }
         Insert: {
           auto_renew_enabled?: boolean
+          bank_accounts?: Json
+          bankak_number?: string | null
           commercial_launch_enabled?: boolean
           default_partner_rate?: number
           expiring_warning_days?: number
@@ -2163,6 +2168,7 @@ export type Database = {
           maintenance_message?: string | null
           maintenance_mode?: boolean
           min_payout_amount?: number | null
+          payment_instructions?: string | null
           retention_days_personal?: number
           retention_months_tickets?: number
           slug_reservation_months?: number
@@ -2173,6 +2179,8 @@ export type Database = {
         }
         Update: {
           auto_renew_enabled?: boolean
+          bank_accounts?: Json
+          bankak_number?: string | null
           commercial_launch_enabled?: boolean
           default_partner_rate?: number
           expiring_warning_days?: number
@@ -2181,6 +2189,7 @@ export type Database = {
           maintenance_message?: string | null
           maintenance_mode?: boolean
           min_payout_amount?: number | null
+          payment_instructions?: string | null
           retention_days_personal?: number
           retention_months_tickets?: number
           slug_reservation_months?: number
@@ -3856,12 +3865,31 @@ export type Database = {
       }
     }
     Functions: {
+      accept_partner_invitation: {
+        Args: { p_token: string }
+        Returns: {
+          name: string
+          partner_id: string
+          referral_code: string
+        }[]
+      }
+      accept_store_invitation: {
+        Args: { p_token: string }
+        Returns: {
+          role: Database["public"]["Enums"]["store_role"]
+          store_id: string
+        }[]
+      }
       add_custom_domain: {
         Args: { p_hostname: string; p_store_id: string }
         Returns: {
           domain_id: string
           verification_token: string
         }[]
+      }
+      add_internal_note: {
+        Args: { p_body: string; p_ticket_id: string }
+        Returns: string
       }
       adjust_inventory: {
         Args: {
@@ -3876,12 +3904,105 @@ export type Database = {
           quantity: number
         }[]
       }
+      admin_access_matrix: {
+        Args: never
+        Returns: {
+          display_name: string
+          is_owner: boolean
+          last_active_at: string
+          member_id: string
+          mfa_required: boolean
+          permissions: Json
+          profile_id: string
+          status: Database["public"]["Enums"]["member_status"]
+        }[]
+      }
+      admin_overview: { Args: never; Returns: Json }
       aggregate_analytics: { Args: { p_date?: string }; Returns: number }
       anonymize_due_accounts: { Args: never; Returns: number }
+      assign_ticket: {
+        Args: { p_member_id?: string; p_ticket_id: string }
+        Returns: undefined
+      }
+      assignable_admins: {
+        Args: never
+        Returns: {
+          display_name: string
+          member_id: string
+        }[]
+      }
+      audit_log_page: {
+        Args: {
+          p_action?: string
+          p_actor?: string
+          p_limit?: number
+          p_offset?: number
+          p_resource?: string
+        }
+        Returns: {
+          action: string
+          actor_id: string
+          actor_kind: string
+          actor_name: string
+          after: Json
+          before: Json
+          created_at: string
+          log_id: string
+          resource_id: string
+          resource_type: string
+          store_id: string
+          store_name: string
+          total_count: number
+        }[]
+      }
+      cancel_subscription_request: {
+        Args: { p_request_id: string }
+        Returns: undefined
+      }
+      cart_add_item: {
+        Args: {
+          p_anon_token?: string
+          p_product_id: string
+          p_quantity?: number
+          p_store_id: string
+          p_variant_id?: string
+        }
+        Returns: {
+          cart_id: string
+          quantity: number
+        }[]
+      }
+      cart_merge_guest: {
+        Args: { p_anon_token: string; p_store_id: string }
+        Returns: {
+          cart_id: string
+          merged: number
+        }[]
+      }
+      cart_set_quantity: {
+        Args: {
+          p_anon_token?: string
+          p_item_id: string
+          p_quantity: number
+          p_store_id: string
+        }
+        Returns: undefined
+      }
       check_rate_limit: {
         Args: { p_bucket: string; p_max: number; p_window_seconds: number }
         Returns: boolean
       }
+      claim_emails: {
+        Args: { p_limit?: number }
+        Returns: {
+          attempts: number
+          id: string
+          payload: Json
+          template: string
+          to_email: string
+        }[]
+      }
+      close_my_ticket: { Args: { p_ticket_id: string }; Returns: undefined }
       create_order: {
         Args: {
           p_address: Json
@@ -3914,6 +4035,19 @@ export type Database = {
           store_id: string
         }[]
       }
+      create_support_ticket: {
+        Args: {
+          p_body: string
+          p_category: Database["public"]["Enums"]["ticket_category"]
+          p_requester_kind?: Database["public"]["Enums"]["requester_kind"]
+          p_store_id?: string
+          p_subject: string
+        }
+        Returns: {
+          ticket_id: string
+          ticket_number: string
+        }[]
+      }
       delete_product: { Args: { p_product_id: string }; Returns: undefined }
       duplicate_product: {
         Args: { p_product_id: string }
@@ -3931,6 +4065,24 @@ export type Database = {
         }
         Returns: undefined
       }
+      get_cart: {
+        Args: { p_anon_token?: string; p_store_id: string }
+        Returns: {
+          available: number
+          cart_id: string
+          image_bucket: string
+          image_path: string
+          item_id: string
+          line_total: number
+          product_id: string
+          product_name: string
+          product_slug: string
+          quantity: number
+          unit_price: number
+          variant_id: string
+          variant_name: string
+        }[]
+      }
       import_products: {
         Args: { p_dry_run?: boolean; p_rows: Json; p_store_id: string }
         Returns: {
@@ -3939,13 +4091,139 @@ export type Database = {
           imported: number
         }[]
       }
+      invite_partner: {
+        Args: { p_email: string; p_name: string; p_phone?: string }
+        Returns: {
+          partner_id: string
+          referral_code: string
+          token: string
+        }[]
+      }
+      invite_store_member: {
+        Args: {
+          p_email: string
+          p_permissions?: string[]
+          p_role: Database["public"]["Enums"]["store_role"]
+          p_store_id: string
+        }
+        Returns: {
+          expires_at: string
+          invitation_id: string
+          token: string
+        }[]
+      }
       is_slug_available: {
         Args: { p_slug: string; p_store_id?: string }
         Returns: boolean
       }
+      mark_email_failed: {
+        Args: { p_error: string; p_id: string }
+        Returns: undefined
+      }
+      mark_email_sent: { Args: { p_id: string }; Returns: undefined }
+      mark_notifications_read: { Args: { p_ids?: string[] }; Returns: number }
       mark_payout_paid: {
         Args: { p_payout_id: string; p_reference?: string }
         Returns: number
+      }
+      my_orders: {
+        Args: { p_store_id: string }
+        Returns: {
+          created_at: string
+          item_count: number
+          order_id: string
+          order_number: string
+          payment_status: Database["public"]["Enums"]["order_payment_status"]
+          status: Database["public"]["Enums"]["order_status"]
+          total: number
+        }[]
+      }
+      order_details: {
+        Args: {
+          p_guest_token?: string
+          p_order_number: string
+          p_phone?: string
+          p_store_id: string
+        }
+        Returns: {
+          contact_name: string
+          contact_phone: string
+          coupon_code: string
+          created_at: string
+          delivery_address: Json
+          delivery_fee: number
+          delivery_zone_name: string
+          discount_total: number
+          items: Json
+          note: string
+          order_id: string
+          order_number: string
+          payment_method: Database["public"]["Enums"]["payment_method"]
+          payment_status: Database["public"]["Enums"]["order_payment_status"]
+          status: Database["public"]["Enums"]["order_status"]
+          subtotal: number
+          total: number
+        }[]
+      }
+      order_payment_instructions: {
+        Args: {
+          p_guest_token?: string
+          p_order_number: string
+          p_phone?: string
+          p_store_id: string
+        }
+        Returns: {
+          amount_due: number
+          bank_accounts: Json
+          bankak_number: string
+        }[]
+      }
+      partner_admin_list: {
+        Args: {
+          p_limit?: number
+          p_offset?: number
+          p_search?: string
+          p_status?: string
+        }
+        Returns: {
+          commission_rate: number
+          created_at: string
+          email: string
+          is_linked: boolean
+          name: string
+          paid: number
+          partner_id: string
+          payable: number
+          phone: string
+          referral_code: string
+          referrals_count: number
+          status: string
+          stores_active: number
+          total_count: number
+        }[]
+      }
+      payments_page: {
+        Args: {
+          p_kind?: string
+          p_limit?: number
+          p_offset?: number
+          p_search?: string
+          p_status?: string
+        }
+        Returns: {
+          amount: number
+          created_at: string
+          kind: string
+          method: string
+          order_number: string
+          paid_at: string
+          payment_id: string
+          reference: string
+          status: string
+          store_id: string
+          store_name: string
+          total_count: number
+        }[]
       }
       plan_configuration_status: {
         Args: never
@@ -3955,6 +4233,35 @@ export type Database = {
           complete: boolean
           unconfigured_features: string[]
           unconfigured_prices: string[]
+        }[]
+      }
+      platform_payment_info: {
+        Args: never
+        Returns: {
+          bank_accounts: Json
+          bankak_number: string
+          payment_instructions: string
+        }[]
+      }
+      platform_reports: { Args: { p_days?: number }; Returns: Json }
+      platform_users: {
+        Args: {
+          p_limit?: number
+          p_offset?: number
+          p_search?: string
+          p_status?: string
+        }
+        Returns: {
+          account_status: string
+          created_at: string
+          email: string
+          full_name: string
+          is_staff: boolean
+          last_seen_at: string
+          phone: string
+          profile_id: string
+          stores_count: number
+          total_count: number
         }[]
       }
       prepare_upload: {
@@ -3979,6 +4286,25 @@ export type Database = {
         }[]
       }
       purge_old_tickets: { Args: never; Returns: number }
+      quote_checkout: {
+        Args: {
+          p_anon_token?: string
+          p_coupon_code?: string
+          p_store_id: string
+          p_zone_id?: string
+        }
+        Returns: {
+          can_checkout: boolean
+          coupon_message: string
+          coupon_valid: boolean
+          delivery_fee: number
+          discount_total: number
+          item_count: number
+          out_of_stock: boolean
+          subtotal: number
+          total: number
+        }[]
+      }
       record_payment: {
         Args: {
           p_amount: number
@@ -3991,7 +4317,33 @@ export type Database = {
         }
         Returns: string
       }
+      record_referral_visit: {
+        Args: {
+          p_code: string
+          p_ip?: string
+          p_landing_path?: string
+          p_user_agent?: string
+          p_visitor_token: string
+        }
+        Returns: boolean
+      }
       release_expired_slugs: { Args: never; Returns: number }
+      remove_custom_domain: {
+        Args: { p_domain_id: string }
+        Returns: undefined
+      }
+      remove_store_member: { Args: { p_member_id: string }; Returns: undefined }
+      reply_to_ticket: {
+        Args: { p_body: string; p_ticket_id: string }
+        Returns: undefined
+      }
+      request_partner_payout: {
+        Args: { p_amount: number; p_idempotency_key?: string; p_note?: string }
+        Returns: {
+          amount: number
+          payout_id: string
+        }[]
+      }
       resolve_store_by_host: {
         Args: { p_host: string }
         Returns: {
@@ -4005,6 +4357,15 @@ export type Database = {
           store_id: string
         }[]
       }
+      review_payout: {
+        Args: { p_action: string; p_payout_id: string; p_reason?: string }
+        Returns: Json
+      }
+      review_subscription_request: {
+        Args: { p_action: string; p_reason?: string; p_request_id: string }
+        Returns: Json
+      }
+      run_daily_maintenance: { Args: never; Returns: Json }
       save_onboarding_step: {
         Args: { p_step: string; p_store_id: string }
         Returns: undefined
@@ -4034,12 +4395,111 @@ export type Database = {
           slug: string
         }[]
       }
+      set_account_status: {
+        Args: {
+          p_profile_id: string
+          p_reason?: string
+          p_status: Database["public"]["Enums"]["account_status"]
+        }
+        Returns: undefined
+      }
+      set_partner_rate: {
+        Args: { p_partner_id: string; p_rate: number }
+        Returns: undefined
+      }
+      set_partner_status: {
+        Args: {
+          p_partner_id: string
+          p_status: Database["public"]["Enums"]["partner_status"]
+        }
+        Returns: undefined
+      }
+      set_primary_domain: { Args: { p_domain_id: string }; Returns: undefined }
+      set_store_member_role: {
+        Args: {
+          p_member_id: string
+          p_permissions?: string[]
+          p_role: Database["public"]["Enums"]["store_role"]
+        }
+        Returns: undefined
+      }
+      set_store_status: {
+        Args: {
+          p_reason?: string
+          p_status: Database["public"]["Enums"]["store_status"]
+          p_store_id: string
+        }
+        Returns: undefined
+      }
+      set_ticket_status: {
+        Args: {
+          p_priority?: Database["public"]["Enums"]["ticket_priority"]
+          p_status: Database["public"]["Enums"]["ticket_status"]
+          p_ticket_id: string
+        }
+        Returns: undefined
+      }
+      submit_subscription_request: {
+        Args: {
+          p_idempotency_key?: string
+          p_plan_id: string
+          p_proof_media_id?: string
+          p_reference?: string
+          p_store_id: string
+        }
+        Returns: {
+          net_amount: number
+          request_id: string
+        }[]
+      }
+      support_queue: {
+        Args: {
+          p_limit?: number
+          p_mine?: boolean
+          p_offset?: number
+          p_search?: string
+          p_status?: string
+        }
+        Returns: {
+          assigned_name: string
+          assigned_to: string
+          category: string
+          created_at: string
+          last_message_at: string
+          priority: string
+          requester_name: string
+          status: string
+          store_name: string
+          subject: string
+          ticket_id: string
+          ticket_number: string
+          total_count: number
+        }[]
+      }
+      support_ticket_admin: { Args: { p_ticket_id: string }; Returns: Json }
+      suspend_admin_member: {
+        Args: { p_member_id: string }
+        Returns: undefined
+      }
       sweep_subscriptions: {
         Args: never
         Returns: {
           expired: number
           graced: number
           warned: number
+        }[]
+      }
+      system_health: { Args: never; Returns: Json }
+      track_order: {
+        Args: { p_order_number: string; p_phone: string; p_store_id: string }
+        Returns: {
+          created_at: string
+          item_count: number
+          order_id: string
+          order_number: string
+          payment_status: Database["public"]["Enums"]["order_payment_status"]
+          status: Database["public"]["Enums"]["order_status"]
+          total: number
         }[]
       }
       track_store_visit: {
@@ -4054,6 +4514,15 @@ export type Database = {
         }
         Returns: undefined
       }
+      upsert_admin_member: {
+        Args: {
+          p_display_name: string
+          p_is_owner?: boolean
+          p_permissions?: Json
+          p_profile_id: string
+        }
+        Returns: string
+      }
       validate_coupon: {
         Args: {
           p_code: string
@@ -4066,6 +4535,14 @@ export type Database = {
           discount: number
           message: string
           valid: boolean
+        }[]
+      }
+      verify_domain: {
+        Args: { p_domain_id: string; p_txt_records: string[] }
+        Returns: {
+          reason: string
+          status: Database["public"]["Enums"]["domain_status"]
+          verified: boolean
         }[]
       }
     }
@@ -4193,7 +4670,7 @@ export type Database = {
         | "approved"
         | "rejected"
         | "completed"
-      request_status: "pending" | "approved" | "rejected"
+      request_status: "pending" | "approved" | "rejected" | "cancelled"
       requester_kind: "merchant" | "customer" | "partner"
       store_role:
         | "owner"
@@ -4505,7 +4982,7 @@ export const Constants = {
         "rejected",
         "completed",
       ],
-      request_status: ["pending", "approved", "rejected"],
+      request_status: ["pending", "approved", "rejected", "cancelled"],
       requester_kind: ["merchant", "customer", "partner"],
       store_role: [
         "owner",
