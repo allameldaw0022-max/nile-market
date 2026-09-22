@@ -1,14 +1,15 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import {
-  BarChart3, Boxes, CreditCard, ExternalLink, LayoutDashboard, Package,
-  Settings, ShoppingCart, Tag, Users,
+  BarChart3, Boxes, CreditCard, ExternalLink, LayoutDashboard, LifeBuoy,
+  Package, Settings, ShoppingCart, Tag, Users,
 } from 'lucide-react';
 import { getActor } from '@/lib/auth/actor';
 import { can } from '@/lib/authz/guards';
 import { createClient } from '@/lib/supabase/server';
 import { SUBSCRIPTION_STATUS } from '@/lib/status';
 import { Badge } from '@/components/ui/Badge';
+import { NotificationBell } from '@/components/dashboard/NotificationBell';
 import type { StorePermission } from '@/lib/authz/permissions';
 
 type NavItem = { href: string; label: string; icon: typeof Package; perm?: StorePermission };
@@ -23,6 +24,7 @@ const NAV: NavItem[] = [
   { href: '/dashboard/analytics',     label: 'الإحصائيات', icon: BarChart3,   perm: 'analytics:view' },
   { href: '/dashboard/subscription',  label: 'الاشتراك',  icon: CreditCard,   perm: 'subscription:manage' },
   { href: '/dashboard/settings',      label: 'الإعدادات', icon: Settings,     perm: 'settings:view' },
+  { href: '/support',                 label: 'الدعم',     icon: LifeBuoy },
 ];
 
 export default async function DashboardLayout({ children }: LayoutProps<'/dashboard'>) {
@@ -34,13 +36,16 @@ export default async function DashboardLayout({ children }: LayoutProps<'/dashbo
   const membership = actor.stores[0];
 
   const supabase = await createClient();
-  const [{ data: sub }, { data: domain }] = await Promise.all([
+  const [{ data: sub }, { data: domain }, { count: unread }] = await Promise.all([
     supabase.from('subscriptions')
       .select('status, current_period_end, plans(name)')
       .eq('store_id', membership.storeId).neq('status', 'cancelled').maybeSingle(),
     supabase.from('store_domains')
       .select('hostname').eq('store_id', membership.storeId)
       .eq('is_primary', true).maybeSingle(),
+    // RLS ترشّح على المستخدم الحالي — لا تمرير لمعرّفه من الواجهة
+    supabase.from('notifications')
+      .select('id', { count: 'exact', head: true }).is('read_at', null),
   ]);
 
   // التنقّل يُبنى من الصلاحيات — لكن الإخفاء تحسين تجربة فقط،
@@ -64,6 +69,7 @@ export default async function DashboardLayout({ children }: LayoutProps<'/dashbo
           </Badge>
 
           <div className="ms-auto flex items-center gap-2">
+            <NotificationBell initialUnread={unread ?? 0} />
             {domain?.hostname && (
               <a href={`https://${domain.hostname}`} target="_blank" rel="noopener noreferrer"
                  className="inline-flex items-center gap-1.5 rounded-[--radius-md] border

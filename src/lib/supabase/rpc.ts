@@ -245,8 +245,35 @@ export type RpcMap = {
   };
   create_support_ticket: {
     args: { p_subject: string; p_category: string; p_body: string;
-            p_store_id?: string; p_requester_kind?: string };
+            p_store_id?: string | null; p_requester_kind?: string };
     returns: { ticket_id: string; ticket_number: string }[];
+  };
+  reply_to_ticket: {
+    args: { p_ticket_id: string; p_body: string };
+    returns: void;
+  };
+  close_my_ticket: {
+    args: { p_ticket_id: string };
+    returns: void;
+  };
+  mark_notifications_read: {
+    args: { p_ids?: string[] | null };
+    returns: number;
+  };
+  claim_emails: {
+    args: { p_limit?: number };
+    returns: {
+      id: string; to_email: string; template: string;
+      payload: Record<string, unknown>; attempts: number;
+    }[];
+  };
+  mark_email_sent: {
+    args: { p_id: string };
+    returns: void;
+  };
+  mark_email_failed: {
+    args: { p_id: string; p_error: string };
+    returns: void;
   };
   import_products: {
     args: { p_store_id: string; p_rows: ImportRow[]; p_dry_run: boolean };
