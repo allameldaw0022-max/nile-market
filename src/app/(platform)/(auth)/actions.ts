@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/service';
 import { config } from '@/lib/config';
 import { recordLoginEvent } from '@/lib/auth/sessions';
+import { safeNext } from '@/lib/safe-next';
 
 export type AuthResult = { ok: false; message: string } | { ok: true; message?: string };
 
@@ -33,20 +34,6 @@ async function rateLimit(bucket: string, max: number, windowSeconds: number) {
 async function clientKey() {
   const h = await headers();
   return h.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
-}
-
-/**
- * وجهة العودة بعد الدخول.
- *
- * ★ تُقبل المسارات النسبية داخل الموقع فقط. أي قيمة تبدأ بمخطَّط أو
- * بشرطتين (`//evil.com`) تُهمَل، وإلا صار رابط الدخول أداة تحويل
- * مفتوحة تُستخدم في التصيّد.
- */
-function safeNext(value: FormDataEntryValue | null): string {
-  const raw = String(value ?? '').trim();
-  if (!raw.startsWith('/') || raw.startsWith('//')) return '/dashboard';
-  if (raw.includes('\\')) return '/dashboard';
-  return raw;
 }
 
 export async function signIn(_prev: AuthResult | null, formData: FormData): Promise<AuthResult> {

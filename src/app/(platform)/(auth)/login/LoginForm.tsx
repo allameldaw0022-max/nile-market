@@ -6,6 +6,7 @@ import { AlertTriangle } from 'lucide-react';
 import { signIn, signInWithGoogle, type AuthResult } from '../actions';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Field';
+import { safeNext } from '@/lib/safe-next';
 
 const URL_ERRORS: Record<string, string> = {
   oauth_failed: 'تعذّر الدخول بحساب Google، حاول مجددًا',
@@ -19,8 +20,9 @@ export function LoginForm() {
   const params = useSearchParams();
   const urlError = URL_ERRORS[params.get('error') ?? ''];
   const signedOutAll = params.get('signed_out') === 'all';
-  // وجهة العودة تمرّ كحقل مخفي ويُنقّيها الخادم — الواجهة لا تحوّل
-  const next = params.get('next') ?? '';
+  // وجهة العودة يُنقّيها الخادم أيضًا (هو الحاجز). تُنقّى هنا كذلك
+  // حتى لا يحمل النموذج المعروض حمولة هجوم أصلًا.
+  const next = params.get('next') ? safeNext(params.get('next'), '') : '';
 
   return (
     <form action={action} className="mt-8 space-y-4">
