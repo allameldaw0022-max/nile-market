@@ -63,9 +63,17 @@ export function fromPostgres(err: { code?: string; message?: string }): AppError
     return new AppError('FEATURE_DISABLED', msg.split(':').slice(1).join(':').trim());
   if (named('ILLEGAL_TRANSITION') || named('ILLEGAL_TICKET_TRANSITION'))
     return new AppError('ILLEGAL_TRANSITION', 'لا يمكن الانتقال إلى هذه الحالة');
+  if (named('FEATURE_UNAVAILABLE'))
+    return new AppError('FEATURE_DISABLED', msg.split(':').slice(1).join(':').trim(),
+      undefined, { label: 'ترقية الباقة', href: '/dashboard/subscription' });
+  // رسائل تحقق تُكتب في القاعدة بالعربية وتُعرض للمستخدم كما هي.
+  // القاعدة هي المصدر الوحيد للتحقق ⇒ رسالتها هي رسالة الواجهة.
   if (named('OUT_OF_STOCK') || named('INVALID_ZONE') || named('EMPTY_CART') ||
       named('CONTACT_REQUIRED') || named('REASON_REQUIRED') ||
-      named('PAYMENT_METHOD_DISABLED') || named('INVALID_QUANTITY'))
+      named('PAYMENT_METHOD_DISABLED') || named('INVALID_QUANTITY') ||
+      named('VALIDATION') || named('SLUG_TAKEN') || named('STORE_EXISTS') ||
+      named('INVALID_MEDIA') || named('INVALID_MIME') || named('FILE_TOO_LARGE') ||
+      named('INVALID_SIZE') || named('INVALID_PURPOSE'))
     return new AppError('VALIDATION_ERROR', msg.split(':').slice(1).join(':').trim() || msg);
   if (err.code === '42501' || named('FORBIDDEN'))
     return errors.forbidden();
