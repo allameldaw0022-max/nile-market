@@ -92,4 +92,36 @@ select t.empty('select 1 from system_health_checks',
 rollback;
 select t.reset();
 
+
+\echo '── كنس الدومينات المنتظرة ──'
+begin;
+select t.reset();
+insert into store_domains (store_id, hostname, kind, status, verification_token)
+values (:'A', 'shop-one.example', 'custom', 'pending', 'tok-one'),
+       (:'A', 'shop-two.example', 'custom', 'active',  'tok-two'),
+       (:'B', 'shop-old.example', 'custom', 'pending', 'tok-old');
+update store_domains set created_at = now() - interval '20 days'
+ where hostname = 'shop-old.example';
+
+select t.ok((select count(*) = 1 from claim_pending_domains()),
+            '★ الكنس يأخذ المنتظر وحده — لا الدومين النشط');
+select t.ok((select count(*) = 0 from claim_pending_domains()),
+            '★★ ولا يعيد الدومين نفسه مباشرةً (تباعد يمنع استنزاف DNS)');
+select t.empty('select 1 from claim_pending_domains() where hostname = ''shop-old.example''',
+               '★ ودومين مضى عليه أسبوعان لا يُفحص آليًا');
+select t.ok((select last_checked_at is not null from store_domains
+             where hostname = 'shop-one.example'),
+            'ووقت الفحص يُختم عند الأخذ');
+rollback;
+
+begin;
+select t.login(:'ownerA');
+select t.throws('select 1 from claim_pending_domains()',
+                '★★ التاجر لا ينادي الكنس (وإلا أمكن استنزاف الحصة)');
+select t.login(:'adminOwner');
+select t.throws('select 1 from claim_pending_domains()',
+                '★ ولا موظف المنصة — الكنس للخادم وحده');
+rollback;
+select t.reset();
+
 \echo '✓ اختبارات الإحصاءات وصحة النظام مرّت'

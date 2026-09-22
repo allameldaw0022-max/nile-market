@@ -492,6 +492,22 @@ export type RpcMap = {
     args: { p_member_id: string };
     returns: void;
   };
+  claim_pending_domains: {
+    args: { p_limit?: number };
+    returns: {
+      domain_id: string; store_id: string; hostname: string;
+      attempts_age: string;
+    }[];
+  };
+  notify_domain_verified: {
+    args: { p_domain_id: string };
+    returns: boolean;
+  };
+  record_health_check: {
+    args: { p_component: string; p_status: string;
+            p_latency_ms?: number | null; p_detail?: string | null };
+    returns: string;
+  };
   store_analytics: {
     args: { p_store_id: string; p_days?: number };
     returns: StoreAnalytics;
