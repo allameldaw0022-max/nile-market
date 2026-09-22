@@ -26,11 +26,17 @@ export default async function PlatformLayout({ children }: LayoutProps<'/'>) {
 
           <div className="ms-auto flex items-center gap-2">
             {signedIn ? (
-              <Link href={actor.stores.length ? '/dashboard' : '/onboarding'}>
-                <Button size="sm">
-                  {actor.stores.length ? 'لوحة التحكم' : 'أنشئ متجرك'}
-                </Button>
-              </Link>
+              <>
+                <Link href="/account/security"
+                      className="hidden text-sm font-bold text-navy-700 hover:text-nile-600 sm:block">
+                  الأمان
+                </Link>
+                <Link href={actor.stores.length ? '/dashboard' : '/onboarding'}>
+                  <Button size="sm">
+                    {actor.stores.length ? 'لوحة التحكم' : 'أنشئ متجرك'}
+                  </Button>
+                </Link>
+              </>
             ) : (
               <>
                 <Link href="/login">
