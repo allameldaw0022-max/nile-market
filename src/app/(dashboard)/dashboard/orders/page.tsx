@@ -101,7 +101,7 @@ export default async function OrdersPage({ searchParams }: PageProps<'/dashboard
       <form className="flex flex-wrap items-center gap-2" action="/dashboard/orders">
         <input name="q" defaultValue={term} maxLength={60}
                placeholder="رقم الطلب أو اسم/هاتف الزبون" aria-label="بحث في الطلبات"
-               className="h-10 min-w-52 flex-1 rounded-[--radius-md] border border-sand-300
+               className="h-10 min-w-52 flex-1 rounded-[--radius-md] border border-[--color-field-border]
                           bg-white px-3 text-[14px] text-navy-900
                           placeholder:text-sand-400 focus:border-nile-500" />
         <input type="hidden" name="status" value={status} />

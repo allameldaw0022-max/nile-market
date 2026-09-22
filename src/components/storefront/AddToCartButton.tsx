@@ -73,7 +73,7 @@ export function AddToCartButton({ host, productId, variantId, available, disable
           <Plus size={16} />
         </button>
         {available <= 5 && (
-          <span className="ms-2 text-xs font-bold text-gold-600">
+          <span className="ms-2 text-xs font-bold text-gold-700">
             بقي <span className="tabular">{available}</span> فقط
           </span>
         )}

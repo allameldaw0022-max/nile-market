@@ -33,7 +33,7 @@ export function StatCard({ label, value, hint, tone = 'default' }: {
     <Card className="p-4">
       <p className="text-[13px] font-medium text-sand-600">{label}</p>
       <p className={cn('mt-1 text-2xl font-extrabold tabular',
-        tone === 'gold' ? 'text-gold-600' : 'text-navy-900')}>{value}</p>
+        tone === 'gold' ? 'text-gold-700' : 'text-navy-900')}>{value}</p>
       {hint && <p className="mt-1 text-xs text-sand-600">{hint}</p>}
     </Card>
   );

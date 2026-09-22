@@ -43,7 +43,7 @@ export function ProductFilters({ categories }: {
         <Search size={15} className="absolute start-3 top-1/2 -translate-y-1/2 text-sand-400" />
         <input value={term} onChange={(e) => setTerm(e.target.value)}
                placeholder="ابحث بالاسم أو الرمز" aria-label="بحث في المنتجات"
-               className="h-10 w-full rounded-[--radius-md] border border-sand-300 bg-white
+               className="h-10 w-full rounded-[--radius-md] border border-[--color-field-border] bg-white
                           ps-9 pe-8 text-[14px] text-navy-900 placeholder:text-sand-400
                           focus:border-nile-500" />
         {term && (

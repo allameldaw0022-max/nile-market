@@ -64,7 +64,7 @@ export function AdminTicketView({ ticket, canEdit, assignees }: {
               {' · '}فُتحت {formatDateTime(ticket.created_at)}
             </p>
             {ticket.reopened_count > 0 && (
-              <p className="mt-1 text-xs text-gold-600">
+              <p className="mt-1 text-xs text-gold-700">
                 أُعيد فتحها {ticket.reopened_count} مرّة
               </p>
             )}
@@ -172,7 +172,7 @@ export function AdminTicketView({ ticket, canEdit, assignees }: {
           <ul className="divide-y divide-sand-200">
             {ticket.notes.map((n) => (
               <li key={n.id} className="flex gap-3 bg-gold-400/5 px-5 py-3.5">
-                <StickyNote size={15} className="mt-0.5 shrink-0 text-gold-600" />
+                <StickyNote size={15} className="mt-0.5 shrink-0 text-gold-700" />
                 <div className="min-w-0 flex-1">
                   <p className="text-xs text-sand-600">
                     {n.author_name ?? 'موظف'} · {formatDateTime(n.created_at)}

@@ -55,7 +55,7 @@ export function InventoryAdjuster({ storeId, productId, quantity }: {
         <input value={amount} onChange={(e) => setAmount(e.target.value)}
                type="number" min={1} step={1} inputMode="numeric" dir="ltr"
                aria-label="مقدار التعديل"
-               className="h-9 w-16 rounded-[--radius-md] border border-sand-300 bg-white
+               className="h-9 w-16 rounded-[--radius-md] border border-[--color-field-border] bg-white
                           px-2 text-center text-sm tabular text-navy-900
                           focus:border-nile-500" />
 

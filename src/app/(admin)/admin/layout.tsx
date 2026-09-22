@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/Badge';
 import { NotificationBell } from '@/components/dashboard/NotificationBell';
 import { createClient } from '@/lib/supabase/server';
 import type { AdminSection } from '@/lib/authz/permissions';
+import { SkipLink } from '@/components/ui/SkipLink';
 
 /**
  * لوحة إدارة المنصة.
@@ -62,6 +63,7 @@ export default async function AdminLayout({ children }: LayoutProps<'/admin'>) {
 
   return (
     <div className="flex min-h-screen flex-col bg-sand-50">
+      <SkipLink />
       <header className="sticky top-0 z-40 border-b border-navy-700 bg-navy-900">
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4">
           <Link href="/admin"
@@ -100,7 +102,7 @@ export default async function AdminLayout({ children }: LayoutProps<'/admin'>) {
         </nav>
       </header>
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6">{children}</main>
+      <main id="main" className="mx-auto w-full max-w-6xl flex-1 px-4 py-6">{children}</main>
     </div>
   );
 }

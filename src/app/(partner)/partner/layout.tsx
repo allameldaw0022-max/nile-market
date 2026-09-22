@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { Handshake } from 'lucide-react';
 import { getActor } from '@/lib/auth/actor';
+import { SkipLink } from '@/components/ui/SkipLink';
 
 /**
  * منطقة الشريك.
@@ -17,11 +18,12 @@ export default async function PartnerLayout({ children }: LayoutProps<'/partner'
 
   return (
     <div className="flex min-h-screen flex-col bg-sand-50">
+      <SkipLink />
       <header className="border-b border-sand-200 bg-white">
         <div className="mx-auto flex h-16 max-w-4xl items-center gap-3 px-4">
           <Link href="/partner"
                 className="inline-flex items-center gap-2 font-extrabold text-navy-900">
-            <Handshake size={20} className="text-gold-600" />
+            <Handshake size={20} className="text-gold-700" />
             برنامج الشركاء
           </Link>
           <Link href="/" className="ms-auto text-sm font-bold text-sand-600
@@ -31,7 +33,7 @@ export default async function PartnerLayout({ children }: LayoutProps<'/partner'
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-6">{children}</main>
+      <main id="main" className="mx-auto w-full max-w-4xl flex-1 px-4 py-6">{children}</main>
     </div>
   );
 }

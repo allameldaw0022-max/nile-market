@@ -87,7 +87,7 @@ export default async function AdminPartnersPage(
         <input name="q" defaultValue={term} maxLength={60}
                placeholder="الاسم أو البريد أو رمز الإحالة" aria-label="بحث في الشركاء"
                className="h-10 min-w-52 flex-1 rounded-[--radius-md] border
-                          border-sand-300 bg-white px-3 text-[14px] text-navy-900
+                          border-[--color-field-border] bg-white px-3 text-[14px] text-navy-900
                           placeholder:text-sand-400 focus:border-nile-500" />
         <input type="hidden" name="status" value={status} />
         <Button type="submit" variant="outline" size="sm">بحث</Button>
@@ -118,7 +118,7 @@ export default async function AdminPartnersPage(
                     {p.email} · {p.referral_code}
                   </p>
                   {!p.is_linked && p.status === 'invited' && (
-                    <p className="text-xs text-gold-600">
+                    <p className="text-xs text-gold-700">
                       لم يقبل الدعوة بعد — رابط الدعوة يُسلَّم مرّة واحدة
                     </p>
                   )}

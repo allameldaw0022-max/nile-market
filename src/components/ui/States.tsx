@@ -62,7 +62,7 @@ export function UpgradeCard({ message, used, limit }: {
   return (
     <div className="rounded-[--radius-lg] border border-gold-500/40 bg-gold-400/10 p-5">
       <div className="flex items-start gap-3">
-        <span className="mt-0.5 shrink-0 rounded-full bg-gold-500/20 p-2 text-gold-600">
+        <span className="mt-0.5 shrink-0 rounded-full bg-gold-500/20 p-2 text-gold-700">
           <AlertTriangle size={18} />
         </span>
         <div className="flex-1">

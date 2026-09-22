@@ -81,7 +81,7 @@ export default async function AdminPaymentsPage(
         <input name="q" defaultValue={term} maxLength={60}
                placeholder="المرجع أو المتجر أو رقم الطلب" aria-label="بحث في المدفوعات"
                className="h-10 min-w-52 flex-1 rounded-[--radius-md] border
-                          border-sand-300 bg-white px-3 text-[14px] text-navy-900
+                          border-[--color-field-border] bg-white px-3 text-[14px] text-navy-900
                           placeholder:text-sand-400 focus:border-nile-500" />
         <input type="hidden" name="status" value={status} />
         <input type="hidden" name="kind" value={kind} />

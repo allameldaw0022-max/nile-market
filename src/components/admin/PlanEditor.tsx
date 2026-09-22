@@ -128,7 +128,7 @@ function PlanCard({ plan, canEdit }: { plan: PlanRow; canEdit: boolean }) {
                 <span className="min-w-0 flex-1 text-sm text-navy-900">
                   {row.label}
                   {!row.configured && (
-                    <span className="ms-2 text-xs text-gold-600">غير مضبوط</span>
+                    <span className="ms-2 text-xs text-gold-700">غير مضبوط</span>
                   )}
                 </span>
 

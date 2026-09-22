@@ -125,7 +125,7 @@ export function TeamManager({ storeId, members, invitations, canManage, isOwner 
                           storeId, memberId: m.memberId,
                           role: e.target.value as StoreRole,
                         }))}
-                        className="h-9 rounded-[--radius-md] border border-sand-300 bg-white
+                        className="h-9 rounded-[--radius-md] border border-[--color-field-border] bg-white
                                    px-2 text-[13px] font-bold text-navy-900
                                    focus:border-nile-500">
                   {roles.map((r) => (

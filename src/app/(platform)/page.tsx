@@ -35,7 +35,7 @@ export default async function HomePage() {
       <section className="bg-gradient-to-b from-nile-50 to-transparent">
         <div className="mx-auto max-w-6xl px-4 py-16 text-center sm:py-24">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-gold-500/30
-                           bg-gold-400/10 px-3 py-1 text-xs font-bold text-gold-600">
+                           bg-gold-400/10 px-3 py-1 text-xs font-bold text-gold-700">
             منصة سودانية
           </span>
           <h1 className="mt-5 text-3xl font-extrabold leading-tight text-navy-900 sm:text-5xl">

@@ -74,7 +74,7 @@ export function PlatformSettingsForm({ settings, canManage, launchBlockers }: {
       {launchBlockers.length > 0 && (
         <Card className="border-gold-500/40 bg-gold-400/10 p-5">
           <h2 className="flex items-center gap-2 font-bold text-navy-900">
-            <AlertTriangle size={17} className="text-gold-600" />
+            <AlertTriangle size={17} className="text-gold-700" />
             الإطلاق التجاري لا يُفعَّل بعد
           </h2>
           <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-navy-700">

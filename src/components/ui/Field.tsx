@@ -49,7 +49,7 @@ export function Input({
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined}
         className={cn(base, 'h-11',
-          error ? 'border-[--color-danger]' : 'border-sand-300 focus:border-nile-500',
+          error ? 'border-[--color-danger]' : 'border-[--color-field-border] focus:border-nile-500',
           className)}
       />
     </Wrapper>
@@ -71,7 +71,7 @@ export function Textarea({
         required={required}
         aria-invalid={error ? true : undefined}
         className={cn(base, 'py-2.5 min-h-24 leading-relaxed',
-          error ? 'border-[--color-danger]' : 'border-sand-300 focus:border-nile-500',
+          error ? 'border-[--color-danger]' : 'border-[--color-field-border] focus:border-nile-500',
           className)}
       />
     </Wrapper>
@@ -93,7 +93,7 @@ export function Select({
         required={required}
         aria-invalid={error ? true : undefined}
         className={cn(base, 'h-11',
-          error ? 'border-[--color-danger]' : 'border-sand-300 focus:border-nile-500',
+          error ? 'border-[--color-danger]' : 'border-[--color-field-border] focus:border-nile-500',
           className)}
       >
         {children}

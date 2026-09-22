@@ -6,9 +6,9 @@ const TONES: Record<StatusTone, string> = {
   neutral: 'bg-sand-100 text-sand-800 border-sand-200',
   info:    'bg-[--color-info-bg] text-nile-700 border-nile-200',
   success: 'bg-[--color-success-bg] text-[--color-success] border-[--color-success]/25',
-  warning: 'bg-[--color-warning-bg] text-gold-600 border-gold-500/30',
+  warning: 'bg-[--color-warning-bg] text-gold-700 border-gold-500/30',
   danger:  'bg-[--color-danger-bg] text-[--color-danger] border-[--color-danger]/25',
-  gold:    'bg-gold-400/15 text-gold-600 border-gold-500/30',
+  gold:    'bg-gold-400/15 text-gold-700 border-gold-500/30',
 };
 
 /**

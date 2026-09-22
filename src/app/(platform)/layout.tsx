@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Store } from 'lucide-react';
 import { getActor } from '@/lib/auth/actor';
 import { Button } from '@/components/ui/Button';
+import { SkipLink } from '@/components/ui/SkipLink';
 
 export default async function PlatformLayout({ children }: LayoutProps<'/'>) {
   const actor = await getActor();
@@ -9,6 +10,7 @@ export default async function PlatformLayout({ children }: LayoutProps<'/'>) {
 
   return (
     <div className="flex min-h-screen flex-col">
+      <SkipLink />
       <header className="sticky top-0 z-40 border-b border-sand-200 bg-white/95 backdrop-blur">
         <nav className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4">
           <Link href="/" className="flex items-center gap-2 font-extrabold text-navy-900">
@@ -50,7 +52,7 @@ export default async function PlatformLayout({ children }: LayoutProps<'/'>) {
         </nav>
       </header>
 
-      <main className="flex-1">{children}</main>
+      <main id="main" className="flex-1">{children}</main>
 
       <footer className="border-t border-sand-200 bg-white">
         <div className="mx-auto max-w-6xl px-4 py-10">

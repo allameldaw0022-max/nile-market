@@ -11,6 +11,7 @@ import { SUBSCRIPTION_STATUS } from '@/lib/status';
 import { Badge } from '@/components/ui/Badge';
 import { NotificationBell } from '@/components/dashboard/NotificationBell';
 import type { StorePermission } from '@/lib/authz/permissions';
+import { SkipLink } from '@/components/ui/SkipLink';
 
 type NavItem = { href: string; label: string; icon: typeof Package; perm?: StorePermission };
 
@@ -56,6 +57,7 @@ export default async function DashboardLayout({ children }: LayoutProps<'/dashbo
 
   return (
     <div className="flex min-h-screen flex-col bg-sand-50">
+      <SkipLink />
       <header className="sticky top-0 z-40 border-b border-sand-200 bg-white">
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4">
           <Link href="/dashboard" className="truncate font-extrabold text-navy-900">
@@ -115,7 +117,7 @@ export default async function DashboardLayout({ children }: LayoutProps<'/dashbo
         </div>
       )}
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6">{children}</main>
+      <main id="main" className="mx-auto w-full max-w-6xl flex-1 px-4 py-6">{children}</main>
     </div>
   );
 }

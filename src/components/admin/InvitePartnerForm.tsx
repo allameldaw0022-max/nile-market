@@ -39,7 +39,7 @@ export function InvitePartnerForm() {
     return (
       <Card className="border-gold-500/40 bg-gold-400/10 p-5">
         <h2 className="flex items-center gap-2 font-bold text-navy-900">
-          <Link2 size={17} className="text-gold-600" />
+          <Link2 size={17} className="text-gold-700" />
           رابط الدعوة — يظهر مرّة واحدة
         </h2>
         <p className="mt-1 text-sm text-navy-700">

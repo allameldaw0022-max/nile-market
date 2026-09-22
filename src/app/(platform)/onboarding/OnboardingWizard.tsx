@@ -172,7 +172,7 @@ function CreateStoreStep({ onCreated }: { onCreated: (s: WizardInitial) => void 
           <label htmlFor="bt" className="block text-[13px] font-bold text-navy-700">نوع النشاط</label>
           <select id="bt" name="business_type" value={businessType}
                   onChange={(e) => setBusinessType(e.target.value)}
-                  className="h-11 w-full rounded-[--radius-md] border border-sand-300 bg-white
+                  className="h-11 w-full rounded-[--radius-md] border border-[--color-field-border] bg-white
                              px-3 text-[15px] text-navy-900 focus:border-nile-500">
             <option value="">اختر نوع النشاط</option>
             {BUSINESS_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
@@ -256,7 +256,7 @@ function StoreInfoStep({ store, setStore, onNext }: StepProps) {
         <label htmlFor="bt2" className="block text-[13px] font-bold text-navy-700">نوع النشاط</label>
         <select id="bt2" value={store.businessType}
                 onChange={(e) => { setStore({ ...store, businessType: e.target.value }); markDirty(); }}
-                className="h-11 w-full rounded-[--radius-md] border border-sand-300 bg-white
+                className="h-11 w-full rounded-[--radius-md] border border-[--color-field-border] bg-white
                            px-3 text-[15px] text-navy-900 focus:border-nile-500">
           <option value="">اختر نوع النشاط</option>
           {BUSINESS_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}

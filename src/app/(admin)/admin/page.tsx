@@ -54,7 +54,7 @@ export default async function AdminHomePage() {
       {blockers.length > 0 && (
         <Card className="border-gold-500/40 bg-gold-400/10 p-5">
           <h2 className="flex items-center gap-2 font-bold text-navy-900">
-            <AlertTriangle size={17} className="text-gold-600" />
+            <AlertTriangle size={17} className="text-gold-700" />
             الإطلاق التجاري متوقّف
           </h2>
           <p className="mt-1 text-sm text-navy-700">
@@ -114,7 +114,7 @@ function PendingRow({ href, label, count }: {
         <span className="flex-1 font-bold text-navy-900">{label}</span>
         <span className={`min-w-8 rounded-full px-2.5 py-0.5 text-center text-sm
                           font-extrabold tabular ${n > 0
-                            ? 'bg-gold-500/20 text-gold-600'
+                            ? 'bg-gold-500/20 text-gold-700'
                             : 'bg-sand-100 text-sand-600'}`}>
           {formatNumber(n)}
         </span>

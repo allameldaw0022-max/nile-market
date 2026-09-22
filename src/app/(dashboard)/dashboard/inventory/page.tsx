@@ -109,7 +109,7 @@ export default async function InventoryPage({ searchParams }: PageProps<'/dashbo
       {lowCount > 0 && !lowOnly && (
         <div className="flex flex-wrap items-center gap-2 rounded-[--radius-md]
                         border border-gold-500/40 bg-gold-400/10 p-3.5 text-sm">
-          <TriangleAlert size={16} className="text-gold-600" />
+          <TriangleAlert size={16} className="text-gold-700" />
           <span className="flex-1 text-navy-700">
             <span className="tabular font-bold">{lowCount}</span> منتجًا أوشك على النفاد
             في هذه الصفحة.

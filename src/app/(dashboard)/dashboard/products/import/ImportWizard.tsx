@@ -254,7 +254,7 @@ export function ImportWizard({ storeId }: { storeId: string }) {
                   </span>
                   <select value={mapping[i] ?? ''}
                           onChange={(e) => remap(i, (e.target.value || null) as ImportField | null)}
-                          className="h-9 w-40 rounded-[--radius-md] border border-sand-300
+                          className="h-9 w-40 rounded-[--radius-md] border border-[--color-field-border]
                                      bg-white px-2 text-[13px] font-bold text-navy-900
                                      focus:border-nile-500">
                     <option value="">— غير مستخدم —</option>

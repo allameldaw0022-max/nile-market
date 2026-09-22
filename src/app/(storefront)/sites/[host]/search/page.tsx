@@ -37,7 +37,7 @@ export default async function SearchPage(
           <Search size={16} className="absolute start-3 top-1/2 -translate-y-1/2 text-sand-400" />
           <input name="q" defaultValue={term} maxLength={80}
                  placeholder="اكتب اسم المنتج" aria-label="كلمة البحث"
-                 className="h-12 w-full rounded-[--radius-md] border border-sand-300 bg-white
+                 className="h-12 w-full rounded-[--radius-md] border border-[--color-field-border] bg-white
                             ps-10 pe-3 text-[15px] text-navy-900 placeholder:text-sand-400
                             focus:border-nile-500" />
         </div>

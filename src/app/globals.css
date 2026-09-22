@@ -33,12 +33,21 @@
   --color-gold-400: #E4BC6E;
   --color-gold-500: #D9A441;   /* ★ Accent فقط — لا خلفيات واسعة */
   --color-gold-600: #B8862C;
+  --color-gold-700: #906922;   /* نصّ ذهبي: AA على الخلفيات الفاتحة */
 
-  --color-success: #0F9D58;
+  /* حدّ عناصر الإدخال — WCAG 1.4.11 يطلب ٣:١ لحدود عناصر الواجهة.
+     sand-300 كان 1.57:1 على الأبيض، أي حدًّا لا يكاد يُرى. حدود
+     البطاقات الزخرفية تبقى sand-200: القاعدة تخصّ ما يُعرّف عنصر تحكّم. */
+  --color-field-border: #7D889B;
+
+  /* ألوان الحالة مُعتَمة لتبلغ WCAG AA (4.5:1) نصًّا على خلفيّاتها
+     المضيئة وعلى الأبيض و sand-50. القِيَم السابقة كانت 3.09:1
+     (نجاح) و3.77:1 (خطأ) — أي نصّ حالة دون الحدّ في كل شارة. */
+  --color-success: #0C7E47;
   --color-success-bg: #E6F4EC;
   --color-warning: #E8A33D;
   --color-warning-bg: #FDF3E4;
-  --color-danger:  #D64545;
+  --color-danger:  #C03E3E;
   --color-danger-bg: #FBEAEA;
   --color-info:    #0B5ED7;
   --color-info-bg: #EBF2FE;

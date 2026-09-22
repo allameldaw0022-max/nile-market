@@ -48,14 +48,14 @@ export default async function TrackOrderPage(
             <span className="mb-1.5 block text-[13px] font-bold text-navy-700">رقم الطلب</span>
             <input name="number" defaultValue={number} dir="ltr" required maxLength={40}
                    placeholder="NM-00001"
-                   className="h-11 w-full rounded-[--radius-md] border border-sand-300
+                   className="h-11 w-full rounded-[--radius-md] border border-[--color-field-border]
                               bg-white px-3 text-[15px] text-navy-900 focus:border-nile-500" />
           </label>
           <label className="block">
             <span className="mb-1.5 block text-[13px] font-bold text-navy-700">رقم الهاتف</span>
             <input name="phone" defaultValue={phone} dir="ltr" type="tel" required
                    maxLength={20} placeholder="0912345678"
-                   className="h-11 w-full rounded-[--radius-md] border border-sand-300
+                   className="h-11 w-full rounded-[--radius-md] border border-[--color-field-border]
                               bg-white px-3 text-[15px] text-navy-900 focus:border-nile-500" />
           </label>
           <button type="submit"

@@ -80,12 +80,12 @@ export default async function AdminAuditPage(
         <input name="action" defaultValue={action} maxLength={60}
                placeholder="الإجراء — مثل partner. أو store." aria-label="تصفية بالإجراء"
                className="h-10 min-w-44 flex-1 rounded-[--radius-md] border
-                          border-sand-300 bg-white px-3 text-[14px] text-navy-900
+                          border-[--color-field-border] bg-white px-3 text-[14px] text-navy-900
                           placeholder:text-sand-400 focus:border-nile-500" />
         <input name="resource" defaultValue={resource} maxLength={40}
                placeholder="نوع المورد" aria-label="تصفية بنوع المورد"
                className="h-10 min-w-36 rounded-[--radius-md] border
-                          border-sand-300 bg-white px-3 text-[14px] text-navy-900
+                          border-[--color-field-border] bg-white px-3 text-[14px] text-navy-900
                           placeholder:text-sand-400 focus:border-nile-500" />
         <Button type="submit" variant="outline" size="sm">تصفية</Button>
       </form>

@@ -11,6 +11,7 @@ import { GuestCartMerger } from '@/components/storefront/GuestCartMerger';
 import { ServiceWorkerRegister } from '@/components/pwa/ServiceWorkerRegister';
 import { InstallPrompt } from '@/components/pwa/InstallPrompt';
 import { trackVisit } from '@/lib/analytics/track';
+import { SkipLink } from '@/components/ui/SkipLink';
 
 /**
  * بيانات رأس الصفحة المشتركة لكل صفحات المتجر.
@@ -85,6 +86,7 @@ export default async function StorefrontLayout({
 
   return (
     <div className="flex min-h-screen flex-col bg-sand-50">
+      <SkipLink />
       <header className="sticky top-0 z-40 border-b border-sand-200 bg-white">
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4">
           <Link href="/" className="truncate text-lg font-extrabold text-navy-900">
@@ -124,7 +126,7 @@ export default async function StorefrontLayout({
       <ServiceWorkerRegister />
       <InstallPrompt label={`ثبّت ${store.name} على شاشتك`} />
 
-      <main className="flex-1">{children}</main>
+      <main id="main" className="flex-1">{children}</main>
 
       <footer className="border-t border-sand-200 bg-white">
         <div className="mx-auto max-w-6xl px-4 py-8 text-sm text-sand-600">
