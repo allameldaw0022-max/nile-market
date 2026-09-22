@@ -23,10 +23,10 @@ export function AcceptPartnership({ token }: { token: string }) {
     return (
       <Card className="p-6 text-center">
         <CheckCircle2 className="mx-auto text-[--color-success]" size={40} />
-        <h1 className="mt-3 text-lg font-extrabold text-navy-900">
-          صرت شريكًا في نايل ماركت
+        <h1 className="mt-3 text-lg font-extrabold text-ink-900">
+          صرت شريكًا في سوق النيل
         </h1>
-        <p className="mt-1 text-sm text-sand-600">
+        <p className="mt-1 text-sm text-ink-500">
           رمز الإحالة الخاص بك:{' '}
           <strong dir="ltr" className="tabular">{joined.referralCode}</strong>
         </p>
@@ -39,9 +39,9 @@ export function AcceptPartnership({ token }: { token: string }) {
 
   return (
     <Card className="p-6 text-center">
-      <Handshake className="mx-auto text-nile-500" size={40} />
-      <h1 className="mt-3 text-lg font-extrabold text-navy-900">دعوة شراكة</h1>
-      <p className="mt-1 text-sm text-sand-600">
+      <Handshake className="mx-auto text-teal-700" size={40} />
+      <h1 className="mt-3 text-lg font-extrabold text-ink-900">دعوة شراكة</h1>
+      <p className="mt-1 text-sm text-ink-500">
         بقبولك تُربط الشراكة بحسابك الحالي، وتحصل على رمز إحالة تُنسب
         إليه المتاجر التي تجلبها.
       </p>

@@ -40,8 +40,8 @@ export default async function AdminFlagsPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-extrabold text-navy-900">مفاتيح الميزات</h1>
-        <p className="text-sm text-sand-600">
+        <h1 className="text-xl font-extrabold text-ink-900">مفاتيح الميزات</h1>
+        <p className="text-sm text-ink-500">
           الإطفاء يوقف المسار في القاعدة، لا في الواجهة وحدها.
         </p>
       </div>
@@ -54,18 +54,18 @@ export default async function AdminFlagsPage() {
           <CardHeader title="الميزات"
                       description={canEdit ? undefined
                         : 'للاطّلاع فقط — التبديل يحتاج صلاحية إدارة الميزات.'} />
-          <ul className="divide-y divide-sand-200">
+          <ul className="divide-y divide-ink-200">
             {rows.map((f) => (
               <li key={f.key}
                   className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3.5">
                 <div className="min-w-0 flex-1">
-                  <p dir="ltr" className="font-mono text-[13px] font-bold text-navy-900">
+                  <p dir="ltr" className="font-mono text-[13px] font-bold text-ink-900">
                     {f.key}
                   </p>
                   {f.description && (
-                    <p className="text-xs text-sand-600">{f.description}</p>
+                    <p className="text-xs text-ink-500">{f.description}</p>
                   )}
-                  <p className="text-[11px] text-sand-600">
+                  <p className="text-[11px] text-ink-500">
                     آخر تغيير {formatDateTime(f.updated_at)}
                   </p>
                 </div>

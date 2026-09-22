@@ -74,16 +74,16 @@ export default async function AdminSupportPage(
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-extrabold text-navy-900">تذاكر الدعم</h1>
-        <p className="text-sm text-sand-600 tabular">{formatNumber(total)} تذكرة</p>
+        <h1 className="text-xl font-extrabold text-ink-900">تذاكر الدعم</h1>
+        <p className="text-sm text-ink-500 tabular">{formatNumber(total)} تذكرة</p>
       </div>
 
       <form className="flex flex-wrap items-center gap-2" action="/admin/support">
         <input name="q" defaultValue={term} maxLength={60}
                placeholder="رقم التذكرة أو الموضوع أو الاسم" aria-label="بحث في التذاكر"
                className="h-10 min-w-52 flex-1 rounded-[--radius-md] border
-                          border-[--color-field-border] bg-white px-3 text-[14px] text-navy-900
-                          placeholder:text-sand-400 focus:border-nile-500" />
+                          border-[--color-ink-400] bg-white px-3 text-[14px] text-ink-900
+                          placeholder:text-ink-400 focus:border-teal-600" />
         <input type="hidden" name="status" value={status} />
         {mine && <input type="hidden" name="mine" value="1" />}
         <Button type="submit" variant="outline" size="sm">بحث</Button>
@@ -110,15 +110,15 @@ export default async function AdminSupportPage(
                     title="لا تذاكر مطابقة" />
       ) : (
         <Card className="overflow-hidden">
-          <ul className="divide-y divide-sand-200">
+          <ul className="divide-y divide-ink-200">
             {rows.map((t) => (
               <li key={t.ticket_id}>
                 <Link href={`/admin/support/${t.ticket_id}`}
                       className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3.5
-                                 hover:bg-sand-50">
+                                 hover:bg-ink-50">
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-bold text-navy-900">{t.subject}</p>
-                    <p className="truncate text-xs text-sand-600">
+                    <p className="truncate font-bold text-ink-900">{t.subject}</p>
+                    <p className="truncate text-xs text-ink-500">
                       <span dir="ltr" className="tabular">{t.ticket_number}</span>
                       {' · '}{TICKET_CATEGORY_LABEL[t.category] ?? t.category}
                       {' · '}{t.requester_name ?? 'بلا اسم'}
@@ -127,9 +127,9 @@ export default async function AdminSupportPage(
                   </div>
 
                   {t.assigned_name && (
-                    <span className="text-xs text-sand-600">{t.assigned_name}</span>
+                    <span className="text-xs text-ink-500">{t.assigned_name}</span>
                   )}
-                  <span className="text-xs text-sand-600">
+                  <span className="text-xs text-ink-500">
                     {formatDateTime(t.last_message_at)}
                   </span>
                   <Badge tone={PRIORITY[t.priority]?.tone ?? 'neutral'}>
@@ -150,7 +150,7 @@ export default async function AdminSupportPage(
               <Button variant="outline" size="sm">السابق</Button>
             </Link>
           )}
-          <span className="text-sm text-sand-600 tabular">صفحة {page} من {pages}</span>
+          <span className="text-sm text-ink-500 tabular">صفحة {page} من {pages}</span>
           {page < pages && (
             <Link href={qs({ page: page + 1 })}>
               <Button variant="outline" size="sm">التالي</Button>
@@ -164,5 +164,5 @@ export default async function AdminSupportPage(
 
 const chip = (active: boolean) =>
   `shrink-0 rounded-full border px-3 py-1.5 text-xs font-bold ${active
-    ? 'border-nile-500 bg-nile-500 text-white'
-    : 'border-sand-300 bg-white text-sand-700 hover:border-nile-400'}`;
+    ? 'border-teal-600 bg-teal-600 text-white'
+    : 'border-ink-300 bg-white text-ink-600 hover:border-teal-400'}`;

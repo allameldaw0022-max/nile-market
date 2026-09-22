@@ -17,18 +17,18 @@ export default async function PartnerLayout({ children }: LayoutProps<'/partner'
   if (!actor.partnerId) redirect('/');
 
   return (
-    <div className="flex min-h-screen flex-col bg-sand-50">
+    <div className="flex min-h-screen flex-col bg-ink-50">
       <SkipLink />
-      <header className="border-b border-sand-200 bg-white">
+      <header className="border-b border-ink-200 bg-white">
         <div className="mx-auto flex h-16 max-w-4xl items-center gap-3 px-4">
           <Link href="/partner"
-                className="inline-flex items-center gap-2 font-extrabold text-navy-900">
+                className="inline-flex items-center gap-2 font-extrabold text-ink-900">
             <Handshake size={20} className="text-gold-700" />
             برنامج الشركاء
           </Link>
-          <Link href="/" className="ms-auto text-sm font-bold text-sand-600
-                     hover:text-nile-600">
-            نايل ماركت
+          <Link href="/" className="ms-auto text-sm font-bold text-ink-500
+                     hover:text-teal-700">
+            سوق النيل
           </Link>
         </div>
       </header>

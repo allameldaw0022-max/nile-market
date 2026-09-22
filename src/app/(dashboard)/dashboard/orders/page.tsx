@@ -88,8 +88,8 @@ export default async function OrdersPage({ searchParams }: PageProps<'/dashboard
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-extrabold text-navy-900">الطلبات</h1>
-        <p className="text-sm text-sand-600 tabular">{total} طلب</p>
+        <h1 className="text-xl font-extrabold text-ink-900">الطلبات</h1>
+        <p className="text-sm text-ink-500 tabular">{total} طلب</p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
@@ -101,9 +101,9 @@ export default async function OrdersPage({ searchParams }: PageProps<'/dashboard
       <form className="flex flex-wrap items-center gap-2" action="/dashboard/orders">
         <input name="q" defaultValue={term} maxLength={60}
                placeholder="رقم الطلب أو اسم/هاتف الزبون" aria-label="بحث في الطلبات"
-               className="h-10 min-w-52 flex-1 rounded-[--radius-md] border border-[--color-field-border]
-                          bg-white px-3 text-[14px] text-navy-900
-                          placeholder:text-sand-400 focus:border-nile-500" />
+               className="h-10 min-w-52 flex-1 rounded-[--radius-md] border border-[--color-ink-400]
+                          bg-white px-3 text-[14px] text-ink-900
+                          placeholder:text-ink-400 focus:border-teal-600" />
         <input type="hidden" name="status" value={status} />
         <Button type="submit" variant="outline" size="sm">بحث</Button>
       </form>
@@ -131,25 +131,25 @@ export default async function OrdersPage({ searchParams }: PageProps<'/dashboard
         />
       ) : (
         <Card className="overflow-hidden">
-          <ul className="divide-y divide-sand-200">
+          <ul className="divide-y divide-ink-200">
             {orders.map((o) => (
               <li key={o.id}>
                 <Link href={`/dashboard/orders/${o.id}`}
                       className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3.5
-                                 hover:bg-sand-50">
-                  <span className="font-extrabold tabular text-navy-900" dir="ltr">
+                                 hover:bg-ink-50">
+                  <span className="font-extrabold tabular text-ink-900" dir="ltr">
                     {o.order_number}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-bold text-navy-900">{o.contact_name}</p>
-                    <p className="text-xs text-sand-600 tabular" dir="ltr">
+                    <p className="truncate font-bold text-ink-900">{o.contact_name}</p>
+                    <p className="text-xs text-ink-500 tabular" dir="ltr">
                       {o.contact_phone}
                     </p>
                   </div>
-                  <span className="text-xs text-sand-600">
+                  <span className="text-xs text-ink-500">
                     {formatDateTime(o.created_at)}
                   </span>
-                  <span className="font-bold tabular text-navy-900">
+                  <span className="font-bold tabular text-ink-900">
                     {formatMoney(o.total)}
                   </span>
                   <StatusChip map={PAYMENT_STATUS} value={o.payment_status} />
@@ -168,7 +168,7 @@ export default async function OrdersPage({ searchParams }: PageProps<'/dashboard
               <Button variant="outline" size="sm">السابق</Button>
             </Link>
           )}
-          <span className="text-sm text-sand-600 tabular">صفحة {page} من {pages}</span>
+          <span className="text-sm text-ink-500 tabular">صفحة {page} من {pages}</span>
           {page < pages && (
             <Link href={qs({ page: page + 1 })}>
               <Button variant="outline" size="sm">التالي</Button>
@@ -182,5 +182,5 @@ export default async function OrdersPage({ searchParams }: PageProps<'/dashboard
 
 const chip = (active: boolean) =>
   `shrink-0 rounded-full border px-3 py-1.5 text-xs font-bold ${active
-    ? 'border-nile-500 bg-nile-500 text-white'
-    : 'border-sand-300 bg-white text-sand-700 hover:border-nile-400'}`;
+    ? 'border-teal-600 bg-teal-600 text-white'
+    : 'border-ink-300 bg-white text-ink-600 hover:border-teal-400'}`;

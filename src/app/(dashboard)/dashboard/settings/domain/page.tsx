@@ -23,15 +23,15 @@ export default async function DomainSettingsPage() {
   return (
     <div className="space-y-5">
       <Link href="/dashboard/settings"
-            className="inline-flex items-center gap-1 text-sm font-bold text-sand-600
-                       hover:text-nile-600">
+            className="inline-flex items-center gap-1 text-sm font-bold text-ink-500
+                       hover:text-teal-700">
         <ChevronRight size={15} /> الإعدادات
       </Link>
 
       <div>
-        <h1 className="text-xl font-extrabold text-navy-900">الدومين</h1>
-        <p className="text-sm text-sand-600">
-          نطاقك على نايل ماركت يعمل دائمًا. يمكنك ربط دومين تملكه إلى جانبه.
+        <h1 className="text-xl font-extrabold text-ink-900">الدومين</h1>
+        <p className="text-sm text-ink-500">
+          نطاقك على سوق النيل يعمل دائمًا. يمكنك ربط دومين تملكه إلى جانبه.
         </p>
       </div>
 

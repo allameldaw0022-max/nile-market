@@ -57,8 +57,8 @@ export default async function AllProductsPage(
     <div className="mx-auto max-w-6xl px-4 py-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-extrabold text-navy-900">كل المنتجات</h1>
-          <p className="text-sm text-sand-600 tabular">{total} منتج</p>
+          <h1 className="text-xl font-extrabold text-ink-900">كل المنتجات</h1>
+          <p className="text-sm text-ink-500 tabular">{total} منتج</p>
         </div>
 
         <div className="flex flex-wrap gap-1.5">
@@ -67,8 +67,8 @@ export default async function AllProductsPage(
                   aria-current={sort === s.value ? 'page' : undefined}
                   className={`rounded-full border px-3 py-1.5 text-xs font-bold ${
                     sort === s.value
-                      ? 'border-nile-500 bg-nile-500 text-white'
-                      : 'border-sand-300 bg-white text-sand-700 hover:border-nile-400'}`}>
+                      ? 'border-teal-600 bg-teal-600 text-white'
+                      : 'border-ink-300 bg-white text-ink-600 hover:border-teal-400'}`}>
               {s.label}
             </Link>
           ))}
@@ -80,8 +80,8 @@ export default async function AllProductsPage(
              aria-label="التصنيفات">
           {categories.map((c) => (
             <Link key={c.id} href={`/categories/${c.slug}`}
-                  className="shrink-0 rounded-full border border-sand-300 bg-white px-4 py-2
-                             text-sm font-bold text-navy-700 hover:border-nile-500">
+                  className="shrink-0 rounded-full border border-ink-300 bg-white px-4 py-2
+                             text-sm font-bold text-ink-700 hover:border-teal-600">
               {c.name}
             </Link>
           ))}
@@ -100,7 +100,7 @@ export default async function AllProductsPage(
               <Button variant="outline" size="sm">السابق</Button>
             </Link>
           )}
-          <span className="text-sm text-sand-600 tabular">صفحة {page} من {pages}</span>
+          <span className="text-sm text-ink-500 tabular">صفحة {page} من {pages}</span>
           {page < pages && (
             <Link href={`/products?sort=${sort}&page=${page + 1}`}>
               <Button variant="outline" size="sm">التالي</Button>

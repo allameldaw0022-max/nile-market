@@ -42,7 +42,7 @@ export function RefundReviewRow({
 
   if (actions.length === 0) {
     return hint
-      ? <p className="text-[11px] text-sand-600">{hint}</p>
+      ? <p className="text-[11px] text-ink-500">{hint}</p>
       : null;
   }
 

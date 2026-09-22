@@ -81,8 +81,8 @@ export function PartnerDashboard({
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-extrabold text-navy-900">مرحبًا {profile.name}</h1>
-        <p className="text-sm text-sand-600">
+        <h1 className="text-xl font-extrabold text-ink-900">مرحبًا {profile.name}</h1>
+        <p className="text-sm text-ink-500">
           نسبة عمولتك <span className="tabular font-bold">{profile.commissionRate}%</span>
           {' '}من قيمة اشتراك كل متجر أحلته.
         </p>
@@ -90,21 +90,21 @@ export function PartnerDashboard({
 
       {!isActive && (
         <p role="status" className="rounded-[--radius-md] border border-gold-500/40
-                        bg-gold-400/10 p-3.5 text-sm text-navy-700">
-          حسابك كشريك غير نشط حاليًا. تواصل مع فريق نايل ماركت لتفعيله.
+                        bg-gold-300/10 p-3.5 text-sm text-ink-700">
+          حسابك كشريك غير نشط حاليًا. تواصل مع فريق سوق النيل لتفعيله.
         </p>
       )}
 
       <Card className="p-5">
-        <h2 className="flex items-center gap-2 font-bold text-navy-900">
+        <h2 className="flex items-center gap-2 font-bold text-ink-900">
           <Link2 size={16} /> رابط الإحالة
         </h2>
-        <p className="mt-1 text-sm text-sand-600">
+        <p className="mt-1 text-sm text-ink-500">
           كل من يفتح هذا الرابط ثم ينشئ متجرًا خلال 30 يومًا يُحتسب لك.
         </p>
         <div className="mt-3 flex items-center gap-2">
           <code className="min-w-0 flex-1 truncate rounded-[--radius-md] border
-                           border-sand-200 bg-sand-50 px-3 py-2 text-xs text-navy-900"
+                           border-ink-200 bg-ink-50 px-3 py-2 text-xs text-ink-900"
                 dir="ltr">{profile.referralUrl}</code>
           <Button variant="outline" size="sm" onClick={copy}
                   icon={copied ? <Check size={14} /> : <Copy size={14} />}>
@@ -162,17 +162,17 @@ export function PartnerDashboard({
       {payouts.length > 0 && (
         <Card className="overflow-hidden">
           <CardHeader title="طلبات الصرف" />
-          <ul className="divide-y divide-sand-200">
+          <ul className="divide-y divide-ink-200">
             {payouts.map((p) => {
               const status = PAYOUT_STATUS[p.status]
                 ?? { label: p.status, tone: 'neutral' as const };
               return (
                 <li key={p.id}
                     className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3.5">
-                  <span className="font-bold tabular text-navy-900">
+                  <span className="font-bold tabular text-ink-900">
                     {formatMoney(p.amount)}
                   </span>
-                  <span className="min-w-0 flex-1 text-xs text-sand-600">
+                  <span className="min-w-0 flex-1 text-xs text-ink-500">
                     {formatDate(p.createdAt)}
                     {p.paidAt && ` · صُرف ${formatDate(p.paidAt)}`}
                     {p.rejectedReason && (
@@ -193,11 +193,11 @@ export function PartnerDashboard({
         <CardHeader title="العمولات"
                     description="تُحتسب عند اعتماد اشتراك متجر أحلته." />
         {commissions.length === 0 ? (
-          <p className="px-5 py-8 text-center text-sm text-sand-600">
+          <p className="px-5 py-8 text-center text-sm text-ink-500">
             لا عمولات بعد.
           </p>
         ) : (
-          <ul className="divide-y divide-sand-200">
+          <ul className="divide-y divide-ink-200">
             {commissions.map((c) => {
               const status = COMMISSION_STATUS[c.status]
                 ?? { label: c.status, tone: 'neutral' as const };
@@ -208,10 +208,10 @@ export function PartnerDashboard({
                               className={c.amount < 0 ? 'text-[--color-danger]'
                                 : 'text-[--color-success]'} />
                   <span className={`font-bold tabular ${c.amount < 0
-                    ? 'text-[--color-danger]' : 'text-navy-900'}`} dir="ltr">
+                    ? 'text-[--color-danger]' : 'text-ink-900'}`} dir="ltr">
                     {formatMoney(c.amount)}
                   </span>
-                  <span className="min-w-0 flex-1 text-xs text-sand-600 tabular">
+                  <span className="min-w-0 flex-1 text-xs text-ink-500 tabular">
                     {c.rateApplied}% من {formatMoney(c.baseAmount)} ·{' '}
                     {formatDate(c.createdAt)}
                   </span>
@@ -226,18 +226,18 @@ export function PartnerDashboard({
       <Card className="overflow-hidden">
         <CardHeader title="المتاجر التي أحلتها" />
         {referrals.length === 0 ? (
-          <p className="px-5 py-8 text-center text-sm text-sand-600">
+          <p className="px-5 py-8 text-center text-sm text-ink-500">
             لا إحالات بعد — شارك رابطك للبدء.
           </p>
         ) : (
-          <ul className="divide-y divide-sand-200">
+          <ul className="divide-y divide-ink-200">
             {referrals.map((r) => (
               <li key={r.id} className="flex items-center gap-3 px-4 py-3">
-                <Store size={15} className="text-sand-500" />
-                <span className="min-w-0 flex-1 truncate font-bold text-navy-900">
+                <Store size={15} className="text-ink-500" />
+                <span className="min-w-0 flex-1 truncate font-bold text-ink-900">
                   {r.storeName ?? 'متجر'}
                 </span>
-                <span className="text-xs text-sand-600">{formatDate(r.createdAt)}</span>
+                <span className="text-xs text-ink-500">{formatDate(r.createdAt)}</span>
               </li>
             ))}
           </ul>

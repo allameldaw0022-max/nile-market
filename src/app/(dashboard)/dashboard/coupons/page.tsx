@@ -37,8 +37,8 @@ export default async function CouponsPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-extrabold text-navy-900">أكواد الخصم</h1>
-        <p className="text-sm text-sand-600">
+        <h1 className="text-xl font-extrabold text-ink-900">أكواد الخصم</h1>
+        <p className="text-sm text-ink-500">
           الخصم يُحسب في الخادم وقت الطلب — الكود لا يُطبَّق من المتصفح.
         </p>
       </div>

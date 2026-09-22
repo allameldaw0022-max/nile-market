@@ -111,21 +111,21 @@ function PlanCard({ plan, canEdit }: { plan: PlanRow; canEdit: boolean }) {
           </div>
         )}
 
-        <div className="space-y-2 border-t border-sand-200 pt-4">
-          <p className="flex items-center gap-1.5 text-sm font-bold text-navy-900">
+        <div className="space-y-2 border-t border-ink-200 pt-4">
+          <p className="flex items-center gap-1.5 text-sm font-bold text-ink-900">
             الحدود والميزات
           </p>
-          <p className="flex items-start gap-1.5 text-xs text-sand-600">
+          <p className="flex items-start gap-1.5 text-xs text-ink-500">
             <Info size={12} className="mt-0.5 shrink-0" />
             الحقل الفارغ = لم يُضبط، ولا يفرض النظام حدًّا لم تضبطه. لإلغاء الحد
             صراحةً اترك الرقم فارغًا واحفظ.
           </p>
 
-          <ul className="divide-y divide-sand-200">
+          <ul className="divide-y divide-ink-200">
             {plan.entitlements.map((row) => (
               <li key={row.featureKey}
                   className="flex flex-wrap items-center gap-3 py-2.5">
-                <span className="min-w-0 flex-1 text-sm text-navy-900">
+                <span className="min-w-0 flex-1 text-sm text-ink-900">
                   {row.label}
                   {!row.configured && (
                     <span className="ms-2 text-xs text-gold-700">غير مضبوط</span>
@@ -136,7 +136,7 @@ function PlanCard({ plan, canEdit }: { plan: PlanRow; canEdit: boolean }) {
                   <label className="flex items-center gap-2 text-sm">
                     <input type="checkbox" defaultChecked={row.boolValue ?? false}
                            disabled={!canEdit || pending}
-                           className="size-4 accent-[--color-nile-500]"
+                           className="size-4 accent-[--color-teal-600]"
                            onChange={(e) => saveEntitlement(row, e.target.checked)} />
                     متاحة
                   </label>
@@ -151,9 +151,9 @@ function PlanCard({ plan, canEdit }: { plan: PlanRow; canEdit: boolean }) {
                            const before = row.limitValue === null ? '' : String(row.limitValue);
                            if (next !== before) saveEntitlement(row, next);
                          }}
-                         className="h-9 w-28 rounded-[--radius-md] border border-sand-300
-                                    bg-white px-2 text-sm tabular text-navy-900
-                                    focus:border-nile-500 disabled:bg-sand-100" />
+                         className="h-9 w-28 rounded-[--radius-md] border border-ink-300
+                                    bg-white px-2 text-sm tabular text-ink-900
+                                    focus:border-teal-600 disabled:bg-ink-100" />
                 )}
 
                 {saved === row.featureKey && (

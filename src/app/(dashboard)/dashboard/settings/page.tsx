@@ -77,9 +77,9 @@ export default async function SettingsPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-extrabold text-navy-900">الإعدادات</h1>
+        <h1 className="text-xl font-extrabold text-ink-900">الإعدادات</h1>
         {store?.slug && (
-          <p className="text-sm text-sand-600" dir="ltr">
+          <p className="text-sm text-ink-500" dir="ltr">
             {store.slug}.nilemarket.online
           </p>
         )}
@@ -88,14 +88,14 @@ export default async function SettingsPage() {
       <nav className="grid gap-3 sm:grid-cols-2">
         {LINKS.map((link) => (
           <Link key={link.href} href={link.href}>
-            <Card className="flex items-center gap-3 p-4 hover:border-nile-400">
+            <Card className="flex items-center gap-3 p-4 hover:border-teal-400">
               <span className="grid size-10 shrink-0 place-items-center rounded-[--radius-md]
-                               bg-[--color-info-bg] text-nile-600">
+                               bg-[--color-teal-50] text-teal-700">
                 <link.icon size={18} />
               </span>
               <span className="min-w-0">
-                <span className="block font-bold text-navy-900">{link.label}</span>
-                <span className="block text-xs text-sand-600">{link.hint}</span>
+                <span className="block font-bold text-ink-900">{link.label}</span>
+                <span className="block text-xs text-ink-500">{link.hint}</span>
               </span>
             </Card>
           </Link>

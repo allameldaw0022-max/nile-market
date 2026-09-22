@@ -56,11 +56,11 @@ export default async function DashboardLayout({ children }: LayoutProps<'/dashbo
   const needsAttention = ['expiring', 'grace', 'expired', 'suspended'].includes(subStatus);
 
   return (
-    <div className="flex min-h-screen flex-col bg-sand-50">
+    <div className="flex min-h-screen flex-col bg-ink-50">
       <SkipLink />
-      <header className="sticky top-0 z-40 border-b border-sand-200 bg-white">
+      <header className="sticky top-0 z-40 border-b border-ink-200 bg-white">
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4">
-          <Link href="/dashboard" className="truncate font-extrabold text-navy-900">
+          <Link href="/dashboard" className="truncate font-extrabold text-ink-900">
             {membership.storeName}
           </Link>
           <Badge tone="neutral" className="hidden sm:inline-flex">
@@ -75,8 +75,8 @@ export default async function DashboardLayout({ children }: LayoutProps<'/dashbo
             {domain?.hostname && (
               <a href={`https://${domain.hostname}`} target="_blank" rel="noopener noreferrer"
                  className="inline-flex items-center gap-1.5 rounded-[--radius-md] border
-                            border-sand-300 px-3 py-1.5 text-[13px] font-bold text-navy-700
-                            hover:border-nile-500 hover:text-nile-600">
+                            border-ink-300 px-3 py-1.5 text-[13px] font-bold text-ink-700
+                            hover:border-teal-600 hover:text-teal-700">
                 <ExternalLink size={14} />
                 <span className="hidden sm:inline">مشاهدة المتجر</span>
               </a>
@@ -84,12 +84,12 @@ export default async function DashboardLayout({ children }: LayoutProps<'/dashbo
           </div>
         </div>
 
-        <nav className="border-t border-sand-200">
+        <nav className="border-t border-ink-200">
           <div className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-4 no-scrollbar">
             {items.map((item) => (
               <Link key={item.href} href={item.href}
                     className="flex shrink-0 items-center gap-1.5 px-3 py-3 text-[13px]
-                               font-bold text-sand-600 hover:text-nile-600">
+                               font-bold text-ink-500 hover:text-teal-700">
                 <item.icon size={15} />
                 {item.label}
               </Link>
@@ -99,19 +99,19 @@ export default async function DashboardLayout({ children }: LayoutProps<'/dashbo
       </header>
 
       {needsAttention && (
-        <div className="border-b border-gold-500/30 bg-gold-400/10 px-4 py-2.5">
+        <div className="border-b border-gold-500/30 bg-gold-300/10 px-4 py-2.5">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-2 text-[13px]">
             <Badge tone={SUBSCRIPTION_STATUS[subStatus]?.tone ?? 'warning'}>
               {SUBSCRIPTION_STATUS[subStatus]?.label ?? subStatus}
             </Badge>
-            <span className="text-navy-700">
+            <span className="text-ink-700">
               {subStatus === 'expired' || subStatus === 'suspended'
                 ? 'الشراء من متجرك متوقف حاليًا. بياناتك ومنتجاتك وطلباتك محفوظة بالكامل.'
                 : 'اشتراكك يقارب الانتهاء — جدّد لتبقى كل الميزات متاحة.'}
             </span>
             {can(membership, 'subscription:manage') && (
               <Link href="/dashboard/subscription"
-                    className="font-bold text-nile-600 hover:underline">تجديد الاشتراك</Link>
+                    className="font-bold text-teal-700 hover:underline">تجديد الاشتراك</Link>
             )}
           </div>
         </div>

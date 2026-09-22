@@ -55,14 +55,14 @@ export default async function CategoryPage(
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
-      <nav className="flex items-center gap-1 text-sm text-sand-600" aria-label="المسار">
-        <Link href="/" className="hover:text-nile-600">الرئيسية</Link>
+      <nav className="flex items-center gap-1 text-sm text-ink-500" aria-label="المسار">
+        <Link href="/" className="hover:text-teal-700">الرئيسية</Link>
         <ChevronRight size={14} />
-        <Link href="/products" className="hover:text-nile-600">المنتجات</Link>
+        <Link href="/products" className="hover:text-teal-700">المنتجات</Link>
       </nav>
 
-      <h1 className="mt-4 text-xl font-extrabold text-navy-900">{found.category.name}</h1>
-      <p className="text-sm text-sand-600 tabular">{total} منتج</p>
+      <h1 className="mt-4 text-xl font-extrabold text-ink-900">{found.category.name}</h1>
+      <p className="text-sm text-ink-500 tabular">{total} منتج</p>
 
       <div className="mt-6">
         <ProductGrid products={products} emptyTitle="لا منتجات في هذا التصنيف"
@@ -76,7 +76,7 @@ export default async function CategoryPage(
               <Button variant="outline" size="sm">السابق</Button>
             </Link>
           )}
-          <span className="text-sm text-sand-600 tabular">صفحة {page} من {pages}</span>
+          <span className="text-sm text-ink-500 tabular">صفحة {page} من {pages}</span>
           {page < pages && (
             <Link href={`/categories/${slug}?page=${page + 1}`}>
               <Button variant="outline" size="sm">التالي</Button>

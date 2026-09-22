@@ -93,8 +93,8 @@ export default async function InventoryPage({ searchParams }: PageProps<'/dashbo
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-extrabold text-navy-900">المخزون</h1>
-        <p className="text-sm text-sand-600">
+        <h1 className="text-xl font-extrabold text-ink-900">المخزون</h1>
+        <p className="text-sm text-ink-500">
           كل تعديل يُسجَّل كحركة باسم من نفّذه — لا تُكتب الكمية مباشرة.
         </p>
       </div>
@@ -108,13 +108,13 @@ export default async function InventoryPage({ searchParams }: PageProps<'/dashbo
 
       {lowCount > 0 && !lowOnly && (
         <div className="flex flex-wrap items-center gap-2 rounded-[--radius-md]
-                        border border-gold-500/40 bg-gold-400/10 p-3.5 text-sm">
+                        border border-gold-500/40 bg-gold-300/10 p-3.5 text-sm">
           <TriangleAlert size={16} className="text-gold-700" />
-          <span className="flex-1 text-navy-700">
+          <span className="flex-1 text-ink-700">
             <span className="tabular font-bold">{lowCount}</span> منتجًا أوشك على النفاد
             في هذه الصفحة.
           </span>
-          <Link href="/dashboard/inventory?low=1" className="font-bold text-nile-600
+          <Link href="/dashboard/inventory?low=1" className="font-bold text-teal-700
                      hover:underline">
             عرضها وحدها
           </Link>
@@ -137,7 +137,7 @@ export default async function InventoryPage({ searchParams }: PageProps<'/dashbo
         />
       ) : (
         <Card className="overflow-hidden">
-          <ul className="divide-y divide-sand-200">
+          <ul className="divide-y divide-ink-200">
             {list.map((row) => {
               const product = row.products;
               if (!product) return null;
@@ -146,10 +146,10 @@ export default async function InventoryPage({ searchParams }: PageProps<'/dashbo
                     className="flex flex-wrap items-center gap-3 px-4 py-3">
                   <div className="min-w-0 flex-1">
                     <Link href={`/dashboard/products/${product.id}/edit`}
-                          className="truncate font-bold text-navy-900 hover:text-nile-600">
+                          className="truncate font-bold text-ink-900 hover:text-teal-700">
                       {product.name}
                     </Link>
-                    <p className="flex items-center gap-2 text-xs text-sand-600">
+                    <p className="flex items-center gap-2 text-xs text-ink-500">
                       {product.sku && <span className="tabular" dir="ltr">{product.sku}</span>}
                       {row.quantity === 0 ? (
                         <Badge tone="danger">نفد</Badge>
@@ -163,7 +163,7 @@ export default async function InventoryPage({ searchParams }: PageProps<'/dashbo
                     <InventoryAdjuster storeId={membership.storeId}
                                        productId={product.id} quantity={row.quantity} />
                   ) : (
-                    <span className="font-bold tabular text-navy-900">{row.quantity}</span>
+                    <span className="font-bold tabular text-ink-900">{row.quantity}</span>
                   )}
                 </li>
               );
@@ -179,7 +179,7 @@ export default async function InventoryPage({ searchParams }: PageProps<'/dashbo
               <Button variant="outline" size="sm">السابق</Button>
             </Link>
           )}
-          <span className="text-sm text-sand-600 tabular">صفحة {page} من {pages}</span>
+          <span className="text-sm text-ink-500 tabular">صفحة {page} من {pages}</span>
           {page < pages && (
             <Link href={`/dashboard/inventory?page=${page + 1}`}>
               <Button variant="outline" size="sm">التالي</Button>
@@ -192,26 +192,26 @@ export default async function InventoryPage({ searchParams }: PageProps<'/dashbo
         <CardHeader title="آخر الحركات"
                     description="سجل إلحاقي لا يُعدَّل ولا يُحذف." />
         {history.length === 0 ? (
-          <p className="px-5 py-8 text-center text-sm text-sand-600">لا حركات بعد.</p>
+          <p className="px-5 py-8 text-center text-sm text-ink-500">لا حركات بعد.</p>
         ) : (
-          <ul className="divide-y divide-sand-200">
+          <ul className="divide-y divide-ink-200">
             {history.map((m) => (
               <li key={m.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3">
-                <History size={14} className="shrink-0 text-sand-400" />
-                <span className="min-w-0 flex-1 truncate text-sm font-bold text-navy-900">
+                <History size={14} className="shrink-0 text-ink-400" />
+                <span className="min-w-0 flex-1 truncate text-sm font-bold text-ink-900">
                   {m.products?.name ?? '—'}
                 </span>
                 <span className={`font-bold tabular ${m.delta > 0
                   ? 'text-[--color-success]' : 'text-[--color-danger]'}`} dir="ltr">
                   {m.delta > 0 ? `+${m.delta}` : m.delta}
                 </span>
-                <span className="text-xs text-sand-600">
+                <span className="text-xs text-ink-500">
                   {REASON_LABEL[m.reason] ?? m.reason}
                 </span>
-                <span className="text-xs text-sand-600">
+                <span className="text-xs text-ink-500">
                   {(m.actor_id ? nameOf.get(m.actor_id) : null) ?? 'النظام'}
                 </span>
-                <span className="text-xs text-sand-500">{formatDateTime(m.created_at)}</span>
+                <span className="text-xs text-ink-500">{formatDateTime(m.created_at)}</span>
               </li>
             ))}
           </ul>

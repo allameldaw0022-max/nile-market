@@ -67,9 +67,9 @@ export function FirstProductStep({ storeId, count, onChange, onNext }: {
 
   return (
     <Card>
-      <div className="border-b border-sand-200 px-5 py-4">
-        <h2 className="font-bold text-navy-900">أول منتج</h2>
-        <p className="mt-0.5 text-sm text-sand-600">
+      <div className="border-b border-ink-200 px-5 py-4">
+        <h2 className="font-bold text-ink-900">أول منتج</h2>
+        <p className="mt-0.5 text-sm text-ink-500">
           منتج واحد على الأقل مطلوب لنشر المتجر. يمكنك إضافة الباقي لاحقًا.
         </p>
       </div>
@@ -84,24 +84,24 @@ export function FirstProductStep({ storeId, count, onChange, onNext }: {
         )}
 
         {loading ? (
-          <p className="text-sm text-sand-600">يحمّل المنتجات…</p>
+          <p className="text-sm text-ink-500">يحمّل المنتجات…</p>
         ) : products.length > 0 && (
-          <ul className="divide-y divide-sand-200 rounded-[--radius-md] border border-sand-200">
+          <ul className="divide-y divide-ink-200 rounded-[--radius-md] border border-ink-200">
             {products.map((p) => (
               <li key={p.id} className="flex items-center gap-3 p-3">
                 <div className="relative size-12 shrink-0 overflow-hidden rounded-[--radius-md]
-                                border border-sand-200 bg-sand-50">
+                                border border-ink-200 bg-ink-50">
                   {p.imageUrl ? (
                     <Image src={p.imageUrl} alt="" fill sizes="48px" className="object-cover" />
                   ) : (
-                    <span className="flex size-full items-center justify-center text-sand-400">
+                    <span className="flex size-full items-center justify-center text-ink-400">
                       <Package size={18} />
                     </span>
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-bold text-navy-900">{p.name}</p>
-                  <p className="text-xs text-sand-600 tabular">
+                  <p className="truncate font-bold text-ink-900">{p.name}</p>
+                  <p className="text-xs text-ink-500 tabular">
                     {formatMoney(p.price)} · المخزون {p.quantity}
                   </p>
                 </div>
@@ -118,7 +118,7 @@ export function FirstProductStep({ storeId, count, onChange, onNext }: {
 
         {showForm ? (
           <form action={submit} className="space-y-4 rounded-[--radius-md]
-                                           border border-sand-200 p-4">
+                                           border border-ink-200 p-4">
             <Input name="name" label="اسم المنتج" required maxLength={200}
                    placeholder="مثال: قميص قطن رجالي"
                    error={fieldError?.field === 'name' ? fieldError.message : undefined} />
@@ -135,7 +135,7 @@ export function FirstProductStep({ storeId, count, onChange, onNext }: {
                       hint="اذكر المقاسات أو الألوان أو أي تفصيل يسأل عنه الزبون." />
 
             <div className="space-y-1.5">
-              <span className="block text-[13px] font-bold text-navy-700">صور المنتج</span>
+              <span className="block text-[13px] font-bold text-ink-700">صور المنتج</span>
               <ProductImagesUploader storeId={storeId} value={images}
                                      onChange={setImages} max={5} />
             </div>
@@ -167,7 +167,7 @@ export function FirstProductStep({ storeId, count, onChange, onNext }: {
         )}
       </div>
 
-      <div className="flex items-center justify-end border-t border-sand-200 px-5 py-4">
+      <div className="flex items-center justify-end border-t border-ink-200 px-5 py-4">
         <Button onClick={onNext} disabled={products.length === 0}
                 icon={<ChevronLeft size={16} className="flip-rtl" />}>
           التالي

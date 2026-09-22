@@ -156,10 +156,10 @@ export function ImportWizard({ storeId }: { storeId: string }) {
     return (
       <Card className="p-6 text-center">
         <CheckCircle2 className="mx-auto text-[--color-success]" size={40} />
-        <h2 className="mt-3 text-lg font-extrabold text-navy-900">
+        <h2 className="mt-3 text-lg font-extrabold text-ink-900">
           تم استيراد <span className="tabular">{counts.imported}</span> منتجًا
         </h2>
-        <p className="mt-1 text-sm text-sand-600">
+        <p className="mt-1 text-sm text-ink-500">
           المنتجات المستوردة مسودّات — راجعها ثم انشرها.
           {counts.failed > 0 && ` تعذّر استيراد ${counts.failed} صفًا.`}
         </p>
@@ -197,20 +197,20 @@ export function ImportWizard({ storeId }: { storeId: string }) {
           <div className="space-y-4 p-5">
             <button type="button" onClick={() => inputRef.current?.click()} disabled={pending}
                     className="flex w-full flex-col items-center justify-center gap-2
-                               rounded-[--radius-lg] border border-dashed border-sand-300
-                               bg-white py-12 text-sand-600 hover:border-nile-400
-                               hover:text-nile-600 disabled:opacity-60">
+                               rounded-[--radius-lg] border border-dashed border-ink-300
+                               bg-white py-12 text-ink-500 hover:border-teal-400
+                               hover:text-teal-700 disabled:opacity-60">
               <Upload size={30} strokeWidth={1.5} />
               <span className="font-bold">اضغط لاختيار ملف</span>
               <span className="text-xs">أو اسحبه إلى هنا</span>
             </button>
 
-            <div className="rounded-[--radius-md] border border-sand-200 bg-sand-50 p-4">
-              <p className="text-sm font-bold text-navy-900">الأعمدة المتوقَّعة</p>
+            <div className="rounded-[--radius-md] border border-ink-200 bg-ink-50 p-4">
+              <p className="text-sm font-bold text-ink-900">الأعمدة المتوقَّعة</p>
               <ul className="mt-2 flex flex-wrap gap-1.5">
                 {(Object.keys(IMPORT_FIELDS) as ImportField[]).map((f) => (
-                  <li key={f} className="rounded-full border border-sand-300 bg-white
-                                         px-2.5 py-0.5 text-xs font-bold text-navy-700">
+                  <li key={f} className="rounded-full border border-ink-300 bg-white
+                                         px-2.5 py-0.5 text-xs font-bold text-ink-700">
                     {IMPORT_FIELDS[f].label}
                     {IMPORT_FIELDS[f].required && (
                       <span className="text-[--color-danger]" aria-label="إلزامي"> *</span>
@@ -218,7 +218,7 @@ export function ImportWizard({ storeId }: { storeId: string }) {
                   </li>
                 ))}
               </ul>
-              <p className="mt-3 text-xs text-sand-600">
+              <p className="mt-3 text-xs text-ink-500">
                 نتعرّف على الترويسات العربية والإنجليزية تلقائيًا، وما لا نتعرّف
                 عليه يمكنك ربطه يدويًا في الخطوة التالية.
               </p>
@@ -249,14 +249,14 @@ export function ImportWizard({ storeId }: { storeId: string }) {
             <div className="grid gap-3 p-5 sm:grid-cols-2">
               {headers.map((header, i) => (
                 <label key={`${header}-${i}`} className="flex items-center gap-2">
-                  <span className="min-w-0 flex-1 truncate text-sm font-bold text-navy-900">
+                  <span className="min-w-0 flex-1 truncate text-sm font-bold text-ink-900">
                     {header || `عمود ${i + 1}`}
                   </span>
                   <select value={mapping[i] ?? ''}
                           onChange={(e) => remap(i, (e.target.value || null) as ImportField | null)}
-                          className="h-9 w-40 rounded-[--radius-md] border border-[--color-field-border]
-                                     bg-white px-2 text-[13px] font-bold text-navy-900
-                                     focus:border-nile-500">
+                          className="h-9 w-40 rounded-[--radius-md] border border-[--color-ink-400]
+                                     bg-white px-2 text-[13px] font-bold text-ink-900
+                                     focus:border-teal-600">
                     <option value="">— غير مستخدم —</option>
                     {(Object.keys(IMPORT_FIELDS) as ImportField[]).map((f) => (
                       <option key={f} value={f}>{IMPORT_FIELDS[f].label}</option>
@@ -302,10 +302,10 @@ function Stat({ label, value, tone }: {
   label: string; value: number; tone: 'success' | 'danger' | 'neutral';
 }) {
   const cls = tone === 'success' ? 'text-[--color-success]'
-    : tone === 'danger' ? 'text-[--color-danger]' : 'text-navy-900';
+    : tone === 'danger' ? 'text-[--color-danger]' : 'text-ink-900';
   return (
-    <div className="rounded-[--radius-md] border border-sand-200 px-4 py-3">
-      <p className="text-xs font-medium text-sand-600">{label}</p>
+    <div className="rounded-[--radius-md] border border-ink-200 px-4 py-3">
+      <p className="text-xs font-medium text-ink-500">{label}</p>
       <p className={`text-xl font-extrabold tabular ${cls}`}>{value}</p>
     </div>
   );
@@ -318,7 +318,7 @@ function ErrorTable({ errors, onDownload }: {
     <div className="rounded-[--radius-md] border border-[--color-danger]/30
                     bg-[--color-danger-bg] p-4 text-start">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-sm font-bold text-navy-900">
+        <p className="text-sm font-bold text-ink-900">
           صفوف لم تُستورَد (<span className="tabular">{errors.length}</span>)
         </p>
         <Button type="button" variant="outline" size="sm" icon={<Download size={13} />}
@@ -328,7 +328,7 @@ function ErrorTable({ errors, onDownload }: {
       </div>
       <ul className="mt-3 max-h-56 space-y-1 overflow-y-auto text-sm">
         {errors.slice(0, 100).map((e, i) => (
-          <li key={`${e.row}-${i}`} className="flex flex-wrap gap-x-2 text-navy-700">
+          <li key={`${e.row}-${i}`} className="flex flex-wrap gap-x-2 text-ink-700">
             <span className="font-bold tabular">صف {e.row}</span>
             {e.name && <span className="truncate">{e.name}</span>}
             <span className="text-[--color-danger]">{e.message}</span>
@@ -336,7 +336,7 @@ function ErrorTable({ errors, onDownload }: {
         ))}
       </ul>
       {errors.length > 100 && (
-        <p className="mt-2 text-xs text-sand-600">
+        <p className="mt-2 text-xs text-ink-500">
           نعرض أول 100 خطأ — التقرير الكامل في الملف.
         </p>
       )}
@@ -348,29 +348,29 @@ function PreviewTable({ rows, errors }: { rows: ImportRow[]; errors: ImportError
   const bad = new Set(errors.map((e) => e.row));
   const good = rows.filter((r) => !bad.has(r.row ?? -1)).slice(0, 10);
   return (
-    <div className="overflow-x-auto rounded-[--radius-md] border border-sand-200">
+    <div className="overflow-x-auto rounded-[--radius-md] border border-ink-200">
       <table className="w-full text-sm">
-        <thead className="bg-sand-50 text-start">
+        <thead className="bg-ink-50 text-start">
           <tr>
-            <th className="px-3 py-2 text-start font-bold text-navy-700">الاسم</th>
-            <th className="px-3 py-2 text-start font-bold text-navy-700">السعر</th>
-            <th className="px-3 py-2 text-start font-bold text-navy-700">الكمية</th>
-            <th className="px-3 py-2 text-start font-bold text-navy-700">التصنيف</th>
+            <th className="px-3 py-2 text-start font-bold text-ink-700">الاسم</th>
+            <th className="px-3 py-2 text-start font-bold text-ink-700">السعر</th>
+            <th className="px-3 py-2 text-start font-bold text-ink-700">الكمية</th>
+            <th className="px-3 py-2 text-start font-bold text-ink-700">التصنيف</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-sand-200">
+        <tbody className="divide-y divide-ink-200">
           {good.map((r) => (
             <tr key={r.row}>
-              <td className="max-w-40 truncate px-3 py-2 text-navy-900">{r.name}</td>
-              <td className="px-3 py-2 tabular text-navy-900" dir="ltr">{r.price}</td>
-              <td className="px-3 py-2 tabular text-navy-900" dir="ltr">{r.quantity ?? '0'}</td>
-              <td className="px-3 py-2 text-sand-600">{r.category ?? '—'}</td>
+              <td className="max-w-40 truncate px-3 py-2 text-ink-900">{r.name}</td>
+              <td className="px-3 py-2 tabular text-ink-900" dir="ltr">{r.price}</td>
+              <td className="px-3 py-2 tabular text-ink-900" dir="ltr">{r.quantity ?? '0'}</td>
+              <td className="px-3 py-2 text-ink-500">{r.category ?? '—'}</td>
             </tr>
           ))}
         </tbody>
       </table>
       {rows.length > good.length && (
-        <p className="border-t border-sand-200 px-3 py-2 text-xs text-sand-600">
+        <p className="border-t border-ink-200 px-3 py-2 text-xs text-ink-500">
           أول {good.length} صف من {rows.length}.
         </p>
       )}

@@ -126,13 +126,13 @@ export function DeliveryZonesManager({ storeId, zones, canManage }: {
         />
       ) : (
         <Card className="overflow-hidden">
-          <ul className="divide-y divide-sand-200">
+          <ul className="divide-y divide-ink-200">
             {zones.map((z) => (
               <li key={z.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3.5">
-                <span className="font-bold text-navy-900">{z.name}</span>
-                <span className="font-bold tabular text-navy-900">{formatMoney(z.fee)}</span>
+                <span className="font-bold text-ink-900">{z.name}</span>
+                <span className="font-bold tabular text-ink-900">{formatMoney(z.fee)}</span>
 
-                <div className="min-w-0 flex-1 text-xs text-sand-600">
+                <div className="min-w-0 flex-1 text-xs text-ink-500">
                   {z.minOrderFree != null && (
                     <span className="me-3">مجاني فوق {formatMoney(z.minOrderFree)}</span>
                   )}

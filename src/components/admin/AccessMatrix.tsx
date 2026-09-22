@@ -60,7 +60,7 @@ export function AccessMatrix({ members, canManage }: {
   return (
     <div>
       {canManage && (
-        <div className="border-b border-sand-200 px-4 py-3">
+        <div className="border-b border-ink-200 px-4 py-3">
           <Button size="sm" icon={<UserPlus size={15} />}
                   onClick={() => setAdding(true)}>
             إضافة موظف
@@ -71,15 +71,15 @@ export function AccessMatrix({ members, canManage }: {
       <div className="overflow-x-auto">
         <table className="w-full min-w-[46rem] text-sm">
           <thead>
-            <tr className="border-b border-sand-200 bg-sand-50 text-start">
-              <th className="px-4 py-2.5 text-start font-bold text-navy-700">الموظف</th>
-              <th className="px-4 py-2.5 text-start font-bold text-navy-700">الحالة</th>
-              <th className="px-4 py-2.5 text-start font-bold text-navy-700">الصلاحيات</th>
-              <th className="px-4 py-2.5 text-start font-bold text-navy-700">آخر نشاط</th>
+            <tr className="border-b border-ink-200 bg-ink-50 text-start">
+              <th className="px-4 py-2.5 text-start font-bold text-ink-700">الموظف</th>
+              <th className="px-4 py-2.5 text-start font-bold text-ink-700">الحالة</th>
+              <th className="px-4 py-2.5 text-start font-bold text-ink-700">الصلاحيات</th>
+              <th className="px-4 py-2.5 text-start font-bold text-ink-700">آخر نشاط</th>
               {canManage && <th className="px-4 py-2.5" />}
             </tr>
           </thead>
-          <tbody className="divide-y divide-sand-200">
+          <tbody className="divide-y divide-ink-200">
             {members.map((m) => (
               <MemberRow key={m.memberId} member={m} canManage={canManage}
                          onEdit={() => setEditing(m)} />
@@ -110,9 +110,9 @@ function MemberRow({ member, canManage, onEdit }: {
   return (
     <tr className="align-top">
       <td className="px-4 py-3">
-        <p className="font-bold text-navy-900">
+        <p className="font-bold text-ink-900">
           {member.displayName}
-          {member.isMe && <span className="text-xs text-sand-600"> (أنت)</span>}
+          {member.isMe && <span className="text-xs text-ink-500"> (أنت)</span>}
         </p>
         {member.isOwner && <Badge tone="gold" className="mt-1">مالك المنصة</Badge>}
         {error && (
@@ -127,7 +127,7 @@ function MemberRow({ member, canManage, onEdit }: {
         <Badge tone={member.status === 'active' ? 'success' : 'neutral'}>
           {member.status === 'active' ? 'نشط' : 'موقوف'}
         </Badge>
-        <p className="mt-1 flex items-center gap-1 text-[11px] text-sand-600">
+        <p className="mt-1 flex items-center gap-1 text-[11px] text-ink-500">
           {member.mfaRequired
             ? <><ShieldCheck size={11} />تحقق بخطوتين إلزامي</>
             : <><ShieldOff size={11} className="text-[--color-danger]" />بلا تحقق</>}
@@ -136,24 +136,24 @@ function MemberRow({ member, canManage, onEdit }: {
 
       <td className="px-4 py-3">
         {member.isOwner ? (
-          <span className="text-xs text-sand-600">كل الأقسام</span>
+          <span className="text-xs text-ink-500">كل الأقسام</span>
         ) : sections.length === 0 ? (
-          <span className="text-xs text-sand-600">لا صلاحيات</span>
+          <span className="text-xs text-ink-500">لا صلاحيات</span>
         ) : (
           <div className="flex flex-wrap gap-1">
             {sections.map(([section, level]) => (
               <span key={section}
-                    className="rounded-full bg-sand-100 px-2 py-0.5 text-[11px]
-                               font-bold text-navy-700">
+                    className="rounded-full bg-ink-100 px-2 py-0.5 text-[11px]
+                               font-bold text-ink-700">
                 {ADMIN_SECTION_LABELS[section as AdminSection] ?? section}
-                <span className="text-sand-600"> · {LEVEL_LABEL[level] ?? level}</span>
+                <span className="text-ink-500"> · {LEVEL_LABEL[level] ?? level}</span>
               </span>
             ))}
           </div>
         )}
       </td>
 
-      <td className="px-4 py-3 text-xs text-sand-600">
+      <td className="px-4 py-3 text-xs text-ink-500">
         {formatDateTime(member.lastActiveAt)}
       </td>
 
@@ -212,10 +212,10 @@ function MemberEditor({ member, onDone }: {
   return (
     <div className="space-y-5 p-5">
       <div>
-        <h3 className="font-bold text-navy-900">
+        <h3 className="font-bold text-ink-900">
           {member ? `صلاحيات ${member.displayName}` : 'موظف جديد'}
         </h3>
-        <p className="mt-0.5 text-sm text-sand-600">
+        <p className="mt-0.5 text-sm text-ink-500">
           الصلاحيات تُستبدل بالكامل عند الحفظ — ما لا تختاره هنا يُرفع،
           فلا تبقى صلاحية قديمة منسيّة. والتحقق بخطوتين يُفرض على كل
           حساب إدارة جديد (D28).
@@ -223,8 +223,8 @@ function MemberEditor({ member, onDone }: {
       </div>
 
       {!member && (
-        <div className="space-y-3 rounded-[--radius-md] border border-sand-200 p-4">
-          <p className="text-[13px] font-bold text-navy-700">
+        <div className="space-y-3 rounded-[--radius-md] border border-ink-200 p-4">
+          <p className="text-[13px] font-bold text-ink-700">
             اختر حسابًا مسجَّلًا لترقيته
           </p>
           <div className="flex items-end gap-2">
@@ -237,8 +237,8 @@ function MemberEditor({ member, onDone }: {
           </div>
 
           {found.length > 0 && (
-            <ul className="divide-y divide-sand-200 rounded-[--radius-md]
-                           border border-sand-200">
+            <ul className="divide-y divide-ink-200 rounded-[--radius-md]
+                           border border-ink-200">
               {found.map((u) => (
                 <li key={u.profileId}>
                   <button type="button"
@@ -247,16 +247,16 @@ function MemberEditor({ member, onDone }: {
                             setName(u.name ?? u.email ?? '');
                           }}
                           className={`flex w-full items-center gap-2 px-3 py-2.5
-                                      text-start text-sm hover:bg-sand-50
-                                      ${profileId === u.profileId ? 'bg-nile-50' : ''}`}>
+                                      text-start text-sm hover:bg-ink-50
+                                      ${profileId === u.profileId ? 'bg-teal-50' : ''}`}>
                     {profileId === u.profileId && (
-                      <Check size={14} className="text-nile-600" />
+                      <Check size={14} className="text-teal-700" />
                     )}
                     <span className="flex-1">
-                      <span className="block font-bold text-navy-900">
+                      <span className="block font-bold text-ink-900">
                         {u.name ?? 'بلا اسم'}
                       </span>
-                      <span className="block text-xs text-sand-600" dir="ltr">
+                      <span className="block text-xs text-ink-500" dir="ltr">
                         {u.email}
                       </span>
                     </span>

@@ -7,9 +7,9 @@ export const metadata: Metadata = { title: 'تأكيد البريد الإلكت
 export default function VerifyEmailPage() {
   return (
     <div className="mx-auto max-w-md px-4 py-16 text-center">
-      <MailCheck className="mx-auto text-nile-500" size={40} strokeWidth={1.5} />
-      <h1 className="mt-4 text-2xl font-extrabold text-navy-900">أكّد بريدك الإلكتروني</h1>
-      <p className="mt-2 text-sm text-sand-600">
+      <MailCheck className="mx-auto text-teal-700" size={40} strokeWidth={1.5} />
+      <h1 className="mt-4 text-2xl font-extrabold text-ink-900">أكّد بريدك الإلكتروني</h1>
+      <p className="mt-2 text-sm text-ink-500">
         أرسلنا رابط تأكيد إلى بريدك. افتحه لتفعيل حسابك.
         لم تستلم الرسالة؟ أعد الإرسال أدناه.
       </p>

@@ -19,13 +19,13 @@ export default async function ImportProductsPage() {
   return (
     <div className="space-y-5">
       <Link href="/dashboard/products"
-            className="inline-flex items-center gap-1 text-sm font-bold text-sand-600
-                       hover:text-nile-600">
+            className="inline-flex items-center gap-1 text-sm font-bold text-ink-500
+                       hover:text-teal-700">
         <ChevronRight size={15} /> المنتجات
       </Link>
       <div>
-        <h1 className="text-xl font-extrabold text-navy-900">استيراد المنتجات</h1>
-        <p className="text-sm text-sand-600">
+        <h1 className="text-xl font-extrabold text-ink-900">استيراد المنتجات</h1>
+        <p className="text-sm text-ink-500">
           ارفع ملفك، راجع ما سيُستورَد، ثم أكّد. المنتجات تُضاف كمسودّات.
         </p>
       </div>

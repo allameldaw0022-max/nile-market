@@ -24,8 +24,8 @@ export default async function SubscriptionPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-extrabold text-navy-900">الاشتراك</h1>
-        <p className="text-sm text-sand-600">
+        <h1 className="text-xl font-extrabold text-ink-900">الاشتراك</h1>
+        <p className="text-sm text-ink-500">
           الدفع بتحويل يدوي يراجعه فريقنا — لا تجديد آلي ولا خصم من بطاقة.
         </p>
       </div>

@@ -52,10 +52,10 @@ export default async function DashboardHome() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-extrabold text-navy-900">
+        <h1 className="text-xl font-extrabold text-ink-900">
           أهلًا{actor.fullName ? `، ${actor.fullName.split(' ')[0]}` : ''}
         </h1>
-        <p className="text-sm text-sand-600">ملخص متجرك اليوم.</p>
+        <p className="text-sm text-ink-500">ملخص متجرك اليوم.</p>
       </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -76,9 +76,9 @@ export default async function DashboardHome() {
 
       {can(membership, 'orders:view') && (
         <Card>
-          <div className="flex items-center justify-between border-b border-sand-200 px-5 py-4">
-            <h2 className="font-bold text-navy-900">أحدث الطلبات</h2>
-            <Link href="/dashboard/orders" className="text-sm font-bold text-nile-600 hover:underline">
+          <div className="flex items-center justify-between border-b border-ink-200 px-5 py-4">
+            <h2 className="font-bold text-ink-900">أحدث الطلبات</h2>
+            <Link href="/dashboard/orders" className="text-sm font-bold text-teal-700 hover:underline">
               عرض الكل
             </Link>
           </div>
@@ -92,18 +92,18 @@ export default async function DashboardHome() {
               />
             </div>
           ) : (
-            <ul className="divide-y divide-sand-200">
+            <ul className="divide-y divide-ink-200">
               {orders.data.map((o) => (
                 <li key={o.id}>
                   <Link href={`/dashboard/orders/${o.id}`}
-                        className="flex items-center gap-3 px-5 py-3.5 hover:bg-sand-50">
+                        className="flex items-center gap-3 px-5 py-3.5 hover:bg-ink-50">
                     <div className="min-w-0 flex-1">
-                      <p className="font-bold text-navy-900 tabular">{o.order_number}</p>
-                      <p className="truncate text-xs text-sand-600">
+                      <p className="font-bold text-ink-900 tabular">{o.order_number}</p>
+                      <p className="truncate text-xs text-ink-500">
                         {o.contact_name} · {formatDate(o.created_at)}
                       </p>
                     </div>
-                    <span className="font-bold text-navy-900 tabular">{formatMoney(o.total)}</span>
+                    <span className="font-bold text-ink-900 tabular">{formatMoney(o.total)}</span>
                     <StatusChip map={ORDER_STATUS} value={o.status} />
                   </Link>
                 </li>

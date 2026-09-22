@@ -98,8 +98,8 @@ export function DomainManager({ storeId, domains, canManage, rootDomain }: {
       )}
 
       {notice && (
-        <div role="status" className="rounded-[--radius-md] border border-nile-300
-                        bg-[--color-info-bg] p-3 text-sm text-navy-700">
+        <div role="status" className="rounded-[--radius-md] border border-teal-300
+                        bg-[--color-teal-50] p-3 text-sm text-ink-700">
           {notice}
         </div>
       )}
@@ -115,13 +115,13 @@ export function DomainManager({ storeId, domains, canManage, rootDomain }: {
           return (
             <li key={domain.id}>
               <Card>
-                <div className="flex flex-wrap items-center gap-3 border-b border-sand-200
+                <div className="flex flex-wrap items-center gap-3 border-b border-ink-200
                                 px-5 py-4">
-                  <Globe size={18} className="text-sand-500" />
+                  <Globe size={18} className="text-ink-500" />
                   <a href={`https://${domain.hostname}`} target="_blank"
                      rel="noopener noreferrer" dir="ltr"
-                     className="min-w-0 flex-1 truncate font-bold text-navy-900
-                                hover:text-nile-600">
+                     className="min-w-0 flex-1 truncate font-bold text-ink-900
+                                hover:text-teal-700">
                     {domain.hostname}
                     <ExternalLink size={12} className="ms-1 inline" />
                   </a>
@@ -134,12 +134,12 @@ export function DomainManager({ storeId, domains, canManage, rootDomain }: {
 
                 <div className="space-y-4 px-5 py-4">
                   {needsDns && (
-                    <div className="space-y-3 rounded-[--radius-md] border border-sand-200
-                                    bg-sand-50 p-4">
-                      <p className="text-sm font-bold text-navy-900">
+                    <div className="space-y-3 rounded-[--radius-md] border border-ink-200
+                                    bg-ink-50 p-4">
+                      <p className="text-sm font-bold text-ink-900">
                         أضف سجل TXT التالي عند مزوّد الدومين
                       </p>
-                      <p className="text-xs text-sand-600">
+                      <p className="text-xs text-ink-500">
                         ننشر التوكن على اسم فرعي مستقل حتى لا نمسّ سجلات
                         الجذر (مثل SPF) فيتعطّل بريدك.
                       </p>
@@ -152,8 +152,8 @@ export function DomainManager({ storeId, domains, canManage, rootDomain }: {
                               onCopy={() => copy(txtValue, `${domain.id}-value`)}
                               copied={copied === `${domain.id}-value`} />
 
-                      <p className="border-t border-sand-200 pt-3 text-sm font-bold
-                                    text-navy-900">
+                      <p className="border-t border-ink-200 pt-3 text-sm font-bold
+                                    text-ink-900">
                         ثم وجّه الدومين إلى المنصة
                       </p>
                       <DnsRow label="النوع" value="CNAME" />
@@ -168,7 +168,7 @@ export function DomainManager({ storeId, domains, canManage, rootDomain }: {
                         </p>
                       )}
                       {domain.lastCheckedAt && (
-                        <p className="text-xs text-sand-600">
+                        <p className="text-xs text-ink-500">
                           آخر فحص: {formatDateTime(domain.lastCheckedAt)}
                         </p>
                       )}
@@ -246,13 +246,13 @@ function DnsRow({ label, value, onCopy, copied }: {
 }) {
   return (
     <div className="flex items-center gap-2 text-sm">
-      <span className="w-16 shrink-0 text-xs font-bold text-sand-600">{label}</span>
+      <span className="w-16 shrink-0 text-xs font-bold text-ink-500">{label}</span>
       <code className="min-w-0 flex-1 truncate rounded bg-white px-2 py-1.5
-                       text-xs text-navy-900" dir="ltr">{value}</code>
+                       text-xs text-ink-900" dir="ltr">{value}</code>
       {onCopy && (
         <button type="button" onClick={onCopy}
                 aria-label={`نسخ ${label}`}
-                className="rounded p-1.5 text-sand-600 hover:bg-white hover:text-nile-600">
+                className="rounded p-1.5 text-ink-500 hover:bg-white hover:text-teal-700">
           {copied ? <Check size={14} className="text-[--color-success]" /> : <Copy size={14} />}
         </button>
       )}

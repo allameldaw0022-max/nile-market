@@ -66,8 +66,8 @@ export default async function AdminPlansPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-extrabold text-navy-900">الباقات والحدود</h1>
-        <p className="text-sm text-sand-600">
+        <h1 className="text-xl font-extrabold text-ink-900">الباقات والحدود</h1>
+        <p className="text-sm text-ink-500">
           لا يفترض النظام سعرًا ولا حدًّا لم تضبطه هنا (D18)، والإطلاق التجاري
           لا يُفعَّل حتى تكتمل القيم (D31).
         </p>

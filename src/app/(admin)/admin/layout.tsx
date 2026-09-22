@@ -62,14 +62,14 @@ export default async function AdminLayout({ children }: LayoutProps<'/admin'>) {
     .is('read_at', null);
 
   return (
-    <div className="flex min-h-screen flex-col bg-sand-50">
+    <div className="flex min-h-screen flex-col bg-ink-50">
       <SkipLink />
-      <header className="sticky top-0 z-40 border-b border-navy-700 bg-navy-900">
+      <header className="sticky top-0 z-40 border-b border-ink-700 bg-ink-900">
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4">
           <Link href="/admin"
                 className="inline-flex items-center gap-2 font-extrabold text-white">
             <ShieldCheck size={20} className="text-gold-500" />
-            إدارة نايل ماركت
+            إدارة سوق النيل
           </Link>
 
           <Badge tone="gold" className="hidden sm:inline-flex">

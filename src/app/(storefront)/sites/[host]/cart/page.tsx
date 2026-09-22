@@ -24,7 +24,7 @@ export default async function CartPage({ params }: PageProps<'/sites/[host]/cart
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-6">
-      <h1 className="text-xl font-extrabold text-navy-900">سلة التسوّق</h1>
+      <h1 className="text-xl font-extrabold text-ink-900">سلة التسوّق</h1>
       <div className="mt-5">
         <CartView host={host} lines={lines} canCheckout={store.canCheckout}
                   quote={quote.ok ? quote.data : null} />

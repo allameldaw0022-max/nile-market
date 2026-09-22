@@ -32,19 +32,19 @@ export default async function SecurityPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-5 px-4 py-8">
       <div>
-        <h1 className="text-xl font-extrabold text-navy-900">مركز الأمان</h1>
-        <p className="text-sm text-sand-600">إدارة حماية حسابك وجلساتك.</p>
+        <h1 className="text-xl font-extrabold text-ink-900">مركز الأمان</h1>
+        <p className="text-sm text-ink-500">إدارة حماية حسابك وجلساتك.</p>
       </div>
 
       <Card>
         <CardHeader title="الحساب" />
-        <dl className="divide-y divide-sand-200 text-sm">
+        <dl className="divide-y divide-ink-200 text-sm">
           <div className="flex items-center justify-between px-5 py-3">
-            <dt className="text-sand-600">البريد الإلكتروني</dt>
-            <dd className="font-bold text-navy-900" dir="ltr">{actor.email}</dd>
+            <dt className="text-ink-500">البريد الإلكتروني</dt>
+            <dd className="font-bold text-ink-900" dir="ltr">{actor.email}</dd>
           </div>
           <div className="flex items-center justify-between px-5 py-3">
-            <dt className="text-sand-600">تأكيد البريد</dt>
+            <dt className="text-ink-500">تأكيد البريد</dt>
             <dd>
               {actor.emailVerified
                 ? <Badge tone="success">مؤكَّد</Badge>
@@ -52,7 +52,7 @@ export default async function SecurityPage() {
             </dd>
           </div>
           <div className="flex items-center justify-between px-5 py-3">
-            <dt className="text-sand-600">حالة الحساب</dt>
+            <dt className="text-ink-500">حالة الحساب</dt>
             <dd>
               <Badge tone={actor.accountStatus === 'active' ? 'success' : 'danger'}>
                 {actor.accountStatus === 'active' ? 'نشط'
@@ -61,7 +61,7 @@ export default async function SecurityPage() {
             </dd>
           </div>
           <div className="flex items-center justify-between px-5 py-3">
-            <dt className="text-sand-600">مستوى التحقق في هذه الجلسة</dt>
+            <dt className="text-ink-500">مستوى التحقق في هذه الجلسة</dt>
             <dd>
               <Badge tone={actor.aal === 'aal2' ? 'success' : 'neutral'}>
                 {actor.aal === 'aal2' ? 'تحقق بخطوتين' : 'كلمة مرور'}
@@ -84,19 +84,19 @@ export default async function SecurityPage() {
           action={<SignOutAllButton />}
         />
         {!sessions || sessions.length === 0 ? (
-          <p className="px-5 py-8 text-center text-sm text-sand-600">
+          <p className="px-5 py-8 text-center text-sm text-ink-500">
             لا توجد عمليات دخول مسجّلة بعد.
           </p>
         ) : (
-          <ul className="divide-y divide-sand-200">
+          <ul className="divide-y divide-ink-200">
             {sessions.map((s) => (
               <li key={s.id} className="flex items-center gap-3 px-5 py-3.5">
-                <Monitor size={18} className="shrink-0 text-sand-400" />
+                <Monitor size={18} className="shrink-0 text-ink-400" />
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-bold text-navy-900">
+                  <p className="text-sm font-bold text-ink-900">
                     {s.device_label ?? 'جهاز غير معروف'}
                   </p>
-                  <p className="text-xs text-sand-600">
+                  <p className="text-xs text-ink-500">
                     {formatDateTime(s.last_active_at)}
                     {s.session_id && ` · ${
                       { password: 'كلمة مرور', oauth: 'حساب Google',
@@ -115,8 +115,8 @@ export default async function SecurityPage() {
 
       <Card className="p-5">
         <div className="flex items-start gap-3">
-          <ShieldCheck className="mt-0.5 shrink-0 text-nile-500" size={20} />
-          <p className="text-sm text-sand-600">
+          <ShieldCheck className="mt-0.5 shrink-0 text-teal-700" size={20} />
+          <p className="text-sm text-ink-500">
             لا نطلب كلمة مرورك عبر البريد أو واتساب أبدًا. إن وصلتك رسالة
             تطلبها فهي ليست منّا.
           </p>

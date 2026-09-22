@@ -55,8 +55,8 @@ export function AdminTicketView({ ticket, canEdit, assignees }: {
       <Card className="p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
-            <h1 className="font-extrabold text-navy-900">{ticket.subject}</h1>
-            <p className="text-xs text-sand-600">
+            <h1 className="font-extrabold text-ink-900">{ticket.subject}</h1>
+            <p className="text-xs text-ink-500">
               <span className="tabular" dir="ltr">{ticket.ticket_number}</span>
               {' · '}{TICKET_CATEGORY_LABEL[ticket.category] ?? ticket.category}
               {' · '}{ticket.requester_name ?? 'بلا اسم'}
@@ -73,7 +73,7 @@ export function AdminTicketView({ ticket, canEdit, assignees }: {
         </div>
 
         {canEdit && (
-          <div className="mt-4 grid gap-3 border-t border-sand-200 pt-4 sm:grid-cols-3">
+          <div className="mt-4 grid gap-3 border-t border-ink-200 pt-4 sm:grid-cols-3">
             <Select label="الحالة" defaultValue={ticket.status} disabled={pending}
                     onChange={(e) => run(() => changeTicketStatus({
                       ticketId: ticket.id, status: e.target.value,
@@ -116,30 +116,30 @@ export function AdminTicketView({ ticket, canEdit, assignees }: {
 
       <Card className="overflow-hidden">
         <CardHeader title="المحادثة" description="ما يراه صاحب التذكرة." />
-        <ul className="divide-y divide-sand-200">
+        <ul className="divide-y divide-ink-200">
           {ticket.messages.map((m) => (
             <li key={m.id} className="flex gap-3 px-5 py-4">
               <span className={`mt-0.5 flex size-7 shrink-0 items-center justify-center
                                 rounded-full ${m.author_kind === 'staff'
-                                  ? 'bg-nile-100 text-nile-700'
-                                  : 'bg-sand-100 text-sand-700'}`}>
+                                  ? 'bg-teal-100 text-teal-700'
+                                  : 'bg-ink-100 text-ink-600'}`}>
                 {m.author_kind === 'staff' ? <Headset size={14} /> : <User size={14} />}
               </span>
               <div className="min-w-0 flex-1">
-                <p className="text-xs text-sand-600">
+                <p className="text-xs text-ink-500">
                   {m.author_kind === 'staff' ? 'فريق الدعم'
                     : m.author_kind === 'system' ? 'النظام'
                     : (m.author_name ?? 'صاحب التذكرة')}
                   {' · '}{formatDateTime(m.created_at)}
                 </p>
-                <p className="mt-1 whitespace-pre-line text-sm text-navy-900">{m.body}</p>
+                <p className="mt-1 whitespace-pre-line text-sm text-ink-900">{m.body}</p>
               </div>
             </li>
           ))}
         </ul>
 
         {canEdit && !isClosed && (
-          <div className="space-y-2 border-t border-sand-200 p-4">
+          <div className="space-y-2 border-t border-ink-200 p-4">
             <Textarea value={reply} onChange={(e) => setReply(e.target.value)}
                       aria-label="ردّ يصل صاحب التذكرة"
                       placeholder="ردّ يصل صاحب التذكرة…" />
@@ -154,7 +154,7 @@ export function AdminTicketView({ ticket, canEdit, assignees }: {
         )}
 
         {isClosed && (
-          <p className="border-t border-sand-200 px-5 py-4 text-sm text-sand-600">
+          <p className="border-t border-ink-200 px-5 py-4 text-sm text-ink-500">
             التذكرة مغلقة — لا رد عليها. يفتح صاحبها تذكرة جديدة عند الحاجة.
           </p>
         )}
@@ -167,17 +167,17 @@ export function AdminTicketView({ ticket, canEdit, assignees }: {
           action={<Badge tone="gold" icon={<Lock size={11} />}>داخلي</Badge>}
         />
         {ticket.notes.length === 0 ? (
-          <p className="px-5 py-4 text-sm text-sand-600">لا ملاحظات.</p>
+          <p className="px-5 py-4 text-sm text-ink-500">لا ملاحظات.</p>
         ) : (
-          <ul className="divide-y divide-sand-200">
+          <ul className="divide-y divide-ink-200">
             {ticket.notes.map((n) => (
-              <li key={n.id} className="flex gap-3 bg-gold-400/5 px-5 py-3.5">
+              <li key={n.id} className="flex gap-3 bg-gold-300/5 px-5 py-3.5">
                 <StickyNote size={15} className="mt-0.5 shrink-0 text-gold-700" />
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs text-sand-600">
+                  <p className="text-xs text-ink-500">
                     {n.author_name ?? 'موظف'} · {formatDateTime(n.created_at)}
                   </p>
-                  <p className="mt-1 whitespace-pre-line text-sm text-navy-900">
+                  <p className="mt-1 whitespace-pre-line text-sm text-ink-900">
                     {n.body}
                   </p>
                 </div>
@@ -187,7 +187,7 @@ export function AdminTicketView({ ticket, canEdit, assignees }: {
         )}
 
         {canEdit && (
-          <div className="space-y-2 border-t border-sand-200 p-4">
+          <div className="space-y-2 border-t border-ink-200 p-4">
             <Textarea value={note} onChange={(e) => setNote(e.target.value)}
                       aria-label="ملاحظة داخلية"
                       placeholder="ملاحظة للفريق — لا يراها العميل…" />
@@ -205,19 +205,19 @@ export function AdminTicketView({ ticket, canEdit, assignees }: {
       {ticket.events.length > 0 && (
         <Card className="overflow-hidden">
           <CardHeader title="سجل التذكرة" />
-          <ul className="divide-y divide-sand-200">
+          <ul className="divide-y divide-ink-200">
             {ticket.events.map((e, i) => (
               <li key={`${e.event}-${e.created_at}-${i}`}
                   className="flex flex-wrap items-center gap-x-3 px-5 py-2.5 text-xs">
-                <span dir="ltr" className="font-mono font-bold text-navy-900">
+                <span dir="ltr" className="font-mono font-bold text-ink-900">
                   {e.event}
                 </span>
                 {e.to_value && (
-                  <span className="text-sand-600">
+                  <span className="text-ink-500">
                     {e.from_value ?? '—'} ← {e.to_value}
                   </span>
                 )}
-                <span className="ms-auto text-sand-600">
+                <span className="ms-auto text-ink-500">
                   {e.actor_name ?? 'النظام'} · {formatDateTime(e.created_at)}
                 </span>
               </li>

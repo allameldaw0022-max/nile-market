@@ -3,12 +3,12 @@ import type { StatusTone } from '@/lib/status';
 import type { ReactNode } from 'react';
 
 const TONES: Record<StatusTone, string> = {
-  neutral: 'bg-sand-100 text-sand-800 border-sand-200',
-  info:    'bg-[--color-info-bg] text-nile-700 border-nile-200',
+  neutral: 'bg-ink-100 text-ink-700 border-ink-200',
+  info:    'bg-[--color-teal-50] text-teal-700 border-teal-200',
   success: 'bg-[--color-success-bg] text-[--color-success] border-[--color-success]/25',
   warning: 'bg-[--color-warning-bg] text-gold-700 border-gold-500/30',
   danger:  'bg-[--color-danger-bg] text-[--color-danger] border-[--color-danger]/25',
-  gold:    'bg-gold-400/15 text-gold-700 border-gold-500/30',
+  gold:    'bg-gold-300/15 text-gold-700 border-gold-500/30',
 };
 
 /**

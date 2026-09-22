@@ -59,11 +59,11 @@ export default async function CheckoutPage({ params }: PageProps<'/sites/[host]/
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-6">
-      <h1 className="text-xl font-extrabold text-navy-900">إتمام الطلب</h1>
+      <h1 className="text-xl font-extrabold text-ink-900">إتمام الطلب</h1>
 
       {!store.canCheckout && (
-        <p role="alert" className="mt-4 rounded-[--radius-md] border border-sand-300
-                        bg-sand-100 p-4 text-sm font-bold text-sand-700">
+        <p role="alert" className="mt-4 rounded-[--radius-md] border border-ink-300
+                        bg-ink-100 p-4 text-sm font-bold text-ink-600">
           هذا المتجر غير متاح للشراء حاليًا. يمكنك التواصل معه عبر واتساب.
         </p>
       )}

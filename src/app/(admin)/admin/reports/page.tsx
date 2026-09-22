@@ -40,8 +40,8 @@ export default async function AdminReportsPage(
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-extrabold text-navy-900">التقارير</h1>
-        <p className="text-sm text-sand-600">
+        <h1 className="text-xl font-extrabold text-ink-900">التقارير</h1>
+        <p className="text-sm text-ink-500">
           منذ {formatDate(r.from)} — {days} يومًا.
         </p>
       </div>
@@ -51,8 +51,8 @@ export default async function AdminReportsPage(
           <Link key={d} href={`/admin/reports?days=${d}`}
                 className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-bold
                             ${d === days
-                              ? 'border-nile-500 bg-nile-500 text-white'
-                              : 'border-sand-300 bg-white text-sand-700 hover:border-nile-400'}`}>
+                              ? 'border-teal-600 bg-teal-600 text-white'
+                              : 'border-ink-300 bg-white text-ink-600 hover:border-teal-400'}`}>
             {d} يومًا
           </Link>
         ))}
@@ -83,16 +83,16 @@ export default async function AdminReportsPage(
       <Card className="overflow-hidden">
         <CardHeader title="الاشتراكات المعتمدة حسب الباقة" />
         {r.by_plan.length === 0 ? (
-          <p className="px-5 py-4 text-sm text-sand-600">لا اشتراكات معتمدة في المدة.</p>
+          <p className="px-5 py-4 text-sm text-ink-500">لا اشتراكات معتمدة في المدة.</p>
         ) : (
-          <ul className="divide-y divide-sand-200">
+          <ul className="divide-y divide-ink-200">
             {r.by_plan.map((p) => (
               <li key={p.plan} className="flex items-center gap-4 px-5 py-3">
-                <span className="flex-1 font-bold text-navy-900">{p.plan}</span>
-                <span className="text-sm tabular text-sand-700">
+                <span className="flex-1 font-bold text-ink-900">{p.plan}</span>
+                <span className="text-sm tabular text-ink-600">
                   {formatNumber(p.count)} اشتراك
                 </span>
-                <span className="font-bold tabular text-navy-900">
+                <span className="font-bold tabular text-ink-900">
                   {formatMoney(p.amount)}
                 </span>
               </li>
@@ -104,16 +104,16 @@ export default async function AdminReportsPage(
       <Card className="overflow-hidden">
         <CardHeader title="أنشط المتاجر" description="بحسب قيمة الطلبات في المدة." />
         {r.top_stores.length === 0 ? (
-          <p className="px-5 py-4 text-sm text-sand-600">لا طلبات في المدة.</p>
+          <p className="px-5 py-4 text-sm text-ink-500">لا طلبات في المدة.</p>
         ) : (
-          <ul className="divide-y divide-sand-200">
+          <ul className="divide-y divide-ink-200">
             {r.top_stores.map((s) => (
               <li key={s.store} className="flex items-center gap-4 px-5 py-3">
-                <span className="flex-1 truncate font-bold text-navy-900">{s.store}</span>
-                <span className="text-sm tabular text-sand-700">
+                <span className="flex-1 truncate font-bold text-ink-900">{s.store}</span>
+                <span className="text-sm tabular text-ink-600">
                   {formatNumber(s.orders)} طلب
                 </span>
-                <span className="font-bold tabular text-navy-900">
+                <span className="font-bold tabular text-ink-900">
                   {formatMoney(s.amount)}
                 </span>
               </li>
@@ -141,19 +141,19 @@ function Series({ title, points, money = false }: {
     <Card className="overflow-hidden">
       <CardHeader title={title} />
       {points.length === 0 ? (
-        <p className="px-5 py-4 text-sm text-sand-600">لا بيانات في المدة.</p>
+        <p className="px-5 py-4 text-sm text-ink-500">لا بيانات في المدة.</p>
       ) : (
         <ul className="max-h-72 space-y-1.5 overflow-y-auto p-4">
           {points.map((p, i) => {
             const value = values[i];
             return (
               <li key={p.date} className="flex items-center gap-2 text-xs">
-                <span className="w-24 shrink-0 text-sand-600">{formatDate(p.date)}</span>
-                <span className="h-2.5 flex-1 rounded-full bg-sand-100">
-                  <span className="block h-2.5 rounded-full bg-nile-500"
+                <span className="w-24 shrink-0 text-ink-500">{formatDate(p.date)}</span>
+                <span className="h-2.5 flex-1 rounded-full bg-ink-100">
+                  <span className="block h-2.5 rounded-full bg-teal-600"
                         style={{ width: `${Math.max(2, (value / max) * 100)}%` }} />
                 </span>
-                <span className="w-24 shrink-0 text-end font-bold tabular text-navy-900">
+                <span className="w-24 shrink-0 text-end font-bold tabular text-ink-900">
                   {money ? formatMoney(value) : formatNumber(value)}
                 </span>
               </li>

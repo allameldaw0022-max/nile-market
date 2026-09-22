@@ -76,8 +76,8 @@ export default async function AdminRefundsPage(
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-extrabold text-navy-900">الاستردادات</h1>
-        <p className="text-sm text-sand-600">
+        <h1 className="text-xl font-extrabold text-ink-900">الاستردادات</h1>
+        <p className="text-sm text-ink-500">
           {formatNumber(total)} طلب — مَن بادر بالطلب لا يسجّله، ومَن سجّله
           لا يعتمده (D30).
         </p>
@@ -98,26 +98,26 @@ export default async function AdminRefundsPage(
         <Card className="overflow-hidden">
           <CardHeader title="طلبات الاسترداد"
                       description="الإتمام يقيّد الاسترداد في الدفتر ويعكس عمولة الشريك." />
-          <ul className="divide-y divide-sand-200">
+          <ul className="divide-y divide-ink-200">
             {rows.map((r) => {
               const s = STATUS[r.status] ?? { label: r.status, tone: 'warning' as const };
               return (
                 <li key={r.refund_id}
                     className="flex flex-wrap items-center gap-x-4 gap-y-3 px-4 py-4">
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-bold text-navy-900">
+                    <p className="truncate font-bold text-ink-900">
                       {r.store_name ?? 'المنصة'}
-                      <span className="ms-2 text-xs font-medium text-sand-600">
+                      <span className="ms-2 text-xs font-medium text-ink-500">
                         {r.kind === 'subscription' ? 'اشتراك' : 'طلب متجر'}
                         {r.order_number && ` · ${r.order_number}`}
                       </span>
                     </p>
-                    <p className="truncate text-xs text-sand-600">
+                    <p className="truncate text-xs text-ink-500">
                       {r.reason} · {formatDateTime(r.created_at)}
                     </p>
                   </div>
 
-                  <span className="font-extrabold tabular text-navy-900">
+                  <span className="font-extrabold tabular text-ink-900">
                     {formatMoney(r.amount)}
                   </span>
                   <Badge tone={s.tone}>{s.label}</Badge>
@@ -144,7 +144,7 @@ export default async function AdminRefundsPage(
               <Button variant="outline" size="sm">السابق</Button>
             </Link>
           )}
-          <span className="text-sm text-sand-600 tabular">صفحة {page} من {pages}</span>
+          <span className="text-sm text-ink-500 tabular">صفحة {page} من {pages}</span>
           {page < pages && (
             <Link href={qs({ page: page + 1 })}>
               <Button variant="outline" size="sm">التالي</Button>
@@ -158,5 +158,5 @@ export default async function AdminRefundsPage(
 
 const chip = (active: boolean) =>
   `shrink-0 rounded-full border px-3 py-1.5 text-xs font-bold ${active
-    ? 'border-nile-500 bg-nile-500 text-white'
-    : 'border-sand-300 bg-white text-sand-700 hover:border-nile-400'}`;
+    ? 'border-teal-600 bg-teal-600 text-white'
+    : 'border-ink-300 bg-white text-ink-600 hover:border-teal-400'}`;

@@ -27,14 +27,14 @@ export default async function PoliciesPage() {
   return (
     <div className="space-y-5">
       <Link href="/dashboard/settings"
-            className="inline-flex items-center gap-1 text-sm font-bold text-sand-600
-                       hover:text-nile-600">
+            className="inline-flex items-center gap-1 text-sm font-bold text-ink-500
+                       hover:text-teal-700">
         <ChevronRight size={15} /> الإعدادات
       </Link>
 
       <div>
-        <h1 className="text-xl font-extrabold text-navy-900">سياسات المتجر</h1>
-        <p className="text-sm text-sand-600">
+        <h1 className="text-xl font-extrabold text-ink-900">سياسات المتجر</h1>
+        <p className="text-sm text-ink-500">
           تظهر في صفحات متجرك. السياسة التي تتركها فارغة لا تُعرض بنص من عندنا.
         </p>
       </div>

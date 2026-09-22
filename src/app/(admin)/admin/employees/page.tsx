@@ -50,8 +50,8 @@ export default async function AdminEmployeesPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-extrabold text-navy-900">موظفو المنصة</h1>
-        <p className="text-sm text-sand-600">
+        <h1 className="text-xl font-extrabold text-ink-900">موظفو المنصة</h1>
+        <p className="text-sm text-ink-500">
           فصل المهام (D29) يشترط بقاء حسابَي إدارة نشطَين على الأقل —
           حاليًا {active}. القاعدة ترفض الإيقاف الذي ينزل بالعدد دونهما.
         </p>

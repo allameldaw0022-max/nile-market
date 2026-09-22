@@ -72,8 +72,8 @@ export default async function AdminUsersPage(
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-extrabold text-navy-900">المستخدمون</h1>
-        <p className="text-sm text-sand-600 tabular">
+        <h1 className="text-xl font-extrabold text-ink-900">المستخدمون</h1>
+        <p className="text-sm text-ink-500 tabular">
           {formatNumber(Number(total))} حساب
         </p>
       </div>
@@ -82,8 +82,8 @@ export default async function AdminUsersPage(
         <input name="q" defaultValue={term} maxLength={60}
                placeholder="البريد أو الاسم أو الهاتف" aria-label="بحث في الحسابات"
                className="h-10 min-w-52 flex-1 rounded-[--radius-md] border
-                          border-[--color-field-border] bg-white px-3 text-[14px] text-navy-900
-                          placeholder:text-sand-400 focus:border-nile-500" />
+                          border-[--color-ink-400] bg-white px-3 text-[14px] text-ink-900
+                          placeholder:text-ink-400 focus:border-teal-600" />
         <input type="hidden" name="status" value={status} />
         <Button type="submit" variant="outline" size="sm">بحث</Button>
       </form>
@@ -101,7 +101,7 @@ export default async function AdminUsersPage(
                     title="لا حسابات مطابقة" />
       ) : (
         <Card className="overflow-hidden">
-          <ul className="divide-y divide-sand-200">
+          <ul className="divide-y divide-ink-200">
             {rows.map((u) => {
               const s = STATUS[u.account_status]
                 ?? { label: u.account_status, tone: 'neutral' as const };
@@ -109,21 +109,21 @@ export default async function AdminUsersPage(
                 <li key={u.profile_id}
                     className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3.5">
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-bold text-navy-900">
+                    <p className="truncate font-bold text-ink-900">
                       {u.full_name ?? 'بلا اسم'}
                       {u.is_staff && (
                         <Badge tone="gold" className="ms-2">موظف منصة</Badge>
                       )}
                     </p>
-                    <p className="truncate text-xs text-sand-600" dir="ltr">
+                    <p className="truncate text-xs text-ink-500" dir="ltr">
                       {u.email ?? '—'}{u.phone ? ` · ${u.phone}` : ''}
                     </p>
                   </div>
 
-                  <span className="text-xs text-sand-600">
+                  <span className="text-xs text-ink-500">
                     {formatNumber(Number(u.stores_count))} متجر
                   </span>
-                  <span className="text-xs text-sand-600">
+                  <span className="text-xs text-ink-500">
                     انضم {formatDate(u.created_at)}
                   </span>
                   <Badge tone={s.tone}>{s.label}</Badge>
@@ -146,7 +146,7 @@ export default async function AdminUsersPage(
               <Button variant="outline" size="sm">السابق</Button>
             </Link>
           )}
-          <span className="text-sm text-sand-600 tabular">صفحة {page} من {pages}</span>
+          <span className="text-sm text-ink-500 tabular">صفحة {page} من {pages}</span>
           {page < pages && (
             <Link href={qs({ page: page + 1 })}>
               <Button variant="outline" size="sm">التالي</Button>
@@ -160,5 +160,5 @@ export default async function AdminUsersPage(
 
 const chip = (active: boolean) =>
   `shrink-0 rounded-full border px-3 py-1.5 text-xs font-bold ${active
-    ? 'border-nile-500 bg-nile-500 text-white'
-    : 'border-sand-300 bg-white text-sand-700 hover:border-nile-400'}`;
+    ? 'border-teal-600 bg-teal-600 text-white'
+    : 'border-ink-300 bg-white text-ink-600 hover:border-teal-400'}`;

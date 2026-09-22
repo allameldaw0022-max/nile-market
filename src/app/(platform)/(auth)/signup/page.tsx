@@ -12,16 +12,16 @@ export default async function SignupPage() {
 
   return (
     <div className="mx-auto flex max-w-md flex-col justify-center px-4 py-16">
-      <h1 className="text-2xl font-extrabold text-navy-900">أنشئ حسابك</h1>
-      <p className="mt-1 text-sm text-sand-600">
+      <h1 className="text-2xl font-extrabold text-ink-900">أنشئ حسابك</h1>
+      <p className="mt-1 text-sm text-ink-500">
         خطوة واحدة تفصلك عن إنشاء متجرك.
       </p>
       <SignupForm />
-      <p className="mt-6 text-center text-sm text-sand-600">
+      <p className="mt-6 text-center text-sm text-ink-500">
         لديك حساب؟{' '}
-        <Link href="/login" className="font-bold text-nile-600 hover:underline">سجّل الدخول</Link>
+        <Link href="/login" className="font-bold text-teal-700 hover:underline">سجّل الدخول</Link>
       </p>
-      <p className="mt-4 text-center text-xs text-sand-600">
+      <p className="mt-4 text-center text-xs text-ink-500">
         بإنشائك حسابًا فإنك توافق على{' '}
         <Link href="/legal/terms" className="underline">الشروط</Link> و
         <Link href="/legal/privacy" className="underline">سياسة الخصوصية</Link>.

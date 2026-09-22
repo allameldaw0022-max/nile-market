@@ -49,21 +49,21 @@ export function InstallPrompt({ label }: { label: string }) {
   return (
     <div role="region" aria-label="تثبيت التطبيق"
          className="fixed inset-x-3 bottom-3 z-50 flex items-center gap-3
-                    rounded-[--radius-lg] border border-sand-200 bg-white p-3
-                    shadow-[--shadow-overlay] sm:mx-auto sm:max-w-sm">
-      <Download size={20} className="shrink-0 text-nile-600" />
-      <p className="flex-1 text-sm font-bold text-navy-900">{label}</p>
+                    rounded-[--radius-lg] border border-ink-200 bg-white p-3
+                    shadow-[--shadow-popover] sm:mx-auto sm:max-w-sm">
+      <Download size={20} className="shrink-0 text-teal-700" />
+      <p className="flex-1 text-sm font-bold text-ink-900">{label}</p>
       <button type="button"
               onClick={() => {
                 void event.prompt();
                 void event.userChoice.finally(dismiss);
               }}
-              className="rounded-[--radius-md] bg-nile-500 px-3 py-1.5 text-sm
-                         font-bold text-white hover:bg-nile-600">
+              className="rounded-[--radius-md] bg-teal-600 px-3 py-1.5 text-sm
+                         font-bold text-white hover:bg-teal-700">
         تثبيت
       </button>
       <button type="button" onClick={dismiss} aria-label="إخفاء"
-              className="text-sand-400 hover:text-sand-600">
+              className="text-ink-400 hover:text-ink-500">
         <X size={18} />
       </button>
     </div>

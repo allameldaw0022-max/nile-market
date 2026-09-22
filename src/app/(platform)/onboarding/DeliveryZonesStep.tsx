@@ -66,9 +66,9 @@ export function DeliveryZonesStep({ storeId, count, onChange, onNext }: {
 
   return (
     <Card>
-      <div className="border-b border-sand-200 px-5 py-4">
-        <h2 className="font-bold text-navy-900">مناطق التوصيل</h2>
-        <p className="mt-0.5 text-sm text-sand-600">
+      <div className="border-b border-ink-200 px-5 py-4">
+        <h2 className="font-bold text-ink-900">مناطق التوصيل</h2>
+        <p className="mt-0.5 text-sm text-ink-500">
           منطقة واحدة على الأقل مطلوبة. أجرة التوصيل تُحتسب من هنا وقت الطلب.
         </p>
       </div>
@@ -83,18 +83,18 @@ export function DeliveryZonesStep({ storeId, count, onChange, onNext }: {
         )}
 
         {loading ? (
-          <p className="text-sm text-sand-600">يحمّل المناطق…</p>
+          <p className="text-sm text-ink-500">يحمّل المناطق…</p>
         ) : active.length === 0 ? (
           <div className="flex items-center gap-2 rounded-[--radius-md] border border-dashed
-                          border-sand-300 p-4 text-sm text-sand-600">
+                          border-ink-300 p-4 text-sm text-ink-500">
             <Truck size={16} /> لم تُضِف أي منطقة بعد.
           </div>
         ) : (
-          <ul className="divide-y divide-sand-200 rounded-[--radius-md] border border-sand-200">
+          <ul className="divide-y divide-ink-200 rounded-[--radius-md] border border-ink-200">
             {active.map((z) => (
               <li key={z.id} className="flex items-center gap-3 px-3 py-2.5">
-                <span className="flex-1 truncate font-bold text-navy-900">{z.name}</span>
-                <span className="font-bold text-navy-900 tabular">{formatMoney(z.fee)}</span>
+                <span className="flex-1 truncate font-bold text-ink-900">{z.name}</span>
+                <span className="font-bold text-ink-900 tabular">{formatMoney(z.fee)}</span>
                 <button type="button" aria-label={`حذف ${z.name}`} disabled={pending}
                         onClick={() => remove(z.id)}
                         className="rounded p-2 text-[--color-danger] hover:bg-[--color-danger-bg]
@@ -123,16 +123,16 @@ export function DeliveryZonesStep({ storeId, count, onChange, onNext }: {
         <div className="flex flex-wrap gap-1.5">
           {SUGGESTED.filter((s) => !active.some((z) => z.name === s)).map((s) => (
             <button key={s} type="button" onClick={() => setName(s)}
-                    className="rounded-full border border-sand-300 px-2.5 py-1
-                               text-xs font-bold text-sand-700 hover:border-nile-400
-                               hover:text-nile-600">
+                    className="rounded-full border border-ink-300 px-2.5 py-1
+                               text-xs font-bold text-ink-600 hover:border-teal-400
+                               hover:text-teal-700">
               {s}
             </button>
           ))}
         </div>
       </div>
 
-      <div className="flex items-center justify-end border-t border-sand-200 px-5 py-4">
+      <div className="flex items-center justify-end border-t border-ink-200 px-5 py-4">
         <Button onClick={onNext} disabled={known === 0}
                 icon={<ChevronLeft size={16} className="flip-rtl" />}>
           التالي

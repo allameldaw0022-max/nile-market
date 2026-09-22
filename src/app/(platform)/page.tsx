@@ -32,18 +32,18 @@ export default async function HomePage() {
 
   return (
     <>
-      <section className="bg-gradient-to-b from-nile-50 to-transparent">
+      <section className="bg-gradient-to-b from-teal-50 to-transparent">
         <div className="mx-auto max-w-6xl px-4 py-16 text-center sm:py-24">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-gold-500/30
-                           bg-gold-400/10 px-3 py-1 text-xs font-bold text-gold-700">
+                           bg-gold-300/10 px-3 py-1 text-xs font-bold text-gold-700">
             منصة سودانية
           </span>
-          <h1 className="mt-5 text-3xl font-extrabold leading-tight text-navy-900 sm:text-5xl">
+          <h1 className="mt-5 text-3xl font-extrabold leading-tight text-ink-900 sm:text-5xl">
             متجرك الإلكتروني
             <br className="sm:hidden" />
-            <span className="text-nile-500"> جاهز خلال دقائق</span>
+            <span className="text-teal-700"> جاهز خلال دقائق</span>
           </h1>
-          <p className="mx-auto mt-4 max-w-xl text-base text-sand-600 sm:text-lg">
+          <p className="mx-auto mt-4 max-w-xl text-base text-ink-500 sm:text-lg">
             أنشئ متجرك، أضف منتجاتك، واستقبل طلبات عملائك — بالعربية،
             وبتجربة سريعة تناسب السوق السوداني.
           </p>
@@ -61,15 +61,15 @@ export default async function HomePage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-16">
-        <h2 className="text-center text-2xl font-extrabold text-navy-900">كل ما تحتاجه لتبيع</h2>
+        <h2 className="text-center text-2xl font-extrabold text-ink-900">كل ما تحتاجه لتبيع</h2>
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {FEATURES.map((f) => (
             <Card key={f.title} className="p-5">
-              <span className="grid size-10 place-items-center rounded-[--radius-md] bg-nile-50 text-nile-600">
+              <span className="grid size-10 place-items-center rounded-[--radius-md] bg-teal-50 text-teal-700">
                 <f.icon size={20} />
               </span>
-              <h3 className="mt-3 font-bold text-navy-900">{f.title}</h3>
-              <p className="mt-1 text-sm text-sand-600">{f.body}</p>
+              <h3 className="mt-3 font-bold text-ink-900">{f.title}</h3>
+              <p className="mt-1 text-sm text-ink-500">{f.body}</p>
             </Card>
           ))}
         </div>
@@ -77,23 +77,23 @@ export default async function HomePage() {
 
       <section id="pricing" className="bg-white py-16">
         <div className="mx-auto max-w-5xl px-4">
-          <h2 className="text-center text-2xl font-extrabold text-navy-900">الباقات</h2>
-          <p className="mt-2 text-center text-sm text-sand-600">
+          <h2 className="text-center text-2xl font-extrabold text-ink-900">الباقات</h2>
+          <p className="mt-2 text-center text-sm text-ink-500">
             ابدأ بالباقة المجانية، وارقِ متى احتجت.
           </p>
           <div className="mt-10 grid gap-4 sm:grid-cols-3">
             {(plans ?? []).map((p) => (
               <Card key={p.id}
-                    className={p.code === 'basic' ? 'border-nile-500 p-5 ring-1 ring-nile-500' : 'p-5'}>
-                <h3 className="font-extrabold text-navy-900">{p.name}</h3>
-                <p className="mt-2 text-2xl font-extrabold text-nile-600 tabular">
+                    className={p.code === 'basic' ? 'border-teal-600 p-5 ring-1 ring-teal-600' : 'p-5'}>
+                <h3 className="font-extrabold text-ink-900">{p.name}</h3>
+                <p className="mt-2 text-2xl font-extrabold text-teal-700 tabular">
                   {p.is_free
                     ? 'مجانًا'
                     : p.price_configured_at
-                      ? <>{formatMoney(p.price)}<span className="text-sm font-medium text-sand-600"> / شهريًا</span></>
-                      : <span className="text-base text-sand-600">قريبًا</span>}
+                      ? <>{formatMoney(p.price)}<span className="text-sm font-medium text-ink-500"> / شهريًا</span></>
+                      : <span className="text-base text-ink-500">قريبًا</span>}
                 </p>
-                {p.description && <p className="mt-2 text-sm text-sand-600">{p.description}</p>}
+                {p.description && <p className="mt-2 text-sm text-ink-500">{p.description}</p>}
                 <Link href="/signup" className="mt-5 block">
                   <Button className="w-full"
                           variant={p.code === 'basic' ? 'primary' : 'outline'}>
@@ -103,7 +103,7 @@ export default async function HomePage() {
               </Card>
             ))}
           </div>
-          <p className="mt-6 text-center text-xs text-sand-600">
+          <p className="mt-6 text-center text-xs text-ink-500">
             الأسعار والحدود تُدار من لوحة الإدارة وتظهر هنا فور ضبطها.
           </p>
         </div>

@@ -55,7 +55,7 @@ export function OrderStatusActions({ storeId, orderId, status }: {
 
   if (options.length === 0) {
     return (
-      <p className="text-sm text-sand-600">
+      <p className="text-sm text-ink-500">
         {ORDER_STATUS[status]?.label ?? status} — لا إجراءات متاحة على هذه الحالة.
       </p>
     );
@@ -73,8 +73,8 @@ export function OrderStatusActions({ storeId, orderId, status }: {
 
       {confirming === 'cancelled' ? (
         <div className="space-y-3 rounded-[--radius-md] border border-[--color-danger]/30 p-4">
-          <p className="text-sm font-bold text-navy-900">سبب الإلغاء</p>
-          <p className="text-xs text-sand-600">
+          <p className="text-sm font-bold text-ink-900">سبب الإلغاء</p>
+          <p className="text-xs text-ink-500">
             السبب إلزامي ويُحفظ في سجل الطلب. الكميات المحجوزة تعود للمخزون.
           </p>
           <Textarea value={reason} onChange={(e) => setReason(e.target.value)}

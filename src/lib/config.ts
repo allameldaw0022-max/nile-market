@@ -2,7 +2,7 @@ import 'server-only';
 
 /** إعدادات المنصة. كل قيمة سرية تُقرأ هنا فقط، خادميًا. */
 export const config = {
-  siteName: 'نايل ماركت',
+  siteName: 'سوق النيل',
   siteNameEn: 'Nile Market',
   rootDomain: process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? 'nilemarket.online',
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000',

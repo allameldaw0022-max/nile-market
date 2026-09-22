@@ -30,9 +30,9 @@ export default async function OrderConfirmationPage(
   if (!last) {
     return (
       <div className="mx-auto max-w-lg px-4 py-14 text-center">
-        <Search className="mx-auto text-sand-400" size={36} strokeWidth={1.5} />
-        <h1 className="mt-3 text-lg font-extrabold text-navy-900">لا يوجد طلب حديث</h1>
-        <p className="mt-1 text-sm text-sand-600">
+        <Search className="mx-auto text-ink-400" size={36} strokeWidth={1.5} />
+        <h1 className="mt-3 text-lg font-extrabold text-ink-900">لا يوجد طلب حديث</h1>
+        <p className="mt-1 text-sm text-ink-500">
           إن كنت طلبت من قبل، تتبّع طلبك برقمه ورقم هاتفك.
         </p>
         <Link href="/orders/track" className="mt-5 inline-block">
@@ -68,8 +68,8 @@ export default async function OrderConfirmationPage(
     <div className="mx-auto max-w-2xl px-4 py-8">
       <div className="text-center">
         <CheckCircle2 className="mx-auto text-[--color-success]" size={44} />
-        <h1 className="mt-3 text-xl font-extrabold text-navy-900">تم استلام طلبك</h1>
-        <p className="mt-1 text-sm text-sand-600">
+        <h1 className="mt-3 text-xl font-extrabold text-ink-900">تم استلام طلبك</h1>
+        <p className="mt-1 text-sm text-ink-500">
           سيتواصل معك المتجر لتأكيد الطلب. احتفظ برقم الطلب للمتابعة.
         </p>
       </div>
@@ -80,18 +80,18 @@ export default async function OrderConfirmationPage(
 
       {instructions && (accounts.length > 0 || instructions.bankakNumber) && (
         <Card className="mt-5 p-5">
-          <h2 className="font-bold text-navy-900">بيانات التحويل</h2>
-          <p className="mt-1 text-sm text-sand-600">
-            حوّل <span className="font-bold tabular text-navy-900">
+          <h2 className="font-bold text-ink-900">بيانات التحويل</h2>
+          <p className="mt-1 text-sm text-ink-500">
+            حوّل <span className="font-bold tabular text-ink-900">
               {formatMoney(instructions.amountDue)}
             </span> ثم أرسل صورة الإشعار للمتجر عبر واتساب.
           </p>
           <ul className="mt-3 space-y-2">
             {instructions.bankakNumber && (
               <li className="flex items-center justify-between gap-3 rounded-[--radius-md]
-                             border border-sand-200 p-3 text-sm">
-                <span className="font-bold text-navy-900">بنكك</span>
-                <span className="tabular text-navy-700" dir="ltr">
+                             border border-ink-200 p-3 text-sm">
+                <span className="font-bold text-ink-900">بنكك</span>
+                <span className="tabular text-ink-700" dir="ltr">
                   {instructions.bankakNumber}
                 </span>
               </li>
@@ -99,10 +99,10 @@ export default async function OrderConfirmationPage(
             {accounts.map((a, i) => (
               <li key={`${a.account}-${i}`}
                   className="flex flex-wrap items-center justify-between gap-2
-                             rounded-[--radius-md] border border-sand-200 p-3 text-sm">
-                <span className="font-bold text-navy-900">{a.bank ?? 'بنك'}</span>
-                {a.holder && <span className="text-sand-600">{a.holder}</span>}
-                <span className="tabular text-navy-700" dir="ltr">{a.account}</span>
+                             rounded-[--radius-md] border border-ink-200 p-3 text-sm">
+                <span className="font-bold text-ink-900">{a.bank ?? 'بنك'}</span>
+                {a.holder && <span className="text-ink-500">{a.holder}</span>}
+                <span className="tabular text-ink-700" dir="ltr">{a.account}</span>
               </li>
             ))}
           </ul>

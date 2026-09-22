@@ -50,7 +50,7 @@ export default async function StoreHome({ params }: PageProps<'/sites/[host]'>) 
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
-      <section className="rounded-[--radius-xl] bg-gradient-to-l from-nile-500 to-nile-700 px-6 py-10 text-white">
+      <section className="rounded-[--radius-xl] bg-gradient-to-l from-teal-600 to-teal-700 px-6 py-10 text-white">
         <h1 className="text-2xl font-extrabold sm:text-3xl">{store.name}</h1>
         <p className="mt-2 max-w-lg text-sm text-white/85">
           تصفّح منتجاتنا واطلب بسهولة — التوصيل متاح داخل المدن المحددة.
@@ -59,12 +59,12 @@ export default async function StoreHome({ params }: PageProps<'/sites/[host]'>) 
 
       {categories && categories.length > 0 && (
         <section className="mt-8">
-          <h2 className="font-bold text-navy-900">التصنيفات</h2>
+          <h2 className="font-bold text-ink-900">التصنيفات</h2>
           <div className="mt-3 flex gap-2 overflow-x-auto no-scrollbar pb-1">
             {categories.map((c) => (
               <Link key={c.id} href={`/categories/${c.slug}`}
-                    className="shrink-0 rounded-full border border-sand-300 bg-white px-4 py-2
-                               text-sm font-bold text-navy-700 hover:border-nile-500 hover:text-nile-600">
+                    className="shrink-0 rounded-full border border-ink-300 bg-white px-4 py-2
+                               text-sm font-bold text-ink-700 hover:border-teal-600 hover:text-teal-700">
                 {c.name}
               </Link>
             ))}
@@ -74,8 +74,8 @@ export default async function StoreHome({ params }: PageProps<'/sites/[host]'>) 
 
       <section className="mt-8">
         <div className="flex items-center justify-between">
-          <h2 className="font-bold text-navy-900">أحدث المنتجات</h2>
-          <Link href="/products" className="text-sm font-bold text-nile-600 hover:underline">
+          <h2 className="font-bold text-ink-900">أحدث المنتجات</h2>
+          <Link href="/products" className="text-sm font-bold text-teal-700 hover:underline">
             عرض الكل
           </Link>
         </div>

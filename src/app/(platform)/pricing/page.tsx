@@ -11,7 +11,7 @@ export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: 'الباقات والأسعار',
-  description: 'باقات نايل ماركت وأسعارها وحدود كل باقة.',
+  description: 'باقات سوق النيل وأسعارها وحدود كل باقة.',
 };
 
 const FEATURE_LABEL: Record<string, string> = {
@@ -61,17 +61,17 @@ export default async function PricingPage() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
       <div className="text-center">
-        <h1 className="text-2xl font-extrabold text-navy-900 sm:text-3xl">
+        <h1 className="text-2xl font-extrabold text-ink-900 sm:text-3xl">
           الباقات والأسعار
         </h1>
-        <p className="mt-2 text-sm text-sand-600">
+        <p className="mt-2 text-sm text-ink-500">
           ابدأ مجانًا، وارفع باقتك حين يكبر متجرك. الدفع يدوي بتحويل
           بنكي أو بنكك، ولا تُخصم أي مبالغ تلقائيًا.
         </p>
       </div>
 
       {plans.length === 0 ? (
-        <Card className="mt-8 p-8 text-center text-sm text-sand-600">
+        <Card className="mt-8 p-8 text-center text-sm text-ink-500">
           لم تُنشر الباقات بعد.
         </Card>
       ) : (
@@ -83,23 +83,23 @@ export default async function PricingPage() {
 
             return (
               <Card key={plan.id} className="flex flex-col p-6">
-                <h2 className="font-extrabold text-navy-900">{plan.name}</h2>
+                <h2 className="font-extrabold text-ink-900">{plan.name}</h2>
                 {plan.description && (
-                  <p className="mt-1 text-sm text-sand-600">{plan.description}</p>
+                  <p className="mt-1 text-sm text-ink-500">{plan.description}</p>
                 )}
 
                 <p className="mt-4">
                   {!configured ? (
                     <Badge tone="warning">السعر يُعلن قريبًا</Badge>
                   ) : plan.is_free ? (
-                    <span className="text-2xl font-extrabold text-navy-900">مجانية</span>
+                    <span className="text-2xl font-extrabold text-ink-900">مجانية</span>
                   ) : (
                     <>
-                      <span className="text-2xl font-extrabold tabular text-navy-900">
+                      <span className="text-2xl font-extrabold tabular text-ink-900">
                         {formatMoney(plan.price)}
                       </span>
                       {plan.duration_days && (
-                        <span className="text-sm text-sand-600">
+                        <span className="text-sm text-ink-500">
                           {' '}/ {formatNumber(plan.duration_days)} يومًا
                         </span>
                       )}
@@ -118,9 +118,9 @@ export default async function PricingPage() {
                         {on ? (
                           <Check size={15} className="mt-0.5 shrink-0 text-[--color-success]" />
                         ) : (
-                          <Minus size={15} className="mt-0.5 shrink-0 text-sand-400" />
+                          <Minus size={15} className="mt-0.5 shrink-0 text-ink-400" />
                         )}
-                        <span className={on ? 'text-navy-800' : 'text-sand-500'}>
+                        <span className={on ? 'text-ink-800' : 'text-ink-500'}>
                           {FEATURE_LABEL[key]}
                           {!isBool && (
                             <span className="font-bold tabular">
@@ -155,7 +155,7 @@ export default async function PricingPage() {
         </div>
       )}
 
-      <p className="mt-8 text-center text-xs text-sand-600">
+      <p className="mt-8 text-center text-xs text-ink-500">
         الأسعار بالجنيه السوداني. راجع{' '}
         <Link href="/legal/subscription" className="underline">سياسة الاشتراك</Link>{' '}
         و<Link href="/legal/cancellation" className="underline">سياسة الإلغاء</Link>.

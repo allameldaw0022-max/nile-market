@@ -29,8 +29,8 @@ export function ProductCard({ product, priority = false }: {
   return (
     <Link href={`/products/${product.slug}`}
           className="group flex flex-col overflow-hidden rounded-[--radius-lg]
-                     border border-sand-200 bg-white transition-shadow hover:shadow-[--shadow-raised]">
-      <div className="relative aspect-square bg-sand-100">
+                     border border-ink-200 bg-white transition-shadow hover:shadow-[--shadow-sm]">
+      <div className="relative aspect-square bg-ink-100">
         {media ? (
           <Image
             src={publicUrl(media.bucket, media.path)}
@@ -45,24 +45,24 @@ export function ProductCard({ product, priority = false }: {
             loading={priority ? undefined : 'lazy'}
           />
         ) : (
-          <div className="grid h-full place-items-center text-sand-400">
+          <div className="grid h-full place-items-center text-ink-400">
             <ImageOff size={28} strokeWidth={1.5} />
           </div>
         )}
         {hasDiscount && (
           <span className="absolute top-2 start-2 rounded-full bg-gold-500 px-2 py-0.5
-                           text-[11px] font-extrabold text-navy-900">
+                           text-[11px] font-extrabold text-ink-900">
             خصم
           </span>
         )}
       </div>
 
       <div className="flex flex-1 flex-col p-3">
-        <h3 className="line-clamp-2 text-sm font-bold text-navy-900">{product.name}</h3>
+        <h3 className="line-clamp-2 text-sm font-bold text-ink-900">{product.name}</h3>
         <div className="mt-auto pt-2">
-          <p className="font-extrabold text-nile-600 tabular">{formatMoney(product.price)}</p>
+          <p className="font-extrabold text-teal-700 tabular">{formatMoney(product.price)}</p>
           {hasDiscount && (
-            <p className="text-xs text-sand-400 line-through tabular">
+            <p className="text-xs text-ink-400 line-through tabular">
               {formatMoney(product.compare_at_price)}
             </p>
           )}

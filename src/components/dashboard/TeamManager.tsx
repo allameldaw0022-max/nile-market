@@ -101,15 +101,15 @@ export function TeamManager({ storeId, members, invitations, canManage, isOwner 
 
       <Card className="overflow-hidden">
         <CardHeader title="الأعضاء" description={`${members.length} عضو.`} />
-        <ul className="divide-y divide-sand-200">
+        <ul className="divide-y divide-ink-200">
           {members.map((m) => (
             <li key={m.memberId}
                 className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3.5">
               <div className="min-w-0 flex-1">
-                <p className="truncate font-bold text-navy-900">
+                <p className="truncate font-bold text-ink-900">
                   {m.fullName ?? 'عضو بلا اسم'}
                 </p>
-                <p className="text-xs text-sand-600">
+                <p className="text-xs text-ink-500">
                   {m.acceptedAt ? `انضم ${formatDateTime(m.acceptedAt)}` : 'لم يقبل بعد'}
                 </p>
               </div>
@@ -125,9 +125,9 @@ export function TeamManager({ storeId, members, invitations, canManage, isOwner 
                           storeId, memberId: m.memberId,
                           role: e.target.value as StoreRole,
                         }))}
-                        className="h-9 rounded-[--radius-md] border border-[--color-field-border] bg-white
-                                   px-2 text-[13px] font-bold text-navy-900
-                                   focus:border-nile-500">
+                        className="h-9 rounded-[--radius-md] border border-[--color-ink-400] bg-white
+                                   px-2 text-[13px] font-bold text-ink-900
+                                   focus:border-teal-600">
                   {roles.map((r) => (
                     <option key={r} value={r}>{ROLE_LABEL[r]}</option>
                   ))}
@@ -158,16 +158,16 @@ export function TeamManager({ storeId, members, invitations, canManage, isOwner 
       {invitations.length > 0 && (
         <Card className="overflow-hidden">
           <CardHeader title="دعوات معلّقة" />
-          <ul className="divide-y divide-sand-200">
+          <ul className="divide-y divide-ink-200">
             {invitations.map((inv) => (
               <li key={inv.id}
                   className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3.5">
-                <Mail size={15} className="text-sand-500" />
-                <span className="min-w-0 flex-1 truncate text-navy-900" dir="ltr">
+                <Mail size={15} className="text-ink-500" />
+                <span className="min-w-0 flex-1 truncate text-ink-900" dir="ltr">
                   {inv.email}
                 </span>
                 <Badge tone="neutral">{ROLE_LABEL[inv.role]}</Badge>
-                <span className="text-xs text-sand-600">
+                <span className="text-xs text-ink-500">
                   تنتهي {formatDateTime(inv.expiresAt)}
                 </span>
                 {canManage && (
@@ -189,13 +189,13 @@ export function TeamManager({ storeId, members, invitations, canManage, isOwner 
 
       {inviteUrl && (
         <Card className="p-5">
-          <h3 className="font-bold text-navy-900">رابط الدعوة</h3>
-          <p className="mt-1 text-sm text-sand-600">
+          <h3 className="font-bold text-ink-900">رابط الدعوة</h3>
+          <p className="mt-1 text-sm text-ink-500">
             أرسل هذا الرابط للموظف. يظهر مرة واحدة فقط — لا نحتفظ بنسخة منه.
           </p>
           <div className="mt-3 flex items-center gap-2">
             <code className="min-w-0 flex-1 truncate rounded-[--radius-md] border
-                             border-sand-200 bg-sand-50 px-3 py-2 text-xs text-navy-900"
+                             border-ink-200 bg-ink-50 px-3 py-2 text-xs text-ink-900"
                   dir="ltr">{inviteUrl}</code>
             <Button variant="outline" size="sm" onClick={() => copy(inviteUrl)}
                     icon={copied ? <Check size={14} /> : <Copy size={14} />}>
@@ -221,7 +221,7 @@ export function TeamManager({ storeId, members, invitations, canManage, isOwner 
               </Select>
 
               {!isOwner && (
-                <p className="text-xs text-sand-600">
+                <p className="text-xs text-ink-500">
                   دور «مدير» يمنحه مالك المتجر وحده.
                 </p>
               )}

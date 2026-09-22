@@ -29,8 +29,8 @@ export default async function SupportPage() {
     <div className="mx-auto max-w-3xl px-4 py-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-extrabold text-navy-900">الدعم الفني</h1>
-          <p className="text-sm text-sand-600">
+          <h1 className="text-xl font-extrabold text-ink-900">الدعم الفني</h1>
+          <p className="text-sm text-ink-500">
             افتح تذكرة وسنتابع معك حتى الحل.
           </p>
         </div>
@@ -51,15 +51,15 @@ export default async function SupportPage() {
           />
         ) : (
           <Card className="overflow-hidden">
-            <ul className="divide-y divide-sand-200">
+            <ul className="divide-y divide-ink-200">
               {tickets.data.map((t) => (
                 <li key={t.id}>
                   <Link href={`/support/${t.id}`}
                         className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3.5
-                                   hover:bg-sand-50">
+                                   hover:bg-ink-50">
                     <div className="min-w-0 flex-1">
-                      <p className="truncate font-bold text-navy-900">{t.subject}</p>
-                      <p className="text-xs text-sand-600">
+                      <p className="truncate font-bold text-ink-900">{t.subject}</p>
+                      <p className="text-xs text-ink-500">
                         <span className="tabular" dir="ltr">{t.ticketNumber}</span>
                         {' · '}{TICKET_CATEGORY_LABEL[t.category] ?? t.category}
                         {' · '}{formatDateTime(t.lastMessageAt)}

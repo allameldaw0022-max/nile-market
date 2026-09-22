@@ -19,7 +19,7 @@ export function SignOutAllButton() {
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-xs text-sand-600">متأكد؟</span>
+      <span className="text-xs text-ink-500">متأكد؟</span>
       <Button variant="danger" size="sm" loading={pending}
               onClick={() => start(() => { void signOutAllDevices(); })}>
         نعم، أنهِ الكل

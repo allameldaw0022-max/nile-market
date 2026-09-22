@@ -33,9 +33,9 @@ export function MfaSection({ enabled, factorId, adminLocked }: {
 
       <div className="space-y-4 p-5">
         {adminLocked && (
-          <div className="flex items-start gap-2 rounded-[--radius-md] border border-nile-200
-                          bg-nile-50 p-3 text-sm text-navy-700">
-            <Lock size={16} className="mt-0.5 shrink-0 text-nile-600" />
+          <div className="flex items-start gap-2 rounded-[--radius-md] border border-teal-200
+                          bg-teal-50 p-3 text-sm text-ink-700">
+            <Lock size={16} className="mt-0.5 shrink-0 text-teal-700" />
             التحقق بخطوتين <b>إلزامي</b> لحسابات الإدارة، ولا يمكن إلغاؤه.
             بدونه لن تستطيع الوصول إلى لوحة الإدارة.
           </div>
@@ -43,7 +43,7 @@ export function MfaSection({ enabled, factorId, adminLocked }: {
 
         {active ? (
           <>
-            <p className="text-sm text-sand-600">
+            <p className="text-sm text-ink-500">
               حسابك محمي بالتحقق بخطوتين. ستحتاج رمز التطبيق عند الدخول
               إلى الأقسام الحساسة.
             </p>
@@ -64,17 +64,17 @@ export function MfaSection({ enabled, factorId, adminLocked }: {
         ) : enroll?.ok ? (
           <form action={verifyAction} className="space-y-4">
             <input type="hidden" name="factor_id" value={enroll.factorId} />
-            <p className="text-sm text-sand-600">
+            <p className="text-sm text-ink-500">
               1) امسح الرمز بتطبيق المصادقة. 2) أدخل الرمز المكوّن من 6 أرقام.
             </p>
             <div className="flex flex-col items-center gap-3 rounded-[--radius-md]
-                            border border-sand-200 bg-sand-50 p-4">
+                            border border-ink-200 bg-ink-50 p-4">
               {/* QR يأتي كـdata:image/svg من Supabase */}
               <Image src={enroll.qr} alt="رمز QR للتحقق بخطوتين"
                      width={180} height={180} unoptimized className="rounded bg-white p-2" />
               <div className="text-center">
-                <p className="text-xs text-sand-600">أو أدخل السر يدويًا:</p>
-                <code dir="ltr" className="mt-1 block break-all text-xs font-bold text-navy-900">
+                <p className="text-xs text-ink-500">أو أدخل السر يدويًا:</p>
+                <code dir="ltr" className="mt-1 block break-all text-xs font-bold text-ink-900">
                   {enroll.secret}
                 </code>
               </div>

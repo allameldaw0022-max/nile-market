@@ -14,7 +14,7 @@ export function ForgotForm() {
       <div className="mt-8 rounded-[--radius-lg] border border-[--color-success]/30
                       bg-[--color-success-bg] p-5 text-center">
         <CheckCircle2 className="mx-auto mb-2 text-[--color-success]" size={28} />
-        <p className="text-sm text-navy-900">{state.message}</p>
+        <p className="text-sm text-ink-900">{state.message}</p>
       </div>
     );
   }

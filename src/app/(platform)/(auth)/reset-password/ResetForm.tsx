@@ -15,7 +15,7 @@ export function ResetForm() {
       <div className="mt-8 rounded-[--radius-lg] border border-[--color-success]/30
                       bg-[--color-success-bg] p-5 text-center">
         <CheckCircle2 className="mx-auto mb-2 text-[--color-success]" size={28} />
-        <p className="font-bold text-navy-900">{state.message}</p>
+        <p className="font-bold text-ink-900">{state.message}</p>
         <Link href="/dashboard" className="mt-4 inline-block">
           <Button size="sm">الانتقال إلى لوحة التحكم</Button>
         </Link>

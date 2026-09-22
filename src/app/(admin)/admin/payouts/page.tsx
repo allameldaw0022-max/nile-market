@@ -51,8 +51,8 @@ export default async function AdminPayoutsPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-extrabold text-navy-900">صرف الشركاء</h1>
-        <p className="text-sm text-sand-600">
+        <h1 className="text-xl font-extrabold text-ink-900">صرف الشركاء</h1>
+        <p className="text-sm text-ink-500">
           الشريك يطلب · موظف يسجّل · موظف آخر يعتمد. القيد في الجدول يرفض
           تطابق أي اثنين، ولا يتجاوزه أحد (D30).
         </p>
@@ -66,22 +66,22 @@ export default async function AdminPayoutsPage() {
                         title="لا طلبات صرف مفتوحة" />
           </div>
         ) : (
-          <ul className="divide-y divide-sand-200">
+          <ul className="divide-y divide-ink-200">
             {open.map((r) => {
               const s = STATUS[r.status] ?? { label: r.status, tone: 'neutral' as const };
               return (
                 <li key={r.id} className="flex flex-wrap items-center gap-x-4 gap-y-3
                                           px-4 py-4">
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-bold text-navy-900">
+                    <p className="truncate font-bold text-ink-900">
                       {r.partners?.name ?? '—'}
                     </p>
-                    <p className="text-xs text-sand-600">
+                    <p className="text-xs text-ink-500">
                       {formatDateTime(r.created_at)}
                       {r.note && <span> · {r.note}</span>}
                     </p>
                   </div>
-                  <span className="font-extrabold tabular text-navy-900">
+                  <span className="font-extrabold tabular text-ink-900">
                     {formatMoney(r.amount)}
                   </span>
                   <Badge tone={s.tone}>{s.label}</Badge>
@@ -97,16 +97,16 @@ export default async function AdminPayoutsPage() {
       {done.length > 0 && (
         <Card className="overflow-hidden">
           <CardHeader title="طلبات منتهية" />
-          <ul className="divide-y divide-sand-200">
+          <ul className="divide-y divide-ink-200">
             {done.map((r) => {
               const s = STATUS[r.status] ?? { label: r.status, tone: 'neutral' as const };
               return (
                 <li key={r.id} className="flex flex-wrap items-center gap-x-4 gap-y-1
                                           px-4 py-3">
-                  <span className="min-w-0 flex-1 truncate font-bold text-navy-900">
+                  <span className="min-w-0 flex-1 truncate font-bold text-ink-900">
                     {r.partners?.name ?? '—'}
                   </span>
-                  <span className="text-xs text-sand-600">
+                  <span className="text-xs text-ink-500">
                     {formatDateTime(r.paid_at ?? r.created_at)}
                     {r.rejected_reason && (
                       <span className="block text-[--color-danger]">
@@ -114,7 +114,7 @@ export default async function AdminPayoutsPage() {
                       </span>
                     )}
                   </span>
-                  <span className="font-bold tabular text-navy-900">
+                  <span className="font-bold tabular text-ink-900">
                     {formatMoney(r.amount)}
                   </span>
                   <Badge tone={s.tone}>{s.label}</Badge>

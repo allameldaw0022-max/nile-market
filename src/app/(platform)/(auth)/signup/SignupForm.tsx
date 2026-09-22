@@ -13,8 +13,8 @@ export function SignupForm() {
       <div className="mt-8 rounded-[--radius-lg] border border-[--color-success]/30
                       bg-[--color-success-bg] p-5 text-center">
         <CheckCircle2 className="mx-auto mb-2 text-[--color-success]" size={28} />
-        <p className="font-bold text-navy-900">تحقق من بريدك</p>
-        <p className="mt-1 text-sm text-sand-600">{state.message}</p>
+        <p className="font-bold text-ink-900">تحقق من بريدك</p>
+        <p className="mt-1 text-sm text-ink-500">{state.message}</p>
       </div>
     );
   }

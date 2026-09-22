@@ -104,7 +104,7 @@ export function CheckoutForm({
         )}
 
         <Card>
-          <h2 className="border-b border-sand-200 px-5 py-4 font-bold text-navy-900">
+          <h2 className="border-b border-ink-200 px-5 py-4 font-bold text-ink-900">
             بيانات المستلم
           </h2>
           <div className="space-y-4 p-5">
@@ -120,7 +120,7 @@ export function CheckoutForm({
         </Card>
 
         <Card>
-          <h2 className="border-b border-sand-200 px-5 py-4 font-bold text-navy-900">
+          <h2 className="border-b border-ink-200 px-5 py-4 font-bold text-ink-900">
             التوصيل
           </h2>
           <div className="space-y-4 p-5">
@@ -130,20 +130,20 @@ export function CheckoutForm({
               </p>
             ) : (
               <fieldset className="space-y-2">
-                <legend className="mb-1 text-[13px] font-bold text-navy-700">
+                <legend className="mb-1 text-[13px] font-bold text-ink-700">
                   منطقة التوصيل
                 </legend>
                 {zones.map((z) => (
                   <label key={z.id}
                          className={`flex cursor-pointer items-center gap-3 rounded-[--radius-md]
                                      border p-3.5 ${zoneId === z.id
-                                       ? 'border-nile-500 bg-[--color-info-bg]'
-                                       : 'border-sand-200 hover:border-nile-300'}`}>
+                                       ? 'border-teal-600 bg-[--color-teal-50]'
+                                       : 'border-ink-200 hover:border-teal-300'}`}>
                     <input type="radio" name="zone" value={z.id} checked={zoneId === z.id}
                            onChange={() => setZoneId(z.id)}
-                           className="size-4 accent-[--color-nile-500]" />
-                    <span className="flex-1 text-sm font-bold text-navy-900">{z.name}</span>
-                    <span className="text-sm font-bold tabular text-navy-700">
+                           className="size-4 accent-[--color-teal-600]" />
+                    <span className="flex-1 text-sm font-bold text-ink-900">{z.name}</span>
+                    <span className="text-sm font-bold tabular text-ink-700">
                       {formatMoney(z.fee)}
                     </span>
                   </label>
@@ -162,7 +162,7 @@ export function CheckoutForm({
         </Card>
 
         <Card>
-          <h2 className="border-b border-sand-200 px-5 py-4 font-bold text-navy-900">
+          <h2 className="border-b border-ink-200 px-5 py-4 font-bold text-ink-900">
             طريقة الدفع
           </h2>
           <div className="space-y-2 p-5">
@@ -170,15 +170,15 @@ export function CheckoutForm({
               <label key={p.value}
                      className={`flex cursor-pointer items-start gap-3 rounded-[--radius-md]
                                  border p-3.5 ${payment === p.value
-                                   ? 'border-nile-500 bg-[--color-info-bg]'
-                                   : 'border-sand-200 hover:border-nile-300'}`}>
+                                   ? 'border-teal-600 bg-[--color-teal-50]'
+                                   : 'border-ink-200 hover:border-teal-300'}`}>
                 <input type="radio" name="payment" value={p.value}
                        checked={payment === p.value}
                        onChange={() => setPayment(p.value)}
-                       className="mt-0.5 size-4 accent-[--color-nile-500]" />
+                       className="mt-0.5 size-4 accent-[--color-teal-600]" />
                 <span>
-                  <span className="block text-sm font-bold text-navy-900">{p.label}</span>
-                  <span className="block text-xs text-sand-600">{p.hint}</span>
+                  <span className="block text-sm font-bold text-ink-900">{p.label}</span>
+                  <span className="block text-xs text-ink-500">{p.hint}</span>
                 </span>
               </label>
             ))}
@@ -187,16 +187,16 @@ export function CheckoutForm({
       </div>
 
       <Card className="h-fit p-4 lg:sticky lg:top-20">
-        <h2 className="font-bold text-navy-900">ملخص الطلب</h2>
+        <h2 className="font-bold text-ink-900">ملخص الطلب</h2>
 
-        <ul className="mt-3 space-y-2 border-b border-sand-200 pb-3 text-sm">
+        <ul className="mt-3 space-y-2 border-b border-ink-200 pb-3 text-sm">
           {lines.map((l) => (
             <li key={l.itemId} className="flex items-start justify-between gap-2">
-              <span className="min-w-0 flex-1 truncate text-sand-700">
+              <span className="min-w-0 flex-1 truncate text-ink-600">
                 {l.productName}
-                <span className="text-sand-500"> × <span className="tabular">{l.quantity}</span></span>
+                <span className="text-ink-500"> × <span className="tabular">{l.quantity}</span></span>
               </span>
-              <span className="font-bold tabular text-navy-900">{formatMoney(l.lineTotal)}</span>
+              <span className="font-bold tabular text-ink-900">{formatMoney(l.lineTotal)}</span>
             </li>
           ))}
         </ul>
@@ -225,9 +225,9 @@ export function CheckoutForm({
           )}
         </dl>
 
-        <p className="mt-3 flex items-baseline justify-between border-t border-sand-200 pt-3">
-          <span className="font-bold text-navy-900">الإجمالي</span>
-          <span className="text-xl font-extrabold tabular text-nile-600">
+        <p className="mt-3 flex items-baseline justify-between border-t border-ink-200 pt-3">
+          <span className="font-bold text-ink-900">الإجمالي</span>
+          <span className="text-xl font-extrabold tabular text-teal-700">
             {quoting ? <Loader2 size={18} className="animate-spin" /> : formatMoney(quote.total)}
           </span>
         </p>
@@ -238,7 +238,7 @@ export function CheckoutForm({
           تأكيد الطلب
         </Button>
 
-        <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-sand-600">
+        <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-ink-500">
           <ShieldCheck size={13} /> كل المبالغ محسوبة لدى المتجر
         </p>
       </Card>
@@ -251,8 +251,8 @@ function Line({ label, value, good = false }: {
 }) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <dt className="text-sand-600">{label}</dt>
-      <dd className={`font-bold tabular ${good ? 'text-[--color-success]' : 'text-navy-900'}`}>
+      <dt className="text-ink-500">{label}</dt>
+      <dd className={`font-bold tabular ${good ? 'text-[--color-success]' : 'text-ink-900'}`}>
         {value}
       </dd>
     </div>

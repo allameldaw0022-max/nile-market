@@ -71,8 +71,8 @@ export default async function AdminPaymentsPage(
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-extrabold text-navy-900">المدفوعات</h1>
-        <p className="text-sm text-sand-600 tabular">
+        <h1 className="text-xl font-extrabold text-ink-900">المدفوعات</h1>
+        <p className="text-sm text-ink-500 tabular">
           {formatNumber(total)} دفعة — سجل للقراءة، لا يُعدَّل من هنا.
         </p>
       </div>
@@ -81,8 +81,8 @@ export default async function AdminPaymentsPage(
         <input name="q" defaultValue={term} maxLength={60}
                placeholder="المرجع أو المتجر أو رقم الطلب" aria-label="بحث في المدفوعات"
                className="h-10 min-w-52 flex-1 rounded-[--radius-md] border
-                          border-[--color-field-border] bg-white px-3 text-[14px] text-navy-900
-                          placeholder:text-sand-400 focus:border-nile-500" />
+                          border-[--color-ink-400] bg-white px-3 text-[14px] text-ink-900
+                          placeholder:text-ink-400 focus:border-teal-600" />
         <input type="hidden" name="status" value={status} />
         <input type="hidden" name="kind" value={kind} />
         <Button type="submit" variant="outline" size="sm">بحث</Button>
@@ -112,25 +112,25 @@ export default async function AdminPaymentsPage(
                     title="لا مدفوعات مطابقة" />
       ) : (
         <Card className="overflow-hidden">
-          <ul className="divide-y divide-sand-200">
+          <ul className="divide-y divide-ink-200">
             {rows.map((p) => (
               <li key={p.payment_id}
                   className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3.5">
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-bold text-navy-900">
+                  <p className="truncate font-bold text-ink-900">
                     {p.store_name ?? '—'}
-                    <span className="ms-2 text-xs font-medium text-sand-600">
+                    <span className="ms-2 text-xs font-medium text-ink-500">
                       {KINDS[p.kind] ?? p.kind}
                       {p.order_number && ` · ${p.order_number}`}
                     </span>
                   </p>
-                  <p className="truncate text-xs text-sand-600">
+                  <p className="truncate text-xs text-ink-500">
                     {PAYMENT_METHOD[p.method] ?? p.method}
                     {p.reference && <span dir="ltr"> · {p.reference}</span>}
                     {' · '}{formatDateTime(p.paid_at ?? p.created_at)}
                   </p>
                 </div>
-                <span className="font-extrabold tabular text-navy-900">
+                <span className="font-extrabold tabular text-ink-900">
                   {formatMoney(p.amount)}
                 </span>
                 <StatusChip map={PAYMENT_STATUS} value={p.status} />
@@ -147,7 +147,7 @@ export default async function AdminPaymentsPage(
               <Button variant="outline" size="sm">السابق</Button>
             </Link>
           )}
-          <span className="text-sm text-sand-600 tabular">صفحة {page} من {pages}</span>
+          <span className="text-sm text-ink-500 tabular">صفحة {page} من {pages}</span>
           {page < pages && (
             <Link href={qs({ page: page + 1 })}>
               <Button variant="outline" size="sm">التالي</Button>
@@ -161,5 +161,5 @@ export default async function AdminPaymentsPage(
 
 const chip = (active: boolean) =>
   `shrink-0 rounded-full border px-3 py-1.5 text-xs font-bold ${active
-    ? 'border-nile-500 bg-nile-500 text-white'
-    : 'border-sand-300 bg-white text-sand-700 hover:border-nile-400'}`;
+    ? 'border-teal-600 bg-teal-600 text-white'
+    : 'border-ink-300 bg-white text-ink-600 hover:border-teal-400'}`;

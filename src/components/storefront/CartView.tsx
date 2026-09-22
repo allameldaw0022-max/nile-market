@@ -44,7 +44,7 @@ export function CartView({ host, lines, quote, canCheckout }: {
 
   const short = lines.some((l) => l.quantity > l.available);
   const step = 'flex size-9 items-center justify-center rounded-[--radius-md] ' +
-               'border border-sand-300 text-navy-700 disabled:opacity-40';
+               'border border-ink-300 text-ink-700 disabled:opacity-40';
 
   return (
     <div className="grid gap-5 lg:grid-cols-[1fr_320px]">
@@ -62,11 +62,11 @@ export function CartView({ host, lines, quote, canCheckout }: {
           return (
             <Card key={line.itemId} className="flex gap-3 p-3">
               <div className="relative size-20 shrink-0 overflow-hidden rounded-[--radius-md]
-                              border border-sand-200 bg-sand-100">
+                              border border-ink-200 bg-ink-100">
                 {line.imageUrl ? (
                   <Image src={line.imageUrl} alt="" fill sizes="80px" className="object-cover" />
                 ) : (
-                  <span className="grid size-full place-items-center text-sand-400">
+                  <span className="grid size-full place-items-center text-ink-400">
                     <ImageOff size={20} />
                   </span>
                 )}
@@ -74,13 +74,13 @@ export function CartView({ host, lines, quote, canCheckout }: {
 
               <div className="min-w-0 flex-1">
                 <Link href={`/products/${line.productSlug}`}
-                      className="line-clamp-2 font-bold text-navy-900 hover:text-nile-600">
+                      className="line-clamp-2 font-bold text-ink-900 hover:text-teal-700">
                   {line.productName}
                 </Link>
                 {line.variantName && (
-                  <p className="text-xs text-sand-600">{line.variantName}</p>
+                  <p className="text-xs text-ink-500">{line.variantName}</p>
                 )}
-                <p className="mt-0.5 text-sm text-sand-600 tabular">
+                <p className="mt-0.5 text-sm text-ink-500 tabular">
                   {formatMoney(line.unitPrice)} للقطعة
                 </p>
 
@@ -97,7 +97,7 @@ export function CartView({ host, lines, quote, canCheckout }: {
                           onClick={() => change(line.itemId, line.quantity - 1)}>
                     {line.quantity <= 1 ? <Trash2 size={14} /> : <Minus size={15} />}
                   </button>
-                  <span className="min-w-8 text-center font-bold tabular text-navy-900">
+                  <span className="min-w-8 text-center font-bold tabular text-ink-900">
                     {line.quantity}
                   </span>
                   <button type="button" className={step} aria-label="زيادة الكمية"
@@ -116,7 +116,7 @@ export function CartView({ host, lines, quote, canCheckout }: {
                 </div>
               </div>
 
-              <p className="self-end font-extrabold tabular text-navy-900">
+              <p className="self-end font-extrabold tabular text-ink-900">
                 {formatMoney(line.lineTotal)}
               </p>
             </Card>
@@ -125,21 +125,21 @@ export function CartView({ host, lines, quote, canCheckout }: {
       </div>
 
       <Card className="h-fit p-4 lg:sticky lg:top-20">
-        <h2 className="font-bold text-navy-900">ملخص الطلب</h2>
+        <h2 className="font-bold text-ink-900">ملخص الطلب</h2>
         <dl className="mt-3 space-y-2 text-sm">
           <Row label="المجموع" value={formatMoney(quote?.subtotal ?? 0)} />
           <Row label="التوصيل" value="يُحتسب في الخطوة التالية" muted />
         </dl>
-        <p className="mt-4 flex items-baseline justify-between border-t border-sand-200 pt-3">
-          <span className="font-bold text-navy-900">الإجمالي المبدئي</span>
-          <span className="text-lg font-extrabold tabular text-nile-600">
+        <p className="mt-4 flex items-baseline justify-between border-t border-ink-200 pt-3">
+          <span className="font-bold text-ink-900">الإجمالي المبدئي</span>
+          <span className="text-lg font-extrabold tabular text-teal-700">
             {formatMoney(quote?.subtotal ?? 0)}
           </span>
         </p>
 
         {!canCheckout ? (
-          <p className="mt-4 rounded-[--radius-md] border border-sand-300 bg-sand-100 p-3
-                        text-center text-sm font-bold text-sand-700">
+          <p className="mt-4 rounded-[--radius-md] border border-ink-300 bg-ink-100 p-3
+                        text-center text-sm font-bold text-ink-600">
             الشراء غير متاح من هذا المتجر حاليًا
           </p>
         ) : short ? (
@@ -155,7 +155,7 @@ export function CartView({ host, lines, quote, canCheckout }: {
         )}
 
         <Link href="/products"
-              className="mt-3 block text-center text-sm font-bold text-nile-600 hover:underline">
+              className="mt-3 block text-center text-sm font-bold text-teal-700 hover:underline">
           مواصلة التسوّق
         </Link>
       </Card>
@@ -168,8 +168,8 @@ function Row({ label, value, muted = false }: {
 }) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <dt className="text-sand-600">{label}</dt>
-      <dd className={muted ? 'text-xs text-sand-600' : 'font-bold tabular text-navy-900'}>
+      <dt className="text-ink-500">{label}</dt>
+      <dd className={muted ? 'text-xs text-ink-500' : 'font-bold tabular text-ink-900'}>
         {value}
       </dd>
     </div>

@@ -70,8 +70,8 @@ export default async function AdminAuditPage(
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-extrabold text-navy-900">سجل التدقيق</h1>
-        <p className="text-sm text-sand-600 tabular">
+        <h1 className="text-xl font-extrabold text-ink-900">سجل التدقيق</h1>
+        <p className="text-sm text-ink-500 tabular">
           {formatNumber(total)} حدث — يُكتب آليًا ولا يُعدَّل ولا يُحذف.
         </p>
       </div>
@@ -80,13 +80,13 @@ export default async function AdminAuditPage(
         <input name="action" defaultValue={action} maxLength={60}
                placeholder="الإجراء — مثل partner. أو store." aria-label="تصفية بالإجراء"
                className="h-10 min-w-44 flex-1 rounded-[--radius-md] border
-                          border-[--color-field-border] bg-white px-3 text-[14px] text-navy-900
-                          placeholder:text-sand-400 focus:border-nile-500" />
+                          border-[--color-ink-400] bg-white px-3 text-[14px] text-ink-900
+                          placeholder:text-ink-400 focus:border-teal-600" />
         <input name="resource" defaultValue={resource} maxLength={40}
                placeholder="نوع المورد" aria-label="تصفية بنوع المورد"
                className="h-10 min-w-36 rounded-[--radius-md] border
-                          border-[--color-field-border] bg-white px-3 text-[14px] text-navy-900
-                          placeholder:text-sand-400 focus:border-nile-500" />
+                          border-[--color-ink-400] bg-white px-3 text-[14px] text-ink-900
+                          placeholder:text-ink-400 focus:border-teal-600" />
         <Button type="submit" variant="outline" size="sm">تصفية</Button>
       </form>
 
@@ -95,7 +95,7 @@ export default async function AdminAuditPage(
                     title="لا أحداث مطابقة" />
       ) : (
         <Card className="overflow-hidden">
-          <ul className="divide-y divide-sand-200">
+          <ul className="divide-y divide-ink-200">
             {rows.map((l) => {
               const kind = ACTOR_KIND[l.actor_kind]
                 ?? { label: l.actor_kind, tone: 'neutral' as const };
@@ -103,18 +103,18 @@ export default async function AdminAuditPage(
                 <li key={l.log_id} className="px-4 py-3">
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                     <span dir="ltr"
-                          className="font-mono text-[13px] font-bold text-navy-900">
+                          className="font-mono text-[13px] font-bold text-ink-900">
                       {l.action}
                     </span>
                     <Badge tone={kind.tone}>{kind.label}</Badge>
-                    <span className="text-xs text-sand-600">
+                    <span className="text-xs text-ink-500">
                       {l.actor_name ?? 'غير معروف'}
                     </span>
-                    <span className="ms-auto text-xs text-sand-600">
+                    <span className="ms-auto text-xs text-ink-500">
                       {formatDateTime(l.created_at)}
                     </span>
                   </div>
-                  <p className="mt-0.5 text-xs text-sand-600">
+                  <p className="mt-0.5 text-xs text-ink-500">
                     {l.resource_type && <span dir="ltr">{l.resource_type}</span>}
                     {l.store_name && <span> · {l.store_name}</span>}
                   </p>
@@ -132,7 +132,7 @@ export default async function AdminAuditPage(
               <Button variant="outline" size="sm">السابق</Button>
             </Link>
           )}
-          <span className="text-sm text-sand-600 tabular">صفحة {page} من {pages}</span>
+          <span className="text-sm text-ink-500 tabular">صفحة {page} من {pages}</span>
           {page < pages && (
             <Link href={qs({ page: page + 1 })}>
               <Button variant="outline" size="sm">التالي</Button>

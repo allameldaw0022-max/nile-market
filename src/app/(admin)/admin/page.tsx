@@ -9,7 +9,7 @@ import { formatMoney, formatNumber } from '@/lib/money/format';
 import { rpc } from '@/lib/supabase/rpc';
 
 export const metadata: Metadata = {
-  title: 'إدارة نايل ماركت',
+  title: 'إدارة سوق النيل',
   robots: { index: false, follow: false },
 };
 
@@ -47,26 +47,26 @@ export default async function AdminHomePage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-extrabold text-navy-900">نظرة عامة</h1>
-        <p className="text-sm text-sand-600">أرقام المنصة خلال آخر 30 يومًا.</p>
+        <h1 className="text-xl font-extrabold text-ink-900">نظرة عامة</h1>
+        <p className="text-sm text-ink-500">أرقام المنصة خلال آخر 30 يومًا.</p>
       </div>
 
       {blockers.length > 0 && (
-        <Card className="border-gold-500/40 bg-gold-400/10 p-5">
-          <h2 className="flex items-center gap-2 font-bold text-navy-900">
+        <Card className="border-gold-500/40 bg-gold-300/10 p-5">
+          <h2 className="flex items-center gap-2 font-bold text-ink-900">
             <AlertTriangle size={17} className="text-gold-700" />
             الإطلاق التجاري متوقّف
           </h2>
-          <p className="mt-1 text-sm text-navy-700">
+          <p className="mt-1 text-sm text-ink-700">
             لن يُفعَّل الإطلاق حتى تكتمل هذه القيم — ولا يفترض النظام أي قيمة
             لم تضبطها (D18 · D31).
           </p>
-          <ul className="mt-3 list-inside list-disc space-y-1 text-sm text-navy-700">
+          <ul className="mt-3 list-inside list-disc space-y-1 text-sm text-ink-700">
             {blockers.map((b) => <li key={b}>{b}</li>)}
           </ul>
           <Link href="/admin/plans"
                 className="mt-4 inline-flex items-center gap-1 text-sm font-bold
-                           text-nile-600 hover:underline">
+                           text-teal-700 hover:underline">
             ضبط الباقات <ArrowLeft size={14} className="flip-rtl" />
           </Link>
         </Card>
@@ -90,7 +90,7 @@ export default async function AdminHomePage() {
 
       <Card>
         <CardHeader title="بانتظارك" description="عناصر تحتاج قرارًا." />
-        <ul className="divide-y divide-sand-200">
+        <ul className="divide-y divide-ink-200">
           <PendingRow href="/admin/subscriptions" label="طلبات اشتراك للمراجعة"
                       count={o.requests_pending} />
           <PendingRow href="/admin/payouts" label="طلبات صرف للشركاء"
@@ -110,15 +110,15 @@ function PendingRow({ href, label, count }: {
   return (
     <li>
       <Link href={href}
-            className="flex items-center gap-3 px-5 py-3.5 hover:bg-sand-50">
-        <span className="flex-1 font-bold text-navy-900">{label}</span>
+            className="flex items-center gap-3 px-5 py-3.5 hover:bg-ink-50">
+        <span className="flex-1 font-bold text-ink-900">{label}</span>
         <span className={`min-w-8 rounded-full px-2.5 py-0.5 text-center text-sm
                           font-extrabold tabular ${n > 0
                             ? 'bg-gold-500/20 text-gold-700'
-                            : 'bg-sand-100 text-sand-600'}`}>
+                            : 'bg-ink-100 text-ink-500'}`}>
           {formatNumber(n)}
         </span>
-        <ArrowLeft size={15} className="flip-rtl text-sand-400" />
+        <ArrowLeft size={15} className="flip-rtl text-ink-400" />
       </Link>
     </li>
   );

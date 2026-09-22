@@ -50,8 +50,8 @@ export default async function AnalyticsPage(
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-extrabold text-navy-900">الإحصائيات</h1>
-        <p className="text-sm text-sand-600">
+        <h1 className="text-xl font-extrabold text-ink-900">الإحصائيات</h1>
+        <p className="text-sm text-ink-500">
           منذ {formatDate(a.from)} — يشمل اليوم الجاري.
         </p>
       </div>
@@ -61,8 +61,8 @@ export default async function AnalyticsPage(
           <Link key={d} href={`/dashboard/analytics?days=${d}`}
                 className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-bold
                             ${d === days
-                              ? 'border-nile-500 bg-nile-500 text-white'
-                              : 'border-sand-300 bg-white text-sand-700 hover:border-nile-400'}`}>
+                              ? 'border-teal-600 bg-teal-600 text-white'
+                              : 'border-ink-300 bg-white text-ink-600 hover:border-teal-400'}`}>
             {d} يومًا
           </Link>
         ))}
@@ -91,20 +91,20 @@ export default async function AnalyticsPage(
       <Card className="overflow-hidden">
         <CardHeader title="الزيارات والطلبات يوميًا" />
         {a.series.length === 0 ? (
-          <p className="px-5 py-4 text-sm text-sand-600">لا بيانات بعد.</p>
+          <p className="px-5 py-4 text-sm text-ink-500">لا بيانات بعد.</p>
         ) : (
           <ul className="max-h-96 space-y-1.5 overflow-y-auto p-4">
             {a.series.map((d) => (
               <li key={d.date} className="flex items-center gap-2 text-xs">
-                <span className="w-24 shrink-0 text-sand-600">{formatDate(d.date)}</span>
-                <span className="h-2.5 flex-1 rounded-full bg-sand-100">
-                  <span className="block h-2.5 rounded-full bg-nile-500"
+                <span className="w-24 shrink-0 text-ink-500">{formatDate(d.date)}</span>
+                <span className="h-2.5 flex-1 rounded-full bg-ink-100">
+                  <span className="block h-2.5 rounded-full bg-teal-600"
                         style={{ width: `${Math.max(2, (Number(d.visits) / maxVisits) * 100)}%` }} />
                 </span>
-                <span className="w-16 shrink-0 text-end tabular text-sand-700">
+                <span className="w-16 shrink-0 text-end tabular text-ink-600">
                   {formatNumber(d.visits)} زيارة
                 </span>
-                <span className="w-16 shrink-0 text-end font-bold tabular text-navy-900">
+                <span className="w-16 shrink-0 text-end font-bold tabular text-ink-900">
                   {formatNumber(d.orders)} طلب
                 </span>
               </li>
@@ -117,18 +117,18 @@ export default async function AnalyticsPage(
         <Card className="overflow-hidden">
           <CardHeader title="أكثر المنتجات مبيعًا" />
           {a.top_products.length === 0 ? (
-            <p className="px-5 py-4 text-sm text-sand-600">لا مبيعات في المدة.</p>
+            <p className="px-5 py-4 text-sm text-ink-500">لا مبيعات في المدة.</p>
           ) : (
-            <ul className="divide-y divide-sand-200">
+            <ul className="divide-y divide-ink-200">
               {a.top_products.map((p) => (
                 <li key={p.name} className="flex items-center gap-3 px-5 py-3">
-                  <span className="min-w-0 flex-1 truncate text-sm font-bold text-navy-900">
+                  <span className="min-w-0 flex-1 truncate text-sm font-bold text-ink-900">
                     {p.name}
                   </span>
-                  <span className="text-xs tabular text-sand-600">
+                  <span className="text-xs tabular text-ink-500">
                     {formatNumber(p.quantity)} قطعة
                   </span>
-                  <span className="font-bold tabular text-navy-900">
+                  <span className="font-bold tabular text-ink-900">
                     {formatMoney(p.revenue)}
                   </span>
                 </li>
@@ -140,16 +140,16 @@ export default async function AnalyticsPage(
         <Card className="overflow-hidden">
           <CardHeader title="أكثر الصفحات زيارة" />
           {a.top_pages.length === 0 ? (
-            <p className="px-5 py-4 text-sm text-sand-600">لا زيارات مسجّلة بعد.</p>
+            <p className="px-5 py-4 text-sm text-ink-500">لا زيارات مسجّلة بعد.</p>
           ) : (
-            <ul className="divide-y divide-sand-200">
+            <ul className="divide-y divide-ink-200">
               {a.top_pages.map((p) => (
                 <li key={p.path} className="flex items-center gap-3 px-5 py-3">
                   <span dir="ltr"
-                        className="min-w-0 flex-1 truncate font-mono text-[13px] text-navy-900">
+                        className="min-w-0 flex-1 truncate font-mono text-[13px] text-ink-900">
                     {p.path}
                   </span>
-                  <span className="font-bold tabular text-navy-900">
+                  <span className="font-bold tabular text-ink-900">
                     {formatNumber(p.visits)}
                   </span>
                 </li>
@@ -162,15 +162,15 @@ export default async function AnalyticsPage(
       <Card className="overflow-hidden">
         <CardHeader title="الطلبات حسب الحالة" />
         {Object.keys(a.by_status).length === 0 ? (
-          <p className="px-5 py-4 text-sm text-sand-600">لا طلبات في المدة.</p>
+          <p className="px-5 py-4 text-sm text-ink-500">لا طلبات في المدة.</p>
         ) : (
-          <ul className="divide-y divide-sand-200">
+          <ul className="divide-y divide-ink-200">
             {Object.entries(a.by_status).map(([status, count]) => (
               <li key={status} className="flex items-center gap-3 px-5 py-3">
-                <span className="flex-1 text-sm font-bold text-navy-900">
+                <span className="flex-1 text-sm font-bold text-ink-900">
                   {ORDER_STATUS[status]?.label ?? status}
                 </span>
-                <span className="font-bold tabular text-navy-900">
+                <span className="font-bold tabular text-ink-900">
                   {formatNumber(count)}
                 </span>
               </li>

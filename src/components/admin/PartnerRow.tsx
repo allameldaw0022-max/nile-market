@@ -47,8 +47,8 @@ export function PartnerRow({ partnerId, status, rate, canEdit, canRate }: {
             <input type="number" min={0} max={100} step="0.01" value={value}
                    aria-label="نسبة العمولة"
                    onChange={(e) => setValue(e.target.value)}
-                   className="h-8 w-20 rounded-[--radius-md] border border-[--color-field-border]
-                              px-2 text-sm tabular text-navy-900" />
+                   className="h-8 w-20 rounded-[--radius-md] border border-[--color-ink-400]
+                              px-2 text-sm tabular text-ink-900" />
             <Button size="sm" loading={pending} onClick={saveRate}>حفظ</Button>
             <Button size="sm" variant="ghost"
                     onClick={() => { setEditingRate(false); setValue(String(rate)); }}>
@@ -58,7 +58,7 @@ export function PartnerRow({ partnerId, status, rate, canEdit, canRate }: {
         ) : (
           <>
             <span className="inline-flex items-center gap-0.5 text-xs font-bold
-                             tabular text-sand-700">
+                             tabular text-ink-600">
               <Percent size={11} />{rate}
             </span>
             {canRate && (

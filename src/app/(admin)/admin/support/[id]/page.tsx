@@ -37,7 +37,7 @@ export default async function AdminTicketPage({ params }: PageProps<'/admin/supp
   return (
     <div className="space-y-4">
       <Link href="/admin/support"
-            className="inline-flex items-center gap-1 text-sm font-bold text-nile-600
+            className="inline-flex items-center gap-1 text-sm font-bold text-teal-700
                        hover:underline">
         <ArrowRight size={15} className="flip-rtl" />
         العودة إلى الطابور

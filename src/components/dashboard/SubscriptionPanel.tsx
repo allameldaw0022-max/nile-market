@@ -107,7 +107,7 @@ export function SubscriptionPanel({
           {current ? (
             <>
               <div className="flex flex-wrap items-center gap-3">
-                <span className="text-lg font-extrabold text-navy-900">
+                <span className="text-lg font-extrabold text-ink-900">
                   {current.planName}
                 </span>
                 <StatusChip map={SUBSCRIPTION_STATUS} value={current.status} />
@@ -126,20 +126,20 @@ export function SubscriptionPanel({
 
               {(current.status === 'expired' || current.status === 'suspended') && (
                 <p className="rounded-[--radius-md] border border-gold-500/40
-                              bg-gold-400/10 p-3.5 text-sm text-navy-700">
+                              bg-gold-300/10 p-3.5 text-sm text-ink-700">
                   الشراء من متجرك متوقف حاليًا. بياناتك ومنتجاتك وطلباتك محفوظة
                   بالكامل، وتعود فور اعتماد التجديد.
                 </p>
               )}
             </>
           ) : (
-            <p className="text-sm text-sand-600">لا يوجد اشتراك مسجَّل لهذا المتجر.</p>
+            <p className="text-sm text-ink-500">لا يوجد اشتراك مسجَّل لهذا المتجر.</p>
           )}
         </div>
       </Card>
 
       <div>
-        <h2 className="mb-3 font-bold text-navy-900">الباقات</h2>
+        <h2 className="mb-3 font-bold text-ink-900">الباقات</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {plans.map((plan) => {
             const isCurrent = current?.planId === plan.id;
@@ -147,33 +147,33 @@ export function SubscriptionPanel({
 
             return (
               <Card key={plan.id}
-                    className={`flex flex-col p-5 ${isCurrent ? 'border-nile-500' : ''}`}>
+                    className={`flex flex-col p-5 ${isCurrent ? 'border-teal-600' : ''}`}>
                 <div className="flex items-start justify-between gap-2">
-                  <h3 className="font-extrabold text-navy-900">{plan.name}</h3>
+                  <h3 className="font-extrabold text-ink-900">{plan.name}</h3>
                   {isCurrent && <Badge tone="info">باقتك</Badge>}
                 </div>
 
                 {plan.description && (
-                  <p className="mt-1 text-xs text-sand-600">{plan.description}</p>
+                  <p className="mt-1 text-xs text-ink-500">{plan.description}</p>
                 )}
 
-                <p className="mt-3 text-2xl font-extrabold tabular text-nile-600">
+                <p className="mt-3 text-2xl font-extrabold tabular text-teal-700">
                   {plan.isFree ? 'مجانية'
                     : plan.priceConfigured ? formatMoney(plan.price)
                     : '—'}
                 </p>
                 {buyable && (
-                  <p className="text-xs text-sand-600 tabular">
+                  <p className="text-xs text-ink-500 tabular">
                     كل {plan.durationDays} يومًا
                   </p>
                 )}
                 {!plan.isFree && !plan.priceConfigured && (
-                  <p className="mt-1 flex items-center gap-1 text-xs text-sand-600">
+                  <p className="mt-1 flex items-center gap-1 text-xs text-ink-500">
                     <Info size={12} /> لم يُضبط سعر هذه الباقة بعد
                   </p>
                 )}
 
-                <ul className="mt-4 flex-1 space-y-1.5 text-xs text-navy-700">
+                <ul className="mt-4 flex-1 space-y-1.5 text-xs text-ink-700">
                   {plan.entitlements
                     .filter((e) => e.configured)
                     .map((e) => (
@@ -213,18 +213,18 @@ export function SubscriptionPanel({
           <CardHeader title={`طلب باقة ${selected.name}`}
                       description="حوّل المبلغ ثم أرسل الطلب برقم العملية." />
           <div className="space-y-4 p-5">
-            <p className="rounded-[--radius-md] border border-sand-200 bg-sand-50 p-3.5
+            <p className="rounded-[--radius-md] border border-ink-200 bg-ink-50 p-3.5
                           text-sm">
-              <span className="text-sand-600">المبلغ المطلوب: </span>
-              <span className="font-extrabold tabular text-navy-900">
+              <span className="text-ink-500">المبلغ المطلوب: </span>
+              <span className="font-extrabold tabular text-ink-900">
                 {formatMoney(selected.price)}
               </span>
             </p>
 
             {payment && (payment.accounts.length > 0 || payment.bankak) && (
-              <div className="space-y-2 rounded-[--radius-md] border border-sand-200 p-4">
-                <p className="flex items-center gap-1.5 text-sm font-bold text-navy-900">
-                  <Landmark size={14} /> حوّل إلى أحد حسابات نايل ماركت
+              <div className="space-y-2 rounded-[--radius-md] border border-ink-200 p-4">
+                <p className="flex items-center gap-1.5 text-sm font-bold text-ink-900">
+                  <Landmark size={14} /> حوّل إلى أحد حسابات سوق النيل
                 </p>
                 {payment.bankak && (
                   <AccountRow bank="بنكك" account={payment.bankak}
@@ -239,7 +239,7 @@ export function SubscriptionPanel({
                               copied={copied === a.account} />
                 ))}
                 {payment.instructions && (
-                  <p className="border-t border-sand-200 pt-2 text-xs text-sand-600">
+                  <p className="border-t border-ink-200 pt-2 text-xs text-ink-500">
                     {payment.instructions}
                   </p>
                 )}
@@ -257,7 +257,7 @@ export function SubscriptionPanel({
               <Button variant="ghost" onClick={() => setSelected(null)}>إلغاء</Button>
             </div>
 
-            <p className="text-xs text-sand-600">
+            <p className="text-xs text-ink-500">
               يراجع فريقنا التحويل يدويًا ثم يُفعَّل اشتراكك. لا يوجد تجديد آلي
               ولا خصم تلقائي من أي بطاقة.
             </p>
@@ -268,18 +268,18 @@ export function SubscriptionPanel({
       {requests.length > 0 && (
         <Card className="overflow-hidden">
           <CardHeader title="طلبات الاشتراك" />
-          <ul className="divide-y divide-sand-200">
+          <ul className="divide-y divide-ink-200">
             {requests.map((r) => {
               const status = REQUEST_STATUS[r.status]
                 ?? { label: r.status, tone: 'neutral' as const };
               return (
                 <li key={r.id}
                     className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3.5">
-                  <span className="font-bold text-navy-900">{r.planName}</span>
-                  <span className="font-bold tabular text-navy-900">
+                  <span className="font-bold text-ink-900">{r.planName}</span>
+                  <span className="font-bold tabular text-ink-900">
                     {formatMoney(r.netAmount)}
                   </span>
-                  <span className="min-w-0 flex-1 text-xs text-sand-600">
+                  <span className="min-w-0 flex-1 text-xs text-ink-500">
                     {formatDate(r.createdAt)}
                     {r.reference && <span dir="ltr"> · {r.reference}</span>}
                     {r.rejectionReason && (
@@ -311,8 +311,8 @@ export function SubscriptionPanel({
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between gap-3 sm:block">
-      <dt className="text-xs text-sand-600">{label}</dt>
-      <dd className="font-bold text-navy-900">{value}</dd>
+      <dt className="text-xs text-ink-500">{label}</dt>
+      <dd className="font-bold text-ink-900">{value}</dd>
     </div>
   );
 }
@@ -323,12 +323,12 @@ function AccountRow({ bank, account, holder, onCopy, copied }: {
 }) {
   return (
     <div className="flex flex-wrap items-center gap-2 text-sm">
-      <span className="font-bold text-navy-900">{bank}</span>
-      {holder && <span className="text-xs text-sand-600">{holder}</span>}
-      <code className="min-w-0 flex-1 truncate rounded bg-sand-50 px-2 py-1 text-xs
-                       text-navy-900" dir="ltr">{account}</code>
+      <span className="font-bold text-ink-900">{bank}</span>
+      {holder && <span className="text-xs text-ink-500">{holder}</span>}
+      <code className="min-w-0 flex-1 truncate rounded bg-ink-50 px-2 py-1 text-xs
+                       text-ink-900" dir="ltr">{account}</code>
       <button type="button" onClick={onCopy} aria-label={`نسخ رقم ${bank}`}
-              className="rounded p-1.5 text-sand-600 hover:text-nile-600">
+              className="rounded p-1.5 text-ink-500 hover:text-teal-700">
         {copied ? <Check size={14} className="text-[--color-success]" /> : <Copy size={14} />}
       </button>
     </div>

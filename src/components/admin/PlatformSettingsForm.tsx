@@ -72,15 +72,15 @@ export function PlatformSettingsForm({ settings, canManage, launchBlockers }: {
   return (
     <div className="space-y-4">
       {launchBlockers.length > 0 && (
-        <Card className="border-gold-500/40 bg-gold-400/10 p-5">
-          <h2 className="flex items-center gap-2 font-bold text-navy-900">
+        <Card className="border-gold-500/40 bg-gold-300/10 p-5">
+          <h2 className="flex items-center gap-2 font-bold text-ink-900">
             <AlertTriangle size={17} className="text-gold-700" />
             الإطلاق التجاري لا يُفعَّل بعد
           </h2>
-          <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-navy-700">
+          <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-ink-700">
             {launchBlockers.map((b) => <li key={b}>{b}</li>)}
           </ul>
-          <p className="mt-2 text-xs text-navy-700">
+          <p className="mt-2 text-xs text-ink-700">
             القاعدة ترفض التفعيل ما دام أحدها قائمًا (D31) — التبديل هنا
             لن يغيّر ذلك.
           </p>
@@ -142,7 +142,7 @@ export function PlatformSettingsForm({ settings, canManage, launchBlockers }: {
                         onClick={() => set('bankAccounts',
                           s.bankAccounts.filter((_, j) => j !== i))}
                         className="mt-6 h-11 rounded-[--radius-md] border
-                                   border-sand-300 px-3 text-[--color-danger]
+                                   border-ink-300 px-3 text-[--color-danger]
                                    hover:border-[--color-danger]">
                   <Trash2 size={15} />
                 </button>
@@ -180,7 +180,7 @@ export function PlatformSettingsForm({ settings, canManage, launchBlockers }: {
           description="تُعرض على /legal — وما لا يُكتب هنا يظهر «لم تُنشر بعد» لا نصًّا افتراضيًا."
         />
         <div className="space-y-4 p-5">
-          <p className="rounded-[--radius-md] bg-sand-50 p-3 text-xs text-sand-700">
+          <p className="rounded-[--radius-md] bg-ink-50 p-3 text-xs text-ink-600">
             صفحة التسجيل تطلب الموافقة على الشروط وسياسة الخصوصية، فاكتبهما
             قبل فتح التسجيل. ويجب أن توثّق سياسة الخصوصية نطاق إخفاء الهوية:
             يشمل بيانات الحسابات والعملاء ولا يمسّ الطلبات ولا السجلات

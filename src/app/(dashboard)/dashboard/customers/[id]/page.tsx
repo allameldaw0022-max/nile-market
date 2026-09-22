@@ -47,23 +47,23 @@ export default async function CustomerPage(
   return (
     <div className="space-y-5">
       <Link href="/dashboard/customers"
-            className="inline-flex items-center gap-1 text-sm font-bold text-sand-600
-                       hover:text-nile-600">
+            className="inline-flex items-center gap-1 text-sm font-bold text-ink-500
+                       hover:text-teal-700">
         <ChevronRight size={15} /> العملاء
       </Link>
 
       <div>
-        <h1 className="text-xl font-extrabold text-navy-900">
+        <h1 className="text-xl font-extrabold text-ink-900">
           {anonymized ? 'عميل محذوف' : (customer.name ?? 'بلا اسم')}
         </h1>
-        <p className="text-sm text-sand-600">
+        <p className="text-sm text-ink-500">
           عميل في هذا المتجر منذ {formatDate(customer.created_at)}
         </p>
       </div>
 
       {anonymized && (
-        <p role="status" className="rounded-[--radius-md] border border-sand-300
-                        bg-sand-100 p-3.5 text-sm text-sand-700">
+        <p role="status" className="rounded-[--radius-md] border border-ink-300
+                        bg-ink-100 p-3.5 text-sm text-ink-600">
           طلب هذا العميل حذف بياناته. الطلبات والفواتير تبقى كما هي لأنها سجل
           مالي، وبياناته الشخصية أُزيلت.
         </p>
@@ -80,21 +80,21 @@ export default async function CustomerPage(
         <Card>
           <CardHeader title="الطلبات" description="آخر 20 طلبًا." />
           {!orders || orders.length === 0 ? (
-            <p className="px-5 py-8 text-center text-sm text-sand-600">لا طلبات.</p>
+            <p className="px-5 py-8 text-center text-sm text-ink-500">لا طلبات.</p>
           ) : (
-            <ul className="divide-y divide-sand-200">
+            <ul className="divide-y divide-ink-200">
               {orders.map((o) => (
                 <li key={o.id}>
                   <Link href={`/dashboard/orders/${o.id}`}
                         className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3
-                                   hover:bg-sand-50">
-                    <span className="font-extrabold tabular text-navy-900" dir="ltr">
+                                   hover:bg-ink-50">
+                    <span className="font-extrabold tabular text-ink-900" dir="ltr">
                       {o.order_number}
                     </span>
-                    <span className="flex-1 text-xs text-sand-600">
+                    <span className="flex-1 text-xs text-ink-500">
                       {formatDateTime(o.created_at)}
                     </span>
-                    <span className="font-bold tabular text-navy-900">
+                    <span className="font-bold tabular text-ink-900">
                       {formatMoney(o.total)}
                     </span>
                     <StatusChip map={PAYMENT_STATUS} value={o.payment_status} />
@@ -111,35 +111,35 @@ export default async function CustomerPage(
             <CardHeader title="بيانات التواصل" />
             <div className="space-y-3 p-5 text-sm">
               {anonymized ? (
-                <p className="text-sand-600">أُزيلت بيانات التواصل.</p>
+                <p className="text-ink-500">أُزيلت بيانات التواصل.</p>
               ) : (
                 <>
                   {phone && (
-                    <p className="tabular text-navy-900" dir="ltr">{phone}</p>
+                    <p className="tabular text-ink-900" dir="ltr">{phone}</p>
                   )}
                   {customer.email && (
-                    <p className="text-sand-700" dir="ltr">{customer.email}</p>
+                    <p className="text-ink-600" dir="ltr">{customer.email}</p>
                   )}
                   {phone && (
                     <div className="flex flex-wrap gap-2">
                       <a href={`tel:${phone}`}
                          className="inline-flex items-center gap-1.5 rounded-[--radius-md]
-                                    border border-sand-300 px-3 py-2 text-[13px] font-bold
-                                    text-navy-700 hover:border-nile-500">
+                                    border border-ink-300 px-3 py-2 text-[13px] font-bold
+                                    text-ink-700 hover:border-teal-600">
                         <Phone size={14} /> اتصال
                       </a>
                       <a href={`https://wa.me/${waNumber}`} target="_blank"
                          rel="noopener noreferrer"
                          className="inline-flex items-center gap-1.5 rounded-[--radius-md]
-                                    border border-sand-300 px-3 py-2 text-[13px] font-bold
-                                    text-navy-700 hover:border-nile-500">
+                                    border border-ink-300 px-3 py-2 text-[13px] font-bold
+                                    text-ink-700 hover:border-teal-600">
                         <MessageCircle size={14} /> واتساب
                       </a>
                     </div>
                   )}
-                  <p className="border-t border-sand-200 pt-3 text-xs text-sand-600">
+                  <p className="border-t border-ink-200 pt-3 text-xs text-ink-500">
                     الموافقة التسويقية:{' '}
-                    <span className="font-bold text-navy-700">
+                    <span className="font-bold text-ink-700">
                       {customer.marketing_consent ? 'موافق' : 'غير موافق'}
                     </span>
                   </p>

@@ -96,17 +96,17 @@ export default async function OrderDetailPage(
   return (
     <div className="space-y-5">
       <Link href="/dashboard/orders"
-            className="inline-flex items-center gap-1 text-sm font-bold text-sand-600
-                       hover:text-nile-600">
+            className="inline-flex items-center gap-1 text-sm font-bold text-ink-500
+                       hover:text-teal-700">
         <ChevronRight size={15} /> الطلبات
       </Link>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-extrabold tabular text-navy-900" dir="ltr">
+          <h1 className="text-xl font-extrabold tabular text-ink-900" dir="ltr">
             {order.order_number}
           </h1>
-          <p className="text-sm text-sand-600">{formatDateTime(order.created_at)}</p>
+          <p className="text-sm text-ink-500">{formatDateTime(order.created_at)}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <StatusChip map={PAYMENT_STATUS} value={order.payment_status} />
@@ -118,37 +118,37 @@ export default async function OrderDetailPage(
         <div className="space-y-5">
           <Card>
             <CardHeader title="المنتجات" />
-            <ul className="divide-y divide-sand-200">
+            <ul className="divide-y divide-ink-200">
               {items.map((item) => (
                 <li key={item.id} className="flex items-start justify-between gap-3 px-5 py-3">
                   <div className="min-w-0">
                     {/* لقطة نصية: الاسم محفوظ في الطلب ولا يتغيّر بتعديل المنتج */}
-                    <p className="font-bold text-navy-900">{item.product_name}</p>
+                    <p className="font-bold text-ink-900">{item.product_name}</p>
                     {item.variant_name && (
-                      <p className="text-xs text-sand-600">{item.variant_name}</p>
+                      <p className="text-xs text-ink-500">{item.variant_name}</p>
                     )}
-                    <p className="text-xs text-sand-600 tabular">
+                    <p className="text-xs text-ink-500 tabular">
                       {formatMoney(item.unit_price)} × {item.quantity}
                       {item.sku && <span dir="ltr"> · {item.sku}</span>}
                     </p>
                   </div>
-                  <p className="font-bold tabular text-navy-900">
+                  <p className="font-bold tabular text-ink-900">
                     {formatMoney(item.line_total)}
                   </p>
                 </li>
               ))}
             </ul>
 
-            <dl className="space-y-2 border-t border-sand-200 px-5 py-4 text-sm">
+            <dl className="space-y-2 border-t border-ink-200 px-5 py-4 text-sm">
               <Row label="المجموع" value={formatMoney(order.subtotal)} />
               <Row label="التوصيل" value={formatMoney(order.delivery_fee)} />
               {Number(order.discount_total) > 0 && (
                 <Row label={`الخصم${order.coupon_code ? ` (${order.coupon_code})` : ''}`}
                      value={`− ${formatMoney(order.discount_total)}`} />
               )}
-              <div className="flex items-baseline justify-between border-t border-sand-200 pt-2">
-                <dt className="font-bold text-navy-900">الإجمالي</dt>
-                <dd className="text-lg font-extrabold tabular text-navy-900">
+              <div className="flex items-baseline justify-between border-t border-ink-200 pt-2">
+                <dt className="font-bold text-ink-900">الإجمالي</dt>
+                <dd className="text-lg font-extrabold tabular text-ink-900">
                   {formatMoney(order.total)}
                 </dd>
               </div>
@@ -165,25 +165,25 @@ export default async function OrderDetailPage(
           <Card>
             <CardHeader title="سجل الطلب"
                         description="سجل إلحاقي لا يُعدَّل ولا يُحذف." />
-            <ol className="divide-y divide-sand-200">
+            <ol className="divide-y divide-ink-200">
               {history.map((h) => (
                 <li key={h.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-5 py-3">
                   <Badge tone={ORDER_STATUS[h.to_status]?.tone ?? 'neutral'}>
                     {ORDER_STATUS[h.to_status]?.label ?? h.to_status}
                   </Badge>
                   {h.from_status && (
-                    <span className="text-xs text-sand-600">
+                    <span className="text-xs text-ink-500">
                       من {ORDER_STATUS[h.from_status]?.label ?? h.from_status}
                     </span>
                   )}
-                  <span className="text-xs text-sand-600">
+                  <span className="text-xs text-ink-500">
                     {(h.actor_id ? nameOf.get(h.actor_id) : null) ?? 'الزبون'}
                   </span>
-                  <span className="ms-auto text-xs text-sand-500">
+                  <span className="ms-auto text-xs text-ink-500">
                     {formatDateTime(h.created_at)}
                   </span>
                   {h.reason && (
-                    <p className="w-full text-xs text-sand-700">السبب: {h.reason}</p>
+                    <p className="w-full text-xs text-ink-600">السبب: {h.reason}</p>
                   )}
                 </li>
               ))}
@@ -193,20 +193,20 @@ export default async function OrderDetailPage(
           {payments.length > 0 && (
             <Card>
               <CardHeader title="الدفعات" />
-              <ul className="divide-y divide-sand-200">
+              <ul className="divide-y divide-ink-200">
                 {payments.map((p) => (
                   <li key={p.id} className="flex flex-wrap items-center gap-x-3 gap-y-1
                                             px-5 py-3 text-sm">
-                    <span className="font-bold tabular text-navy-900">
+                    <span className="font-bold tabular text-ink-900">
                       {formatMoney(p.amount)}
                     </span>
-                    <span className="text-sand-600">
+                    <span className="text-ink-500">
                       {PAYMENT_METHOD[p.method] ?? p.method}
                     </span>
                     {p.reference && (
-                      <span className="text-xs text-sand-600" dir="ltr">{p.reference}</span>
+                      <span className="text-xs text-ink-500" dir="ltr">{p.reference}</span>
                     )}
-                    <span className="ms-auto text-xs text-sand-500">
+                    <span className="ms-auto text-xs text-ink-500">
                       {formatDateTime(p.paid_at ?? p.created_at)}
                     </span>
                   </li>
@@ -221,48 +221,48 @@ export default async function OrderDetailPage(
             <CardHeader title="الزبون" />
             <div className="space-y-3 p-5 text-sm">
               <div>
-                <p className="font-bold text-navy-900">{order.contact_name}</p>
-                <p className="tabular text-sand-700" dir="ltr">{order.contact_phone}</p>
+                <p className="font-bold text-ink-900">{order.contact_name}</p>
+                <p className="tabular text-ink-600" dir="ltr">{order.contact_phone}</p>
                 {order.contact_email && (
-                  <p className="text-sand-600" dir="ltr">{order.contact_email}</p>
+                  <p className="text-ink-500" dir="ltr">{order.contact_email}</p>
                 )}
               </div>
 
               <div className="flex flex-wrap gap-2">
                 <a href={`tel:${order.contact_phone}`}
                    className="inline-flex items-center gap-1.5 rounded-[--radius-md] border
-                              border-sand-300 px-3 py-2 text-[13px] font-bold text-navy-700
-                              hover:border-nile-500">
+                              border-ink-300 px-3 py-2 text-[13px] font-bold text-ink-700
+                              hover:border-teal-600">
                   <Phone size={14} /> اتصال
                 </a>
                 <a href={`https://wa.me/${waNumber}`} target="_blank" rel="noopener noreferrer"
                    className="inline-flex items-center gap-1.5 rounded-[--radius-md] border
-                              border-sand-300 px-3 py-2 text-[13px] font-bold text-navy-700
-                              hover:border-nile-500">
+                              border-ink-300 px-3 py-2 text-[13px] font-bold text-ink-700
+                              hover:border-teal-600">
                   <MessageCircle size={14} /> واتساب
                 </a>
               </div>
 
-              <div className="border-t border-sand-200 pt-3">
-                <p className="text-xs font-bold text-sand-600">التوصيل</p>
-                <p className="text-navy-900">{order.delivery_zone_name ?? '—'}</p>
-                {address.line && <p className="text-sand-700">{address.line}</p>}
+              <div className="border-t border-ink-200 pt-3">
+                <p className="text-xs font-bold text-ink-500">التوصيل</p>
+                <p className="text-ink-900">{order.delivery_zone_name ?? '—'}</p>
+                {address.line && <p className="text-ink-600">{address.line}</p>}
                 {address.landmark && (
-                  <p className="text-xs text-sand-600">{address.landmark}</p>
+                  <p className="text-xs text-ink-500">{address.landmark}</p>
                 )}
               </div>
 
-              <div className="border-t border-sand-200 pt-3">
-                <p className="text-xs font-bold text-sand-600">طريقة الدفع</p>
-                <p className="text-navy-900">
+              <div className="border-t border-ink-200 pt-3">
+                <p className="text-xs font-bold text-ink-500">طريقة الدفع</p>
+                <p className="text-ink-900">
                   {PAYMENT_METHOD[order.payment_method] ?? order.payment_method}
                 </p>
               </div>
 
               {order.note && (
-                <div className="border-t border-sand-200 pt-3">
-                  <p className="text-xs font-bold text-sand-600">ملاحظة الزبون</p>
-                  <p className="text-navy-700">{order.note}</p>
+                <div className="border-t border-ink-200 pt-3">
+                  <p className="text-xs font-bold text-ink-500">ملاحظة الزبون</p>
+                  <p className="text-ink-700">{order.note}</p>
                 </div>
               )}
             </div>
@@ -275,13 +275,13 @@ export default async function OrderDetailPage(
                 <OrderStatusActions storeId={membership.storeId} orderId={order.id}
                                     status={order.status} />
               ) : (
-                <p className="text-sm text-sand-600">
+                <p className="text-sm text-ink-500">
                   لا تملك صلاحية تغيير حالة الطلب.
                 </p>
               )}
 
               {can(membership, 'orders:payment') && order.status !== 'cancelled' && (
-                <div className="border-t border-sand-200 pt-4">
+                <div className="border-t border-ink-200 pt-4">
                   <RecordPaymentForm storeId={membership.storeId} orderId={order.id}
                                      remaining={remaining} idempotencyKey={randomUUID()} />
                 </div>
@@ -299,8 +299,8 @@ function Row({ label, value, danger = false }: {
 }) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <dt className="text-sand-600">{label}</dt>
-      <dd className={`font-bold tabular ${danger ? 'text-[--color-danger]' : 'text-navy-900'}`}>
+      <dt className="text-ink-500">{label}</dt>
+      <dd className={`font-bold tabular ${danger ? 'text-[--color-danger]' : 'text-ink-900'}`}>
         {value}
       </dd>
     </div>

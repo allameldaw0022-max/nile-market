@@ -41,8 +41,8 @@ export function InventoryAdjuster({ storeId, productId, quantity }: {
   });
 
   const btn = 'flex size-9 items-center justify-center rounded-[--radius-md] ' +
-              'border border-sand-300 text-navy-700 hover:border-nile-500 ' +
-              'hover:text-nile-600 disabled:opacity-50';
+              'border border-ink-300 text-ink-700 hover:border-teal-600 ' +
+              'hover:text-teal-700 disabled:opacity-50';
 
   return (
     <div className="flex flex-col items-end gap-1">
@@ -55,16 +55,16 @@ export function InventoryAdjuster({ storeId, productId, quantity }: {
         <input value={amount} onChange={(e) => setAmount(e.target.value)}
                type="number" min={1} step={1} inputMode="numeric" dir="ltr"
                aria-label="مقدار التعديل"
-               className="h-9 w-16 rounded-[--radius-md] border border-[--color-field-border] bg-white
-                          px-2 text-center text-sm tabular text-navy-900
-                          focus:border-nile-500" />
+               className="h-9 w-16 rounded-[--radius-md] border border-[--color-ink-400] bg-white
+                          px-2 text-center text-sm tabular text-ink-900
+                          focus:border-teal-600" />
 
         <button type="button" className={btn} disabled={pending}
                 aria-label="زيادة المخزون" onClick={() => apply(1)}>
           <Plus size={15} />
         </button>
 
-        <span className="ms-2 min-w-14 text-end font-bold tabular text-navy-900">
+        <span className="ms-2 min-w-14 text-end font-bold tabular text-ink-900">
           {current}
           {saved && <Check size={13} className="ms-1 inline text-[--color-success]" />}
         </span>

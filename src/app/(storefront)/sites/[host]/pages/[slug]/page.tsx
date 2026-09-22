@@ -48,14 +48,14 @@ export default async function PolicyPage({ params }: PageProps<'/sites/[host]/pa
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
-      <h1 className="text-xl font-extrabold text-navy-900">{page.title}</h1>
+      <h1 className="text-xl font-extrabold text-ink-900">{page.title}</h1>
       {body ? (
-        <div className="mt-5 whitespace-pre-line text-sm leading-relaxed text-navy-700">
+        <div className="mt-5 whitespace-pre-line text-sm leading-relaxed text-ink-700">
           {body}
         </div>
       ) : (
-        <p className="mt-5 rounded-[--radius-lg] border border-dashed border-sand-300
-                      bg-white px-6 py-10 text-center text-sm text-sand-600">
+        <p className="mt-5 rounded-[--radius-lg] border border-dashed border-ink-300
+                      bg-white px-6 py-10 text-center text-sm text-ink-500">
           لم يضِف المتجر هذه السياسة بعد. تواصل معه لأي استفسار.
         </p>
       )}

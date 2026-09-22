@@ -28,8 +28,8 @@ export function LoginForm() {
     <form action={action} className="mt-8 space-y-4">
       {next && <input type="hidden" name="next" value={next} />}
       {signedOutAll && (
-        <p role="status" className="rounded-[--radius-md] border border-nile-200
-                       bg-nile-50 p-3 text-sm text-navy-700">
+        <p role="status" className="rounded-[--radius-md] border border-teal-200
+                       bg-teal-50 p-3 text-sm text-ink-700">
           أُنهيت كل جلساتك على جميع الأجهزة. سجّل الدخول من جديد.
         </p>
       )}
@@ -56,7 +56,7 @@ export function LoginForm() {
              autoComplete="current-password" />
 
       <div className="flex justify-start">
-        <Link href="/forgot-password" className="text-xs font-bold text-nile-600 hover:underline">
+        <Link href="/forgot-password" className="text-xs font-bold text-teal-700 hover:underline">
           نسيت كلمة المرور؟
         </Link>
       </div>
@@ -66,9 +66,9 @@ export function LoginForm() {
       </Button>
 
       <div className="flex items-center gap-3 py-1">
-        <span className="h-px flex-1 bg-sand-200" />
-        <span className="text-xs text-sand-600">أو</span>
-        <span className="h-px flex-1 bg-sand-200" />
+        <span className="h-px flex-1 bg-ink-200" />
+        <span className="text-xs text-ink-500">أو</span>
+        <span className="h-px flex-1 bg-ink-200" />
       </div>
 
       <Button type="button" variant="outline" className="w-full" size="lg"

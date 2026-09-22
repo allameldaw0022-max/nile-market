@@ -167,20 +167,20 @@ export function CouponManager({ storeId, coupons, canManage }: {
         />
       ) : (
         <Card className="overflow-hidden">
-          <ul className="divide-y divide-sand-200">
+          <ul className="divide-y divide-ink-200">
             {coupons.map((c) => (
               <li key={c.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3.5">
                 <span className="inline-flex items-center gap-1.5 font-extrabold
-                                 tabular text-navy-900" dir="ltr">
+                                 tabular text-ink-900" dir="ltr">
                   {c.type === 'percentage' ? <Percent size={14} /> : <Tag size={14} />}
                   {c.code}
                 </span>
 
-                <span className="font-bold tabular text-navy-900">
+                <span className="font-bold tabular text-ink-900">
                   {c.type === 'percentage' ? `${c.value}%` : formatMoney(c.value)}
                 </span>
 
-                <div className="min-w-0 flex-1 text-xs text-sand-600">
+                <div className="min-w-0 flex-1 text-xs text-ink-500">
                   {c.minOrderAmount != null && (
                     <span className="me-3">أقل طلب {formatMoney(c.minOrderAmount)}</span>
                   )}

@@ -53,8 +53,8 @@ export function OnboardingWizard({ initial }: { initial: WizardInitial | null })
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
-      <h1 className="text-xl font-extrabold text-navy-900">إنشاء متجرك</h1>
-      <p className="text-sm text-sand-600">
+      <h1 className="text-xl font-extrabold text-ink-900">إنشاء متجرك</h1>
+      <p className="text-sm text-ink-500">
         تقدّمك محفوظ تلقائيًا — يمكنك المتابعة في أي وقت.
       </p>
 
@@ -70,9 +70,9 @@ export function OnboardingWizard({ initial }: { initial: WizardInitial | null })
                 aria-current={active ? 'step' : undefined}
                 className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5
                             text-xs font-bold transition-colors ${
-                  active ? 'border-nile-500 bg-nile-500 text-white'
+                  active ? 'border-teal-600 bg-teal-600 text-white'
                   : done ? 'border-[--color-success]/40 bg-[--color-success-bg] text-[--color-success]'
-                  : 'border-sand-300 bg-white text-sand-600'}`}
+                  : 'border-ink-300 bg-white text-ink-500'}`}
               >
                 {done ? <Check size={13} /> : <s.icon size={13} />}
                 {s.label}
@@ -114,8 +114,8 @@ function CreateStoreStep({ onCreated }: { onCreated: (s: WizardInitial) => void 
 
   return (
     <div className="mx-auto max-w-lg px-4 py-10">
-      <h1 className="text-2xl font-extrabold text-navy-900">أنشئ متجرك</h1>
-      <p className="mt-1 text-sm text-sand-600">اسم المتجر ورابطه — يمكنك تعديلهما لاحقًا.</p>
+      <h1 className="text-2xl font-extrabold text-ink-900">أنشئ متجرك</h1>
+      <p className="mt-1 text-sm text-ink-500">اسم المتجر ورابطه — يمكنك تعديلهما لاحقًا.</p>
 
       <form
         className="mt-8 space-y-4"
@@ -169,11 +169,11 @@ function CreateStoreStep({ onCreated }: { onCreated: (s: WizardInitial) => void 
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="bt" className="block text-[13px] font-bold text-navy-700">نوع النشاط</label>
+          <label htmlFor="bt" className="block text-[13px] font-bold text-ink-700">نوع النشاط</label>
           <select id="bt" name="business_type" value={businessType}
                   onChange={(e) => setBusinessType(e.target.value)}
-                  className="h-11 w-full rounded-[--radius-md] border border-[--color-field-border] bg-white
-                             px-3 text-[15px] text-navy-900 focus:border-nile-500">
+                  className="h-11 w-full rounded-[--radius-md] border border-[--color-ink-400] bg-white
+                             px-3 text-[15px] text-ink-900 focus:border-teal-600">
             <option value="">اختر نوع النشاط</option>
             {BUSINESS_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
           </select>
@@ -221,15 +221,15 @@ function StepShell({ title, description, children, footer, saveState }: {
 }) {
   return (
     <Card>
-      <div className="flex items-start justify-between gap-3 border-b border-sand-200 px-5 py-4">
+      <div className="flex items-start justify-between gap-3 border-b border-ink-200 px-5 py-4">
         <div>
-          <h2 className="font-bold text-navy-900">{title}</h2>
-          {description && <p className="mt-0.5 text-sm text-sand-600">{description}</p>}
+          <h2 className="font-bold text-ink-900">{title}</h2>
+          {description && <p className="mt-0.5 text-sm text-ink-500">{description}</p>}
         </div>
         {saveState}
       </div>
       <div className="space-y-4 p-5">{children}</div>
-      <div className="flex items-center justify-end gap-2 border-t border-sand-200 px-5 py-4">
+      <div className="flex items-center justify-end gap-2 border-t border-ink-200 px-5 py-4">
         {footer}
       </div>
     </Card>
@@ -253,11 +253,11 @@ function StoreInfoStep({ store, setStore, onNext }: StepProps) {
       <Input label="اسم المتجر" value={store.name} required
              onChange={(e) => { setStore({ ...store, name: e.target.value }); markDirty(); }} />
       <div className="space-y-1.5">
-        <label htmlFor="bt2" className="block text-[13px] font-bold text-navy-700">نوع النشاط</label>
+        <label htmlFor="bt2" className="block text-[13px] font-bold text-ink-700">نوع النشاط</label>
         <select id="bt2" value={store.businessType}
                 onChange={(e) => { setStore({ ...store, businessType: e.target.value }); markDirty(); }}
-                className="h-11 w-full rounded-[--radius-md] border border-[--color-field-border] bg-white
-                           px-3 text-[15px] text-navy-900 focus:border-nile-500">
+                className="h-11 w-full rounded-[--radius-md] border border-[--color-ink-400] bg-white
+                           px-3 text-[15px] text-ink-900 focus:border-teal-600">
           <option value="">اختر نوع النشاط</option>
           {BUSINESS_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
         </select>
@@ -342,12 +342,12 @@ function Toggle({ label, hint, checked, onChange }: {
 }) {
   return (
     <label className="flex cursor-pointer items-start gap-3 rounded-[--radius-md]
-                      border border-sand-200 p-3.5 hover:border-nile-300">
-      <input type="checkbox" checked={checked} className="mt-1 size-4 accent-[--color-nile-500]"
+                      border border-ink-200 p-3.5 hover:border-teal-300">
+      <input type="checkbox" checked={checked} className="mt-1 size-4 accent-[--color-teal-600]"
              onChange={(e) => onChange(e.target.checked)} />
       <span>
-        <span className="block text-sm font-bold text-navy-900">{label}</span>
-        <span className="block text-xs text-sand-600">{hint}</span>
+        <span className="block text-sm font-bold text-ink-900">{label}</span>
+        <span className="block text-xs text-ink-500">{hint}</span>
       </span>
     </label>
   );
@@ -399,10 +399,10 @@ function PublishStep({ store, onDone }: { store: WizardInitial; onDone: () => vo
     return (
       <Card className="p-6 text-center">
         <CheckCircle2 className="mx-auto text-[--color-success]" size={40} />
-        <h2 className="mt-3 text-lg font-extrabold text-navy-900">متجرك منشور الآن</h2>
+        <h2 className="mt-3 text-lg font-extrabold text-ink-900">متجرك منشور الآن</h2>
         {result.host && (
           <a href={`https://${result.host}`} target="_blank" rel="noopener noreferrer"
-             dir="ltr" className="mt-2 block break-all text-sm font-bold text-nile-600 hover:underline">
+             dir="ltr" className="mt-2 block break-all text-sm font-bold text-teal-700 hover:underline">
             {result.host}
           </a>
         )}
@@ -428,7 +428,7 @@ function PublishStep({ store, onDone }: { store: WizardInitial; onDone: () => vo
         </Button>
       }
     >
-      <dl className="divide-y divide-sand-200 text-sm">
+      <dl className="divide-y divide-ink-200 text-sm">
         <Row label="اسم المتجر" value={store.name} />
         <Row label="الرابط" value={`${store.slug}.nilemarket.online`} ltr />
         <Row label="نوع النشاط" value={store.businessType || '—'} />
@@ -447,9 +447,9 @@ function PublishStep({ store, onDone }: { store: WizardInitial; onDone: () => vo
       )}
 
       {result && !result.published && result.missing.length > 0 && (
-        <div className="rounded-[--radius-md] border border-gold-500/40 bg-gold-400/10 p-4">
-          <p className="text-sm font-bold text-navy-900">ينقص متجرك قبل النشر:</p>
-          <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-navy-700">
+        <div className="rounded-[--radius-md] border border-gold-500/40 bg-gold-300/10 p-4">
+          <p className="text-sm font-bold text-ink-900">ينقص متجرك قبل النشر:</p>
+          <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-ink-700">
             {result.missing.map((m) => <li key={m}>{m}</li>)}
           </ul>
         </div>
@@ -461,8 +461,8 @@ function PublishStep({ store, onDone }: { store: WizardInitial; onDone: () => vo
 function Row({ label, value, ltr = false }: { label: string; value: string; ltr?: boolean }) {
   return (
     <div className="flex items-center justify-between gap-3 py-2.5">
-      <dt className="text-sand-600">{label}</dt>
-      <dd className="font-bold text-navy-900" dir={ltr ? 'ltr' : undefined}>{value}</dd>
+      <dt className="text-ink-500">{label}</dt>
+      <dd className="font-bold text-ink-900" dir={ltr ? 'ltr' : undefined}>{value}</dd>
     </div>
   );
 }

@@ -35,14 +35,14 @@ export function ProductRowActions({ storeId, productId, status, canDelete }: {
     run(() => setProductStatus(storeId, productId, next));
 
   const item = 'flex w-full items-center gap-2 px-3 py-2.5 text-start text-sm ' +
-               'font-medium text-navy-700 hover:bg-sand-50 disabled:opacity-50';
+               'font-medium text-ink-700 hover:bg-ink-50 disabled:opacity-50';
 
   return (
     <div className="relative">
       <button type="button" aria-label="إجراءات المنتج" aria-expanded={open}
               disabled={pending}
               onClick={() => setOpen(!open)}
-              className="rounded p-2 text-sand-600 hover:bg-sand-100 disabled:opacity-50">
+              className="rounded p-2 text-ink-500 hover:bg-ink-100 disabled:opacity-50">
         <MoreVertical size={16} />
       </button>
 
@@ -51,7 +51,7 @@ export function ProductRowActions({ storeId, productId, status, canDelete }: {
           <button type="button" aria-label="إغلاق القائمة" className="fixed inset-0 z-30
                   cursor-default" onClick={() => setOpen(false)} />
           <div className="absolute end-0 z-40 mt-1 w-52 overflow-hidden rounded-[--radius-md]
-                          border border-sand-200 bg-white shadow-lg">
+                          border border-ink-200 bg-white shadow-lg">
             {status !== 'active' && (
               <button type="button" className={item} disabled={pending}
                       onClick={() => changeStatus('active')}>

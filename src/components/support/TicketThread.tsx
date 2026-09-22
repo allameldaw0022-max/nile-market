@@ -45,8 +45,8 @@ export function TicketThread({ ticket }: { ticket: TicketDetail }) {
       <Card className="p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
-            <h1 className="font-extrabold text-navy-900">{ticket.subject}</h1>
-            <p className="text-xs text-sand-600">
+            <h1 className="font-extrabold text-ink-900">{ticket.subject}</h1>
+            <p className="text-xs text-ink-500">
               <span className="tabular" dir="ltr">{ticket.ticketNumber}</span>
               {' · '}{TICKET_CATEGORY_LABEL[ticket.category] ?? ticket.category}
               {' · '}فُتحت {formatDateTime(ticket.createdAt)}
@@ -71,7 +71,7 @@ export function TicketThread({ ticket }: { ticket: TicketDetail }) {
 
           if (isSystem) {
             return (
-              <li key={m.id} className="text-center text-xs text-sand-600">
+              <li key={m.id} className="text-center text-xs text-ink-500">
                 {m.body} · {formatDateTime(m.createdAt)}
               </li>
             );
@@ -81,20 +81,20 @@ export function TicketThread({ ticket }: { ticket: TicketDetail }) {
             <li key={m.id}
                 className={`flex gap-2.5 ${m.isMine ? 'flex-row-reverse' : ''}`}>
               <span className={`grid size-8 shrink-0 place-items-center rounded-full
-                                ${isStaff ? 'bg-nile-500 text-white'
-                                  : 'bg-sand-200 text-navy-700'}`}>
+                                ${isStaff ? 'bg-teal-600 text-white'
+                                  : 'bg-ink-200 text-ink-700'}`}>
                 {isStaff ? <Headset size={15} /> : <User size={15} />}
               </span>
               <div className={`max-w-[85%] rounded-[--radius-lg] border p-3.5
                                ${m.isMine
-                                 ? 'border-nile-200 bg-[--color-info-bg]'
-                                 : 'border-sand-200 bg-white'}`}>
-                <p className="text-xs font-bold text-sand-600">
+                                 ? 'border-teal-200 bg-[--color-teal-50]'
+                                 : 'border-ink-200 bg-white'}`}>
+                <p className="text-xs font-bold text-ink-500">
                   {isStaff ? 'فريق الدعم' : m.isMine ? 'أنت' : 'صاحب التذكرة'}
                   {' · '}{formatDateTime(m.createdAt)}
                 </p>
                 <p className="mt-1 whitespace-pre-line text-sm leading-relaxed
-                              text-navy-900">
+                              text-ink-900">
                   {m.body}
                 </p>
               </div>
@@ -106,7 +106,7 @@ export function TicketThread({ ticket }: { ticket: TicketDetail }) {
       {isClosed ? (
         <Card className="p-5 text-center">
           <CheckCircle2 className="mx-auto text-[--color-success]" size={28} />
-          <p className="mt-2 text-sm text-sand-600">
+          <p className="mt-2 text-sm text-ink-500">
             هذه التذكرة مغلقة. إن عادت المشكلة، افتح تذكرة جديدة.
           </p>
         </Card>

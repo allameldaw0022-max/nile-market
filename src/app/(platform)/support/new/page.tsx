@@ -19,13 +19,13 @@ export default async function NewTicketPage() {
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
       <Link href="/support"
-            className="inline-flex items-center gap-1 text-sm font-bold text-sand-600
-                       hover:text-nile-600">
+            className="inline-flex items-center gap-1 text-sm font-bold text-ink-500
+                       hover:text-teal-700">
         <ChevronRight size={15} /> الدعم
       </Link>
 
-      <h1 className="mt-4 text-xl font-extrabold text-navy-900">تذكرة جديدة</h1>
-      <p className="text-sm text-sand-600">
+      <h1 className="mt-4 text-xl font-extrabold text-ink-900">تذكرة جديدة</h1>
+      <p className="text-sm text-ink-500">
         اشرح المشكلة بالتفصيل، واذكر رقم الطلب أو المنتج إن وُجد.
       </p>
 

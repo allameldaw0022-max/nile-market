@@ -24,8 +24,8 @@ export function AcceptInvite({ token }: { token: string }) {
     return (
       <Card className="p-6 text-center">
         <CheckCircle2 className="mx-auto text-[--color-success]" size={40} />
-        <h1 className="mt-3 text-lg font-extrabold text-navy-900">انضممت إلى الفريق</h1>
-        <p className="mt-1 text-sm text-sand-600">
+        <h1 className="mt-3 text-lg font-extrabold text-ink-900">انضممت إلى الفريق</h1>
+        <p className="mt-1 text-sm text-ink-500">
           دورك: {ROLE_LABEL[role as keyof typeof ROLE_LABEL] ?? role}
         </p>
         <Button className="mt-6" onClick={() => router.push('/dashboard')}>
@@ -37,9 +37,9 @@ export function AcceptInvite({ token }: { token: string }) {
 
   return (
     <Card className="p-6 text-center">
-      <UserPlus className="mx-auto text-nile-500" size={40} />
-      <h1 className="mt-3 text-lg font-extrabold text-navy-900">دعوة انضمام لمتجر</h1>
-      <p className="mt-1 text-sm text-sand-600">
+      <UserPlus className="mx-auto text-teal-700" size={40} />
+      <h1 className="mt-3 text-lg font-extrabold text-ink-900">دعوة انضمام لمتجر</h1>
+      <p className="mt-1 text-sm text-ink-500">
         بقبولك تنضم إلى فريق المتجر بحسابك الحالي.
       </p>
 

@@ -24,8 +24,8 @@ export default async function TicketPage({ params }: PageProps<'/support/[id]'>)
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
       <Link href="/support"
-            className="inline-flex items-center gap-1 text-sm font-bold text-sand-600
-                       hover:text-nile-600">
+            className="inline-flex items-center gap-1 text-sm font-bold text-ink-500
+                       hover:text-teal-700">
         <ChevronRight size={15} /> الدعم
       </Link>
 

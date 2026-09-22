@@ -51,8 +51,8 @@ export default async function AdminSettingsPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-extrabold text-navy-900">إعدادات المنصة</h1>
-        <p className="text-sm text-sand-600">
+        <h1 className="text-xl font-extrabold text-ink-900">إعدادات المنصة</h1>
+        <p className="text-sm text-ink-500">
           قيم تسري على كل المتاجر. لا يفترض النظام قيمة لم تضبطها (D18).
         </p>
       </div>

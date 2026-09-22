@@ -47,8 +47,8 @@ export default async function AdminHealthPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-extrabold text-navy-900">صحة النظام</h1>
-        <p className="text-sm text-sand-600">
+        <h1 className="text-xl font-extrabold text-ink-900">صحة النظام</h1>
+        <p className="text-sm text-ink-500">
           قُرئت {formatDateTime(h.generated_at)}.
         </p>
       </div>
@@ -59,7 +59,7 @@ export default async function AdminHealthPage() {
             <AlertTriangle size={17} />
             يحتاج انتباهك
           </h2>
-          <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-navy-700">
+          <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-ink-700">
             {alerts.map((a) => <li key={a}>{a}</li>)}
           </ul>
         </Card>
@@ -82,7 +82,7 @@ export default async function AdminHealthPage() {
           <StatCard label="أُرسل (24 ساعة)" value={formatNumber(h.email.sent_24h)} />
         </div>
         {h.email.oldest_queued_at && (
-          <p className="border-t border-sand-200 px-5 py-3 text-xs text-sand-600">
+          <p className="border-t border-ink-200 px-5 py-3 text-xs text-ink-500">
             أقدم رسالة منتظرة منذ {formatDateTime(h.email.oldest_queued_at)}
             {h.email.last_error && (
               <span className="mt-1 block text-[--color-danger]">
@@ -119,27 +119,27 @@ export default async function AdminHealthPage() {
         <CardHeader title="فحوص المكوّنات"
                     description={`التخزين المستخدم: ${formatNumber(h.storage_mb)} م.ب`} />
         {h.checks.length === 0 ? (
-          <p className="px-5 py-4 text-sm text-sand-600">
+          <p className="px-5 py-4 text-sm text-ink-500">
             لم تُسجَّل فحوص بعد — تكتبها المهام المجدولة عند تشغيلها.
           </p>
         ) : (
-          <ul className="divide-y divide-sand-200">
+          <ul className="divide-y divide-ink-200">
             {h.checks.map((c) => (
               <li key={c.component}
                   className="flex flex-wrap items-center gap-x-4 gap-y-1 px-5 py-3">
-                <span className="flex flex-1 items-center gap-2 font-bold text-navy-900">
-                  <Activity size={15} className="text-sand-400" />
+                <span className="flex flex-1 items-center gap-2 font-bold text-ink-900">
+                  <Activity size={15} className="text-ink-400" />
                   {c.component}
                 </span>
                 {c.latency_ms !== null && (
-                  <span className="text-xs tabular text-sand-600">{c.latency_ms} مث</span>
+                  <span className="text-xs tabular text-ink-500">{c.latency_ms} مث</span>
                 )}
-                <span className="text-xs text-sand-600">
+                <span className="text-xs text-ink-500">
                   {formatDateTime(c.checked_at)}
                 </span>
                 <Badge tone={CHECK_TONE[c.status] ?? 'neutral'}>{c.status}</Badge>
                 {c.detail && (
-                  <p className="w-full text-xs text-sand-600">{c.detail}</p>
+                  <p className="w-full text-xs text-ink-500">{c.detail}</p>
                 )}
               </li>
             ))}

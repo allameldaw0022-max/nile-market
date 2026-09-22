@@ -107,8 +107,8 @@ export default async function ProductsPage({ searchParams }: PageProps<'/dashboa
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-extrabold text-navy-900">المنتجات</h1>
-          <p className="text-sm text-sand-600 tabular">{total} منتج</p>
+          <h1 className="text-xl font-extrabold text-ink-900">المنتجات</h1>
+          <p className="text-sm text-ink-500 tabular">{total} منتج</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {can(membership, 'export:data') && (
@@ -163,7 +163,7 @@ export default async function ProductsPage({ searchParams }: PageProps<'/dashboa
       ) : (
         <Card className="overflow-hidden">
           {/* صف واحد يتكيّف: جدول على الشاشات الكبيرة، بطاقة على الهاتف (§17.5) */}
-          <ul className="divide-y divide-sand-200">
+          <ul className="divide-y divide-ink-200">
             {list.map((p) => {
               const qty = quantityOf(p);
               const threshold = p.inventory?.[0]?.low_stock_threshold ?? 5;
@@ -172,23 +172,23 @@ export default async function ProductsPage({ searchParams }: PageProps<'/dashboa
               const coverUrl = mediaUrl(cover);
 
               return (
-                <li key={p.id} className="flex items-center gap-3 px-3 py-3 hover:bg-sand-50">
+                <li key={p.id} className="flex items-center gap-3 px-3 py-3 hover:bg-ink-50">
                   <Link href={`/dashboard/products/${p.id}/edit`}
                         className="flex min-w-0 flex-1 items-center gap-3">
                     <div className="relative size-11 shrink-0 overflow-hidden
-                                    rounded-[--radius-md] border border-sand-200 bg-sand-50">
+                                    rounded-[--radius-md] border border-ink-200 bg-ink-50">
                       {coverUrl ? (
                         <Image src={coverUrl} alt="" fill sizes="44px" className="object-cover" />
                       ) : (
-                        <span className="flex size-full items-center justify-center text-sand-400">
+                        <span className="flex size-full items-center justify-center text-ink-400">
                           <Package size={16} />
                         </span>
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate font-bold text-navy-900">{p.name}</p>
-                      <p className="flex flex-wrap items-center gap-x-2 text-xs text-sand-600">
-                        <span className="font-bold text-navy-700 tabular">
+                      <p className="truncate font-bold text-ink-900">{p.name}</p>
+                      <p className="flex flex-wrap items-center gap-x-2 text-xs text-ink-500">
+                        <span className="font-bold text-ink-700 tabular">
                           {formatMoney(p.price)}
                         </span>
                         {p.sku && <span className="tabular" dir="ltr">{p.sku}</span>}
@@ -221,7 +221,7 @@ export default async function ProductsPage({ searchParams }: PageProps<'/dashboa
               <Button variant="outline" size="sm">السابق</Button>
             </Link>
           )}
-          <span className="text-sm text-sand-600 tabular">صفحة {page} من {pages}</span>
+          <span className="text-sm text-ink-500 tabular">صفحة {page} من {pages}</span>
           {page < pages && (
             <Link href={qs(page + 1)}>
               <Button variant="outline" size="sm">التالي</Button>

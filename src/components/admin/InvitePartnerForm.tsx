@@ -37,17 +37,17 @@ export function InvitePartnerForm() {
     const url = typeof window === 'undefined'
       ? invite.link : `${window.location.origin}${invite.link}`;
     return (
-      <Card className="border-gold-500/40 bg-gold-400/10 p-5">
-        <h2 className="flex items-center gap-2 font-bold text-navy-900">
+      <Card className="border-gold-500/40 bg-gold-300/10 p-5">
+        <h2 className="flex items-center gap-2 font-bold text-ink-900">
           <Link2 size={17} className="text-gold-700" />
           رابط الدعوة — يظهر مرّة واحدة
         </h2>
-        <p className="mt-1 text-sm text-navy-700">
+        <p className="mt-1 text-sm text-ink-700">
           انسخه الآن وسلّمه للشريك. لا نحتفظ بنسخة منه، وإن ضاع تُعاد
           الدعوة من جديد. رمز الإحالة: <strong dir="ltr">{invite.code}</strong>
         </p>
         <p dir="ltr" className="mt-3 overflow-x-auto rounded-[--radius-md] bg-white
-                                p-2.5 text-xs text-navy-900">{url}</p>
+                                p-2.5 text-xs text-ink-900">{url}</p>
         <div className="mt-3 flex gap-2">
           <Button size="sm" icon={<Copy size={14} />}
                   onClick={() => {

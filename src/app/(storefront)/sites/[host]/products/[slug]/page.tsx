@@ -125,16 +125,16 @@ export default async function ProductPage(
       <JsonLd data={schema} />
       <JsonLd data={trail} />
 
-      <nav className="flex items-center gap-1 text-sm text-sand-600" aria-label="المسار">
-        <Link href="/" className="hover:text-nile-600">الرئيسية</Link>
+      <nav className="flex items-center gap-1 text-sm text-ink-500" aria-label="المسار">
+        <Link href="/" className="hover:text-teal-700">الرئيسية</Link>
         <ChevronRight size={14} />
-        <Link href="/products" className="hover:text-nile-600">المنتجات</Link>
+        <Link href="/products" className="hover:text-teal-700">المنتجات</Link>
       </nav>
 
       <div className="mt-5 grid gap-6 md:grid-cols-2">
         <div className="space-y-2">
           <div className="relative aspect-square overflow-hidden rounded-[--radius-lg]
-                          border border-sand-200 bg-sand-100">
+                          border border-ink-200 bg-ink-100">
             {images[0] ? (
               <Image src={publicUrl(images[0].bucket, images[0].path)} alt={product.name}
                      fill priority sizes="(max-width: 768px) 100vw, 50vw"
@@ -142,7 +142,7 @@ export default async function ProductPage(
                      placeholder={images[0].blur_data_url ? 'blur' : 'empty'}
                      blurDataURL={images[0].blur_data_url ?? undefined} />
             ) : (
-              <div className="grid h-full place-items-center text-sand-400">
+              <div className="grid h-full place-items-center text-ink-400">
                 <ImageOff size={36} strokeWidth={1.5} />
               </div>
             )}
@@ -153,7 +153,7 @@ export default async function ProductPage(
               {images.slice(1, 6).map((m) => (
                 <li key={m.path}
                     className="relative aspect-square overflow-hidden rounded-[--radius-md]
-                               border border-sand-200 bg-sand-100">
+                               border border-ink-200 bg-ink-100">
                   <Image src={publicUrl(m.bucket, m.path)} alt="" fill sizes="80px"
                          className="object-cover" />
                 </li>
@@ -163,21 +163,21 @@ export default async function ProductPage(
         </div>
 
         <div>
-          <h1 className="text-xl font-extrabold text-navy-900 sm:text-2xl">{product.name}</h1>
+          <h1 className="text-xl font-extrabold text-ink-900 sm:text-2xl">{product.name}</h1>
 
           <div className="mt-3 flex items-baseline gap-3">
-            <p className="text-2xl font-extrabold text-nile-600 tabular">
+            <p className="text-2xl font-extrabold text-teal-700 tabular">
               {formatMoney(product.price)}
             </p>
             {hasDiscount && (
-              <p className="text-base text-sand-400 line-through tabular">
+              <p className="text-base text-ink-400 line-through tabular">
                 {formatMoney(product.compare_at_price)}
               </p>
             )}
           </div>
 
           {product.description && (
-            <p className="mt-4 whitespace-pre-line text-sm leading-relaxed text-navy-700">
+            <p className="mt-4 whitespace-pre-line text-sm leading-relaxed text-ink-700">
               {product.description}
             </p>
           )}
@@ -188,7 +188,7 @@ export default async function ProductPage(
                              disabledNote="هذا المتجر غير متاح للشراء حاليًا — يمكنك التواصل معه." />
           </div>
 
-          <ul className="mt-6 space-y-2 text-sm text-sand-600">
+          <ul className="mt-6 space-y-2 text-sm text-ink-500">
             <li className="flex items-center gap-2">
               <Truck size={15} /> التوصيل داخل المدن المحددة من المتجر
             </li>
@@ -201,7 +201,7 @@ export default async function ProductPage(
 
       {related.length > 0 && (
         <section className="mt-12">
-          <h2 className="font-bold text-navy-900">منتجات مشابهة</h2>
+          <h2 className="font-bold text-ink-900">منتجات مشابهة</h2>
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
             {related.map((p) => <ProductCard key={p.id} product={p} />)}
           </div>

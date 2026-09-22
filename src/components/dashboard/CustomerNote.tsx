@@ -16,7 +16,7 @@ export function CustomerNote({ storeId, customerId, initial, canEdit }: {
 
   if (!canEdit) {
     return (
-      <p className="whitespace-pre-line text-sm text-navy-700">
+      <p className="whitespace-pre-line text-sm text-ink-700">
         {initial || 'لا ملاحظات.'}
       </p>
     );
@@ -32,7 +32,7 @@ export function CustomerNote({ storeId, customerId, initial, canEdit }: {
 
   return (
     <div className="space-y-3">
-      <p className="flex items-center gap-1.5 text-xs text-sand-600">
+      <p className="flex items-center gap-1.5 text-xs text-ink-500">
         <Lock size={12} /> ملاحظة داخلية — لا يراها العميل.
       </p>
 

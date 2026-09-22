@@ -50,8 +50,8 @@ export default async function AdminSubscriptionsPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-extrabold text-navy-900">طلبات الاشتراك</h1>
-        <p className="text-sm text-sand-600">
+        <h1 className="text-xl font-extrabold text-ink-900">طلبات الاشتراك</h1>
+        <p className="text-sm text-ink-500">
           الاعتماد يُفعّل الاشتراك ويقيّد الإيراد وعمولة الشريك في معاملة واحدة.
         </p>
       </div>
@@ -65,20 +65,20 @@ export default async function AdminSubscriptionsPage() {
                         title="لا طلبات معلّقة" />
           </div>
         ) : (
-          <ul className="divide-y divide-sand-200">
+          <ul className="divide-y divide-ink-200">
             {pending.map((r) => (
               <li key={r.id} className="flex flex-wrap items-center gap-x-4 gap-y-3
                                         px-4 py-4">
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-bold text-navy-900">
+                  <p className="truncate font-bold text-ink-900">
                     {r.stores?.name ?? '—'}
                   </p>
-                  <p className="text-xs text-sand-600">
+                  <p className="text-xs text-ink-500">
                     {r.plans?.name ?? '—'} · {formatDateTime(r.created_at)}
                     {r.reference && <span dir="ltr"> · {r.reference}</span>}
                   </p>
                 </div>
-                <span className="font-extrabold tabular text-navy-900">
+                <span className="font-extrabold tabular text-ink-900">
                   {formatMoney(r.net_amount)}
                 </span>
                 {canApprove ? (
@@ -95,16 +95,16 @@ export default async function AdminSubscriptionsPage() {
       {reviewed.length > 0 && (
         <Card className="overflow-hidden">
           <CardHeader title="طلبات سابقة" />
-          <ul className="divide-y divide-sand-200">
+          <ul className="divide-y divide-ink-200">
             {reviewed.map((r) => {
               const s = STATUS[r.status] ?? { label: r.status, tone: 'neutral' as const };
               return (
                 <li key={r.id} className="flex flex-wrap items-center gap-x-4 gap-y-1
                                           px-4 py-3">
-                  <span className="min-w-0 flex-1 truncate font-bold text-navy-900">
+                  <span className="min-w-0 flex-1 truncate font-bold text-ink-900">
                     {r.stores?.name ?? '—'}
                   </span>
-                  <span className="text-xs text-sand-600">
+                  <span className="text-xs text-ink-500">
                     {r.plans?.name ?? '—'} · {formatDateTime(r.created_at)}
                     {r.rejection_reason && (
                       <span className="block text-[--color-danger]">
@@ -112,7 +112,7 @@ export default async function AdminSubscriptionsPage() {
                       </span>
                     )}
                   </span>
-                  <span className="font-bold tabular text-navy-900">
+                  <span className="font-bold tabular text-ink-900">
                     {formatMoney(r.net_amount)}
                   </span>
                   <Badge tone={s.tone}>{s.label}</Badge>

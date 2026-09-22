@@ -45,7 +45,7 @@ export function BankAccountsForm({ storeId, initialAccounts, initialBankak, canE
       <CardHeader title="الحسابات البنكية"
                   description="تظهر للزبون بعد طلبه بتحويل بنكي فقط." />
       <div className="space-y-4 p-5">
-        <p className="flex items-center gap-1.5 text-xs text-sand-600">
+        <p className="flex items-center gap-1.5 text-xs text-ink-500">
           <Lock size={12} /> لا تُعرض هذه البيانات في صفحات المتجر العامة.
         </p>
 
@@ -60,7 +60,7 @@ export function BankAccountsForm({ storeId, initialAccounts, initialBankak, canE
         <ul className="space-y-3">
           {accounts.map((account, i) => (
             <li key={i} className="grid gap-3 rounded-[--radius-md] border
-                                   border-sand-200 p-3 sm:grid-cols-[1fr_1fr_1fr_auto]
+                                   border-ink-200 p-3 sm:grid-cols-[1fr_1fr_1fr_auto]
                                    sm:items-end">
               <Input label="البنك" value={account.bank} disabled={!canEdit}
                      placeholder="بنك الخرطوم"
@@ -93,7 +93,7 @@ export function BankAccountsForm({ storeId, initialAccounts, initialBankak, canE
           </Button>
         )}
 
-        <div className="border-t border-sand-200 pt-4">
+        <div className="border-t border-ink-200 pt-4">
           <Input label="رقم بنكك" value={bankak} dir="ltr" disabled={!canEdit}
                  onChange={(e) => { setBankak(e.target.value); setSaved(false); }}
                  hint="يظهر للزبون الذي يختار الدفع عبر بنكك." />

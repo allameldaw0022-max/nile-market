@@ -34,21 +34,21 @@ export function ProductFilters({ categories }: {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [term]);
 
-  const select = 'h-10 rounded-[--radius-md] border border-sand-300 bg-white px-2.5 ' +
-                 'text-[13px] font-bold text-navy-900 focus:border-nile-500';
+  const select = 'h-10 rounded-[--radius-md] border border-ink-300 bg-white px-2.5 ' +
+                 'text-[13px] font-bold text-ink-900 focus:border-teal-600';
 
   return (
     <div className="flex flex-wrap items-center gap-2">
       <div className="relative min-w-52 flex-1">
-        <Search size={15} className="absolute start-3 top-1/2 -translate-y-1/2 text-sand-400" />
+        <Search size={15} className="absolute start-3 top-1/2 -translate-y-1/2 text-ink-400" />
         <input value={term} onChange={(e) => setTerm(e.target.value)}
                placeholder="ابحث بالاسم أو الرمز" aria-label="بحث في المنتجات"
-               className="h-10 w-full rounded-[--radius-md] border border-[--color-field-border] bg-white
-                          ps-9 pe-8 text-[14px] text-navy-900 placeholder:text-sand-400
-                          focus:border-nile-500" />
+               className="h-10 w-full rounded-[--radius-md] border border-[--color-ink-400] bg-white
+                          ps-9 pe-8 text-[14px] text-ink-900 placeholder:text-ink-400
+                          focus:border-teal-600" />
         {term && (
           <button type="button" aria-label="مسح البحث" onClick={() => setTerm('')}
-                  className="absolute end-2 top-1/2 -translate-y-1/2 text-sand-500">
+                  className="absolute end-2 top-1/2 -translate-y-1/2 text-ink-500">
             <X size={14} />
           </button>
         )}

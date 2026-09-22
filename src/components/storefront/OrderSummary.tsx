@@ -34,13 +34,13 @@ export function OrderSummary({ order }: { order: OrderDetails }) {
   return (
     <Card className="overflow-hidden">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b
-                      border-sand-200 px-5 py-4">
+                      border-ink-200 px-5 py-4">
         <div>
-          <p className="text-xs text-sand-600">رقم الطلب</p>
-          <p className="text-lg font-extrabold tabular text-navy-900" dir="ltr">
+          <p className="text-xs text-ink-500">رقم الطلب</p>
+          <p className="text-lg font-extrabold tabular text-ink-900" dir="ltr">
             {order.orderNumber}
           </p>
-          <p className="text-xs text-sand-600">{formatDateTime(order.createdAt)}</p>
+          <p className="text-xs text-ink-500">{formatDateTime(order.createdAt)}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Badge tone={status.tone}>{status.label}</Badge>
@@ -48,65 +48,65 @@ export function OrderSummary({ order }: { order: OrderDetails }) {
         </div>
       </div>
 
-      <ul className="divide-y divide-sand-200">
+      <ul className="divide-y divide-ink-200">
         {order.items.map((item, i) => (
           <li key={`${item.productName}-${i}`}
               className="flex items-start justify-between gap-3 px-5 py-3">
             <div className="min-w-0">
-              <p className="font-bold text-navy-900">{item.productName}</p>
+              <p className="font-bold text-ink-900">{item.productName}</p>
               {item.variantName && (
-                <p className="text-xs text-sand-600">{item.variantName}</p>
+                <p className="text-xs text-ink-500">{item.variantName}</p>
               )}
-              <p className="text-xs text-sand-600 tabular">
+              <p className="text-xs text-ink-500 tabular">
                 {formatMoney(item.unitPrice)} × {item.quantity}
               </p>
             </div>
-            <p className="font-bold tabular text-navy-900">{formatMoney(item.lineTotal)}</p>
+            <p className="font-bold tabular text-ink-900">{formatMoney(item.lineTotal)}</p>
           </li>
         ))}
       </ul>
 
-      <dl className="space-y-2 border-t border-sand-200 px-5 py-4 text-sm">
+      <dl className="space-y-2 border-t border-ink-200 px-5 py-4 text-sm">
         <Row label="المجموع" value={formatMoney(order.subtotal)} />
         <Row label="التوصيل" value={formatMoney(order.deliveryFee)} />
         {order.discountTotal > 0 && (
           <Row label={`الخصم${order.couponCode ? ` (${order.couponCode})` : ''}`}
                value={`− ${formatMoney(order.discountTotal)}`} />
         )}
-        <div className="flex items-baseline justify-between border-t border-sand-200 pt-2">
-          <dt className="font-bold text-navy-900">الإجمالي</dt>
-          <dd className="text-lg font-extrabold tabular text-nile-600">
+        <div className="flex items-baseline justify-between border-t border-ink-200 pt-2">
+          <dt className="font-bold text-ink-900">الإجمالي</dt>
+          <dd className="text-lg font-extrabold tabular text-teal-700">
             {formatMoney(order.total)}
           </dd>
         </div>
       </dl>
 
-      <div className="grid gap-3 border-t border-sand-200 px-5 py-4 text-sm sm:grid-cols-2">
+      <div className="grid gap-3 border-t border-ink-200 px-5 py-4 text-sm sm:grid-cols-2">
         <div>
-          <p className="text-xs font-bold text-sand-600">المستلم</p>
-          <p className="text-navy-900">{order.contactName}</p>
-          <p className="text-navy-700 tabular" dir="ltr">{order.contactPhone}</p>
+          <p className="text-xs font-bold text-ink-500">المستلم</p>
+          <p className="text-ink-900">{order.contactName}</p>
+          <p className="text-ink-700 tabular" dir="ltr">{order.contactPhone}</p>
         </div>
         <div>
-          <p className="text-xs font-bold text-sand-600">التوصيل</p>
-          <p className="text-navy-900">{order.deliveryZoneName ?? '—'}</p>
+          <p className="text-xs font-bold text-ink-500">التوصيل</p>
+          <p className="text-ink-900">{order.deliveryZoneName ?? '—'}</p>
           {order.deliveryAddress?.line && (
-            <p className="text-navy-700">{order.deliveryAddress.line}</p>
+            <p className="text-ink-700">{order.deliveryAddress.line}</p>
           )}
           {order.deliveryAddress?.landmark && (
-            <p className="text-xs text-sand-600">{order.deliveryAddress.landmark}</p>
+            <p className="text-xs text-ink-500">{order.deliveryAddress.landmark}</p>
           )}
         </div>
         <div>
-          <p className="text-xs font-bold text-sand-600">طريقة الدفع</p>
-          <p className="text-navy-900">
+          <p className="text-xs font-bold text-ink-500">طريقة الدفع</p>
+          <p className="text-ink-900">
             {PAYMENT_METHOD[order.paymentMethod] ?? order.paymentMethod}
           </p>
         </div>
         {order.note && (
           <div>
-            <p className="text-xs font-bold text-sand-600">ملاحظتك</p>
-            <p className="text-navy-700">{order.note}</p>
+            <p className="text-xs font-bold text-ink-500">ملاحظتك</p>
+            <p className="text-ink-700">{order.note}</p>
           </div>
         )}
       </div>
@@ -117,8 +117,8 @@ export function OrderSummary({ order }: { order: OrderDetails }) {
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <dt className="text-sand-600">{label}</dt>
-      <dd className="font-bold tabular text-navy-900">{value}</dd>
+      <dt className="text-ink-500">{label}</dt>
+      <dd className="font-bold tabular text-ink-900">{value}</dd>
     </div>
   );
 }

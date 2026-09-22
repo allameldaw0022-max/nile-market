@@ -129,7 +129,7 @@ function Busy({ state }: { state: State }) {
     : state === 'finalizing' ? 'يحفظ…' : '';
   if (!label) return null;
   return (
-    <span role="status" className="inline-flex items-center gap-2 text-sm font-bold text-sand-600">
+    <span role="status" className="inline-flex items-center gap-2 text-sm font-bold text-ink-500">
       <Loader2 size={15} className="animate-spin" />{label}
     </span>
   );
@@ -170,12 +170,12 @@ export function StoreLogoUploader({ storeId, currentUrl, onUploaded }: {
     <div className="space-y-3">
       <div className="flex items-center gap-4">
         <div className="relative size-24 shrink-0 overflow-hidden rounded-[--radius-lg]
-                        border border-sand-200 bg-sand-50">
+                        border border-ink-200 bg-ink-50">
           {currentUrl ? (
             <Image src={currentUrl} alt="شعار المتجر" fill sizes="96px"
                    className="object-cover" />
           ) : (
-            <span className="flex size-full items-center justify-center text-sand-400">
+            <span className="flex size-full items-center justify-center text-ink-400">
               <ImagePlus size={26} strokeWidth={1.5} />
             </span>
           )}
@@ -188,7 +188,7 @@ export function StoreLogoUploader({ storeId, currentUrl, onUploaded }: {
             {currentUrl ? 'تغيير الشعار' : 'اختر صورة'}
           </Button>
           <Busy state={state} />
-          {!busy && <p className="text-xs text-sand-600">JPG · PNG · WebP — حتى 5 ميجابايت</p>}
+          {!busy && <p className="text-xs text-ink-500">JPG · PNG · WebP — حتى 5 ميجابايت</p>}
         </div>
       </div>
 
@@ -246,14 +246,14 @@ export function ProductImagesUploader({ storeId, value, onChange, max = 8 }: {
         {value.map((media, i) => (
           <figure key={media.mediaId}
                   className={cn('group relative aspect-square overflow-hidden',
-                    'rounded-[--radius-md] border bg-sand-50',
-                    i === 0 ? 'border-nile-500' : 'border-sand-200')}>
+                    'rounded-[--radius-md] border bg-ink-50',
+                    i === 0 ? 'border-teal-600' : 'border-ink-200')}>
             <Image src={media.url} alt={`صورة ${i + 1}`} fill sizes="160px"
                    className="object-cover" />
 
             {i === 0 && (
               <figcaption className="absolute top-1 start-1 inline-flex items-center gap-1
-                                     rounded-full bg-nile-500 px-1.5 py-0.5
+                                     rounded-full bg-teal-600 px-1.5 py-0.5
                                      text-[10px] font-bold text-white">
                 <Star size={9} /> أساسية
               </figcaption>
@@ -262,7 +262,7 @@ export function ProductImagesUploader({ storeId, value, onChange, max = 8 }: {
             <div className="absolute inset-x-1 bottom-1 flex justify-between gap-1">
               <button type="button" onClick={() => move(i, i - 1)} disabled={i === 0}
                       aria-label="تقديم الصورة"
-                      className="rounded bg-white/90 px-1.5 text-xs font-bold text-navy-900
+                      className="rounded bg-white/90 px-1.5 text-xs font-bold text-ink-900
                                  disabled:opacity-40">‹</button>
               <button type="button" aria-label="حذف الصورة"
                       onClick={() => onChange(value.filter((m) => m.mediaId !== media.mediaId))}
@@ -271,7 +271,7 @@ export function ProductImagesUploader({ storeId, value, onChange, max = 8 }: {
               </button>
               <button type="button" onClick={() => move(i, i + 1)}
                       disabled={i === value.length - 1} aria-label="تأخير الصورة"
-                      className="rounded bg-white/90 px-1.5 text-xs font-bold text-navy-900
+                      className="rounded bg-white/90 px-1.5 text-xs font-bold text-ink-900
                                  disabled:opacity-40">›</button>
             </div>
           </figure>
@@ -280,8 +280,8 @@ export function ProductImagesUploader({ storeId, value, onChange, max = 8 }: {
         {!full && (
           <button type="button" onClick={() => inputRef.current?.click()} disabled={busy}
                   className="flex aspect-square flex-col items-center justify-center gap-1
-                             rounded-[--radius-md] border border-dashed border-sand-300
-                             bg-white text-sand-500 hover:border-nile-400 hover:text-nile-600
+                             rounded-[--radius-md] border border-dashed border-ink-300
+                             bg-white text-ink-500 hover:border-teal-400 hover:text-teal-700
                              disabled:opacity-60">
             {busy ? <Loader2 size={20} className="animate-spin" /> : <ImagePlus size={20} />}
             <span className="text-[11px] font-bold">إضافة صورة</span>
@@ -291,7 +291,7 @@ export function ProductImagesUploader({ storeId, value, onChange, max = 8 }: {
 
       <div className="flex items-center justify-between gap-2">
         <Busy state={state} />
-        <p className="text-xs text-sand-600">
+        <p className="text-xs text-ink-500">
           {value.length} من {max} — الأولى هي صورة الغلاف
         </p>
       </div>

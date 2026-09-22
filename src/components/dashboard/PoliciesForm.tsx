@@ -56,7 +56,7 @@ export function PoliciesForm({ storeId, initial, canEdit }: {
                         setValues({ ...values, [section.key]: e.target.value });
                         setSaved(false);
                       }} />
-            <p className="mt-1 text-xs text-sand-600 tabular">
+            <p className="mt-1 text-xs text-ink-500 tabular">
               {values[section.key].length} / 8000
             </p>
           </div>

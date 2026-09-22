@@ -50,9 +50,9 @@ export function RecordPaymentForm({ storeId, orderId, remaining, idempotencyKey 
 
   return (
     <form action={submit} className="space-y-3 rounded-[--radius-md] border
-                                     border-sand-200 p-4">
-      <p className="text-sm font-bold text-navy-900">تسجيل دفعة</p>
-      <p className="text-xs text-sand-600 tabular">
+                                     border-ink-200 p-4">
+      <p className="text-sm font-bold text-ink-900">تسجيل دفعة</p>
+      <p className="text-xs text-ink-500 tabular">
         المتبقي على الطلب: {formatMoney(remaining)}
       </p>
 

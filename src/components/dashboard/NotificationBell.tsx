@@ -53,7 +53,7 @@ export function NotificationBell({ initialUnread }: { initialUnread: number }) {
       <button type="button" onClick={toggle} aria-expanded={open}
               aria-label={unread > 0 ? `التنبيهات (${unread} غير مقروء)` : 'التنبيهات'}
               className="relative grid size-10 place-items-center rounded-[--radius-md]
-                         text-navy-700 hover:bg-sand-100">
+                         text-ink-700 hover:bg-ink-100">
         <Bell size={19} />
         {unread > 0 && (
           <span className="absolute -top-0.5 -end-0.5 grid min-w-5 place-items-center
@@ -70,15 +70,15 @@ export function NotificationBell({ initialUnread }: { initialUnread: number }) {
                   className="fixed inset-0 z-30 cursor-default"
                   onClick={() => setOpen(false)} />
           <div className="absolute end-0 z-40 mt-1 w-80 overflow-hidden
-                          rounded-[--radius-lg] border border-sand-200 bg-white
-                          shadow-[--shadow-overlay]">
+                          rounded-[--radius-lg] border border-ink-200 bg-white
+                          shadow-[--shadow-popover]">
             <div className="flex items-center justify-between gap-2 border-b
-                            border-sand-200 px-4 py-2.5">
-              <span className="text-sm font-bold text-navy-900">التنبيهات</span>
+                            border-ink-200 px-4 py-2.5">
+              <span className="text-sm font-bold text-ink-900">التنبيهات</span>
               {unread > 0 && (
                 <button type="button" onClick={markAll} disabled={pending}
                         className="inline-flex items-center gap-1 text-xs font-bold
-                                   text-nile-600 hover:underline disabled:opacity-50">
+                                   text-teal-700 hover:underline disabled:opacity-50">
                   <CheckCheck size={13} /> تعليم الكل كمقروء
                 </button>
               )}
@@ -87,31 +87,31 @@ export function NotificationBell({ initialUnread }: { initialUnread: number }) {
             <div className="max-h-96 overflow-y-auto">
               {items === null ? (
                 <p className="flex items-center justify-center gap-2 px-4 py-8
-                              text-sm text-sand-600">
+                              text-sm text-ink-500">
                   <Loader2 size={14} className="animate-spin" /> يحمّل…
                 </p>
               ) : items.length === 0 ? (
-                <p className="px-4 py-8 text-center text-sm text-sand-600">
+                <p className="px-4 py-8 text-center text-sm text-ink-500">
                   لا تنبيهات بعد.
                 </p>
               ) : (
-                <ul className="divide-y divide-sand-200">
+                <ul className="divide-y divide-ink-200">
                   {items.map((n) => {
                     const content = (
                       <>
-                        <p className="text-sm font-bold text-navy-900">{n.title}</p>
+                        <p className="text-sm font-bold text-ink-900">{n.title}</p>
                         {n.body && (
-                          <p className="mt-0.5 line-clamp-2 text-xs text-sand-600">
+                          <p className="mt-0.5 line-clamp-2 text-xs text-ink-500">
                             {n.body}
                           </p>
                         )}
-                        <p className="mt-1 text-[11px] text-sand-500">
+                        <p className="mt-1 text-[11px] text-ink-500">
                           {formatDateTime(n.createdAt)}
                         </p>
                       </>
                     );
-                    const cls = `block px-4 py-3 hover:bg-sand-50 ${
-                      n.readAt ? '' : 'border-e-2 border-e-nile-500 bg-[--color-info-bg]'}`;
+                    const cls = `block px-4 py-3 hover:bg-ink-50 ${
+                      n.readAt ? '' : 'border-e-2 border-e-teal-600 bg-[--color-teal-50]'}`;
 
                     return (
                       <li key={n.id}>

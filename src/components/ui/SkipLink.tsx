@@ -13,7 +13,7 @@ export function SkipLink({ href = '#main' }: { href?: string }) {
     <a
       href={href}
       className="sr-only focus:not-sr-only focus:absolute focus:z-50
-                 focus:m-3 focus:rounded-[--radius-md] focus:bg-nile-500
+                 focus:m-3 focus:rounded-[--radius-md] focus:bg-teal-600
                  focus:px-4 focus:py-2 focus:text-white focus:shadow-raised"
     >
       تخطّي إلى المحتوى

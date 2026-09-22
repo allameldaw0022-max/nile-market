@@ -53,8 +53,8 @@ export default async function CustomersPage(
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-extrabold text-navy-900">العملاء</h1>
-        <p className="text-sm text-sand-600 tabular">{total} عميل</p>
+        <h1 className="text-xl font-extrabold text-ink-900">العملاء</h1>
+        <p className="text-sm text-ink-500 tabular">{total} عميل</p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
@@ -66,9 +66,9 @@ export default async function CustomersPage(
       <form className="flex flex-wrap items-center gap-2" action="/dashboard/customers">
         <input name="q" defaultValue={term} maxLength={60}
                placeholder="اسم أو رقم هاتف" aria-label="بحث في العملاء"
-               className="h-10 min-w-52 flex-1 rounded-[--radius-md] border border-[--color-field-border]
-                          bg-white px-3 text-[14px] text-navy-900
-                          placeholder:text-sand-400 focus:border-nile-500" />
+               className="h-10 min-w-52 flex-1 rounded-[--radius-md] border border-[--color-ink-400]
+                          bg-white px-3 text-[14px] text-ink-900
+                          placeholder:text-ink-400 focus:border-teal-600" />
         <Button type="submit" variant="outline" size="sm">بحث</Button>
       </form>
 
@@ -82,27 +82,27 @@ export default async function CustomersPage(
         />
       ) : (
         <Card className="overflow-hidden">
-          <ul className="divide-y divide-sand-200">
+          <ul className="divide-y divide-ink-200">
             {list.map((c) => (
               <li key={c.id}>
                 <Link href={`/dashboard/customers/${c.id}`}
                       className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3.5
-                                 hover:bg-sand-50">
+                                 hover:bg-ink-50">
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-bold text-navy-900">
+                    <p className="truncate font-bold text-ink-900">
                       {c.anonymized_at ? 'عميل محذوف' : (c.name ?? 'بلا اسم')}
                     </p>
                     {c.phone && !c.anonymized_at && (
-                      <p className="text-xs tabular text-sand-600" dir="ltr">{c.phone}</p>
+                      <p className="text-xs tabular text-ink-500" dir="ltr">{c.phone}</p>
                     )}
                   </div>
-                  <span className="text-xs text-sand-600 tabular">
+                  <span className="text-xs text-ink-500 tabular">
                     {c.orders_count} طلب
                   </span>
-                  <span className="font-bold tabular text-navy-900">
+                  <span className="font-bold tabular text-ink-900">
                     {formatMoney(c.total_spent)}
                   </span>
-                  <span className="text-xs text-sand-500">
+                  <span className="text-xs text-ink-500">
                     {c.last_order_at ? formatDate(c.last_order_at) : '—'}
                   </span>
                 </Link>
@@ -119,7 +119,7 @@ export default async function CustomersPage(
               <Button variant="outline" size="sm">السابق</Button>
             </Link>
           )}
-          <span className="text-sm text-sand-600 tabular">صفحة {page} من {pages}</span>
+          <span className="text-sm text-ink-500 tabular">صفحة {page} من {pages}</span>
           {page < pages && (
             <Link href={`/dashboard/customers?page=${page + 1}${term ? `&q=${encodeURIComponent(term)}` : ''}`}>
               <Button variant="outline" size="sm">التالي</Button>

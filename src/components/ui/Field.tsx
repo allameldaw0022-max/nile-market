@@ -12,7 +12,7 @@ function Wrapper({ label, hint, error, required, htmlFor, children }: {
   return (
     <div className="space-y-1.5">
       {label && (
-        <label htmlFor={htmlFor} className="block text-[13px] font-bold text-navy-700">
+        <label htmlFor={htmlFor} className="block text-[13px] font-bold text-ink-700">
           {label}
           {required && <span className="text-[--color-danger] ms-1" aria-hidden>*</span>}
         </label>
@@ -22,16 +22,16 @@ function Wrapper({ label, hint, error, required, htmlFor, children }: {
         <p id={`${htmlFor}-error`} role="alert"
            className="text-xs text-[--color-danger] font-medium">{error}</p>
       ) : hint ? (
-        <p id={`${htmlFor}-hint`} className="text-xs text-sand-600">{hint}</p>
+        <p id={`${htmlFor}-hint`} className="text-xs text-ink-500">{hint}</p>
       ) : null}
     </div>
   );
 }
 
 const base =
-  'w-full rounded-[--radius-md] border bg-white px-3 text-[15px] text-navy-900 ' +
-  'placeholder:text-sand-400 transition-colors ' +
-  'disabled:bg-sand-100 disabled:text-sand-600';
+  'w-full rounded-[--radius-md] border bg-white px-3 text-[15px] text-ink-900 ' +
+  'placeholder:text-ink-400 transition-colors ' +
+  'disabled:bg-ink-100 disabled:text-ink-500';
 
 export function Input({
   label, hint, error, className, required, ...props
@@ -49,7 +49,7 @@ export function Input({
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined}
         className={cn(base, 'h-11',
-          error ? 'border-[--color-danger]' : 'border-[--color-field-border] focus:border-nile-500',
+          error ? 'border-[--color-danger]' : 'border-[--color-ink-400] focus:border-teal-600',
           className)}
       />
     </Wrapper>
@@ -71,7 +71,7 @@ export function Textarea({
         required={required}
         aria-invalid={error ? true : undefined}
         className={cn(base, 'py-2.5 min-h-24 leading-relaxed',
-          error ? 'border-[--color-danger]' : 'border-[--color-field-border] focus:border-nile-500',
+          error ? 'border-[--color-danger]' : 'border-[--color-ink-400] focus:border-teal-600',
           className)}
       />
     </Wrapper>
@@ -93,7 +93,7 @@ export function Select({
         required={required}
         aria-invalid={error ? true : undefined}
         className={cn(base, 'h-11',
-          error ? 'border-[--color-danger]' : 'border-[--color-field-border] focus:border-nile-500',
+          error ? 'border-[--color-danger]' : 'border-[--color-ink-400] focus:border-teal-600',
           className)}
       >
         {children}
@@ -109,13 +109,13 @@ export function Switch({ label, hint, name, defaultChecked, checked, onChange }:
 }) {
   return (
     <label className="flex cursor-pointer items-start gap-3 rounded-[--radius-md]
-                      border border-sand-200 p-3.5 hover:border-nile-300">
-      <input type="checkbox" name={name} className="mt-0.5 size-4 accent-[--color-nile-500]"
+                      border border-ink-200 p-3.5 hover:border-teal-300">
+      <input type="checkbox" name={name} className="mt-0.5 size-4 accent-[--color-teal-600]"
              defaultChecked={defaultChecked} checked={checked}
              onChange={onChange ? (e) => onChange(e.target.checked) : undefined} />
       <span>
-        <span className="block text-sm font-bold text-navy-900">{label}</span>
-        {hint && <span className="block text-xs text-sand-600">{hint}</span>}
+        <span className="block text-sm font-bold text-ink-900">{label}</span>
+        {hint && <span className="block text-xs text-ink-500">{hint}</span>}
       </span>
     </label>
   );

@@ -45,10 +45,10 @@ export function ReviewActions({ actions, onRun, hint }: {
     return (
       <div className="w-full space-y-3 rounded-[--radius-md] border
                       border-[--color-danger]/30 p-4">
-        <p className="text-sm font-bold text-navy-900">
+        <p className="text-sm font-bold text-ink-900">
           {asking.reasonLabel ?? 'السبب'}
         </p>
-        <p className="text-xs text-sand-600">
+        <p className="text-xs text-ink-500">
           السبب إلزامي ويُحفظ في السجل، ويصل صاحب الطلب.
         </p>
         <Textarea value={reason} onChange={(e) => setReason(e.target.value)}
@@ -91,7 +91,7 @@ export function ReviewActions({ actions, onRun, hint }: {
       </div>
 
       {hint && (
-        <p className="flex items-center gap-1 text-[11px] text-sand-600">
+        <p className="flex items-center gap-1 text-[11px] text-ink-500">
           <ShieldAlert size={11} />{hint}
         </p>
       )}

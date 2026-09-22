@@ -37,41 +37,41 @@ export default async function TrackOrderPage(
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
-      <h1 className="text-xl font-extrabold text-navy-900">تتبّع الطلب</h1>
-      <p className="mt-1 text-sm text-sand-600">
+      <h1 className="text-xl font-extrabold text-ink-900">تتبّع الطلب</h1>
+      <p className="mt-1 text-sm text-ink-500">
         أدخل رقم الطلب ورقم الهاتف الذي طلبت به.
       </p>
 
       <Card className="mt-5 p-5">
         <form className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
           <label className="block">
-            <span className="mb-1.5 block text-[13px] font-bold text-navy-700">رقم الطلب</span>
+            <span className="mb-1.5 block text-[13px] font-bold text-ink-700">رقم الطلب</span>
             <input name="number" defaultValue={number} dir="ltr" required maxLength={40}
                    placeholder="NM-00001"
-                   className="h-11 w-full rounded-[--radius-md] border border-[--color-field-border]
-                              bg-white px-3 text-[15px] text-navy-900 focus:border-nile-500" />
+                   className="h-11 w-full rounded-[--radius-md] border border-[--color-ink-400]
+                              bg-white px-3 text-[15px] text-ink-900 focus:border-teal-600" />
           </label>
           <label className="block">
-            <span className="mb-1.5 block text-[13px] font-bold text-navy-700">رقم الهاتف</span>
+            <span className="mb-1.5 block text-[13px] font-bold text-ink-700">رقم الهاتف</span>
             <input name="phone" defaultValue={phone} dir="ltr" type="tel" required
                    maxLength={20} placeholder="0912345678"
-                   className="h-11 w-full rounded-[--radius-md] border border-[--color-field-border]
-                              bg-white px-3 text-[15px] text-navy-900 focus:border-nile-500" />
+                   className="h-11 w-full rounded-[--radius-md] border border-[--color-ink-400]
+                              bg-white px-3 text-[15px] text-ink-900 focus:border-teal-600" />
           </label>
           <button type="submit"
-                  className="h-11 rounded-[--radius-md] bg-nile-500 px-5 font-bold text-white
-                             hover:bg-nile-600">
+                  className="h-11 rounded-[--radius-md] bg-teal-600 px-5 font-bold text-white
+                             hover:bg-teal-700">
             تتبّع
           </button>
         </form>
       </Card>
 
       {searched && !order && (
-        <div role="alert" className="mt-5 rounded-[--radius-lg] border border-sand-300
+        <div role="alert" className="mt-5 rounded-[--radius-lg] border border-ink-300
                         bg-white px-6 py-10 text-center">
-          <PackageSearch className="mx-auto text-sand-400" size={32} strokeWidth={1.5} />
-          <p className="mt-3 font-bold text-navy-900">لم نجد طلبًا مطابقًا</p>
-          <p className="mt-1 text-sm text-sand-600">
+          <PackageSearch className="mx-auto text-ink-400" size={32} strokeWidth={1.5} />
+          <p className="mt-3 font-bold text-ink-900">لم نجد طلبًا مطابقًا</p>
+          <p className="mt-1 text-sm text-ink-500">
             تأكد من رقم الطلب ورقم الهاتف الذي استخدمته عند الطلب.
           </p>
         </div>

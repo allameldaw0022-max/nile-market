@@ -14,7 +14,7 @@ export function ResendForm() {
       {state && (
         <div role="status" className={`flex items-start gap-2 rounded-[--radius-md] border p-3 text-sm ${
           state.ok
-            ? 'border-[--color-success]/30 bg-[--color-success-bg] text-navy-900'
+            ? 'border-[--color-success]/30 bg-[--color-success-bg] text-ink-900'
             : 'border-[--color-danger]/30 bg-[--color-danger-bg] text-[--color-danger]'}`}>
           {state.ok ? <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-[--color-success]" />
                     : <AlertTriangle size={16} className="mt-0.5 shrink-0" />}

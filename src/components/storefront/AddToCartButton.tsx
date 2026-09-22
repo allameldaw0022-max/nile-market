@@ -38,8 +38,8 @@ export function AddToCartButton({ host, productId, variantId, available, disable
 
   if (disabled) {
     return (
-      <p className="rounded-[--radius-md] border border-sand-300 bg-sand-100 p-3.5
-                    text-center text-sm font-bold text-sand-700">
+      <p className="rounded-[--radius-md] border border-ink-300 bg-ink-100 p-3.5
+                    text-center text-sm font-bold text-ink-600">
         {disabledNote ?? 'الشراء غير متاح حاليًا'}
       </p>
     );
@@ -47,15 +47,15 @@ export function AddToCartButton({ host, productId, variantId, available, disable
 
   if (soldOut) {
     return (
-      <p className="rounded-[--radius-md] border border-sand-300 bg-sand-100 p-3.5
-                    text-center text-sm font-bold text-sand-700">
+      <p className="rounded-[--radius-md] border border-ink-300 bg-ink-100 p-3.5
+                    text-center text-sm font-bold text-ink-600">
         نفدت الكمية
       </p>
     );
   }
 
   const step = 'flex size-11 items-center justify-center rounded-[--radius-md] ' +
-               'border border-sand-300 text-navy-700 disabled:opacity-40';
+               'border border-ink-300 text-ink-700 disabled:opacity-40';
 
   return (
     <div className="space-y-3">
@@ -65,7 +65,7 @@ export function AddToCartButton({ host, productId, variantId, available, disable
                 onClick={() => setQuantity(quantity - 1)}>
           <Minus size={16} />
         </button>
-        <span className="min-w-12 text-center text-lg font-bold tabular text-navy-900"
+        <span className="min-w-12 text-center text-lg font-bold tabular text-ink-900"
               aria-live="polite">{quantity}</span>
         <button type="button" className={step} aria-label="زيادة الكمية"
                 disabled={quantity >= max}
