@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import {
-  BarChart3, CreditCard, ExternalLink, LayoutDashboard, Package,
+  BarChart3, Boxes, CreditCard, ExternalLink, LayoutDashboard, Package,
   Settings, ShoppingCart, Users,
 } from 'lucide-react';
 import { getActor } from '@/lib/auth/actor';
@@ -16,6 +16,7 @@ type NavItem = { href: string; label: string; icon: typeof Package; perm?: Store
 const NAV: NavItem[] = [
   { href: '/dashboard',               label: 'الرئيسية',  icon: LayoutDashboard },
   { href: '/dashboard/products',      label: 'المنتجات',  icon: Package,      perm: 'products:view' },
+  { href: '/dashboard/inventory',     label: 'المخزون',   icon: Boxes,        perm: 'inventory:view' },
   { href: '/dashboard/orders',        label: 'الطلبات',   icon: ShoppingCart, perm: 'orders:view' },
   { href: '/dashboard/customers',     label: 'العملاء',   icon: Users,        perm: 'customers:view' },
   { href: '/dashboard/analytics',     label: 'الإحصائيات', icon: BarChart3,   perm: 'analytics:view' },

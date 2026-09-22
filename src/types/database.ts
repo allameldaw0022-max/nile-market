@@ -3828,6 +3828,32 @@ export type Database = {
         }
         Relationships: []
       }
+      store_team: {
+        Row: {
+          avatar_url: string | null
+          full_name: string | null
+          profile_id: string | null
+          role: Database["public"]["Enums"]["store_role"] | null
+          status: Database["public"]["Enums"]["member_status"] | null
+          store_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_members_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_members_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       add_custom_domain: {
@@ -3835,6 +3861,19 @@ export type Database = {
         Returns: {
           domain_id: string
           verification_token: string
+        }[]
+      }
+      adjust_inventory: {
+        Args: {
+          p_delta: number
+          p_note?: string
+          p_product_id: string
+          p_reason?: string
+          p_store_id: string
+          p_variant_id?: string
+        }
+        Returns: {
+          quantity: number
         }[]
       }
       aggregate_analytics: { Args: { p_date?: string }; Returns: number }
@@ -3863,6 +3902,47 @@ export type Database = {
           total: number
         }[]
       }
+      create_store: {
+        Args: {
+          p_business_type?: string
+          p_name: string
+          p_slug: string
+          p_visitor_token?: string
+        }
+        Returns: {
+          slug: string
+          store_id: string
+        }[]
+      }
+      delete_product: { Args: { p_product_id: string }; Returns: undefined }
+      duplicate_product: {
+        Args: { p_product_id: string }
+        Returns: {
+          product_id: string
+          slug: string
+        }[]
+      }
+      finalize_upload: {
+        Args: {
+          p_blur?: string
+          p_height?: number
+          p_media_id: string
+          p_width?: number
+        }
+        Returns: undefined
+      }
+      import_products: {
+        Args: { p_dry_run?: boolean; p_rows: Json; p_store_id: string }
+        Returns: {
+          errors: Json
+          failed: number
+          imported: number
+        }[]
+      }
+      is_slug_available: {
+        Args: { p_slug: string; p_store_id?: string }
+        Returns: boolean
+      }
       mark_payout_paid: {
         Args: { p_payout_id: string; p_reference?: string }
         Returns: number
@@ -3875,6 +3955,27 @@ export type Database = {
           complete: boolean
           unconfigured_features: string[]
           unconfigured_prices: string[]
+        }[]
+      }
+      prepare_upload: {
+        Args: {
+          p_ext?: string
+          p_mime: string
+          p_purpose: Database["public"]["Enums"]["media_purpose"]
+          p_size: number
+          p_store_id: string
+        }
+        Returns: {
+          bucket: string
+          media_id: string
+          path: string
+        }[]
+      }
+      publish_store: {
+        Args: { p_store_id: string }
+        Returns: {
+          missing: string[]
+          ok: boolean
         }[]
       }
       purge_old_tickets: { Args: never; Returns: number }
@@ -3902,6 +4003,35 @@ export type Database = {
           slug: string
           status: Database["public"]["Enums"]["store_status"]
           store_id: string
+        }[]
+      }
+      save_onboarding_step: {
+        Args: { p_step: string; p_store_id: string }
+        Returns: undefined
+      }
+      save_product: {
+        Args: {
+          p_category_id?: string
+          p_compare_at_price?: number
+          p_cost_price?: number
+          p_description?: string
+          p_image_media_ids?: string[]
+          p_initial_quantity?: number
+          p_low_stock_threshold?: number
+          p_name: string
+          p_price: number
+          p_product_id?: string
+          p_seo?: Json
+          p_sku?: string
+          p_slug?: string
+          p_status?: Database["public"]["Enums"]["product_status"]
+          p_store_id: string
+          p_track_inventory?: boolean
+          p_weight_grams?: number
+        }
+        Returns: {
+          product_id: string
+          slug: string
         }[]
       }
       sweep_subscriptions: {

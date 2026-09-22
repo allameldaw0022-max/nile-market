@@ -7,8 +7,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # Node 22: مُشغّل الاختبارات المدمج يحتاج --experimental-strip-types
+      # لقراءة ملفات TypeScript بلا خطوة بناء ولا اعتمادية اختبار.
       - uses: actions/setup-node@v4
-        with: { node-version: '20', cache: 'npm' }
+        with: { node-version: '22', cache: 'npm' }
       - run: npm ci
       - name: فحص الأنواع
         run: npm run typecheck
@@ -39,6 +41,8 @@ jobs:
             echo "❌ ملف بيئة حقيقي داخل المستودع"; exit 1
           fi
           echo "✓ لا أسرار في المستودع"
+      - name: اختبارات الوحدة (محلّلات الاستيراد)
+        run: npm run test:unit
       - name: بناء الإنتاج
         run: npm run build
         env:

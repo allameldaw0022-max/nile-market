@@ -282,3 +282,30 @@ rollback;
 select t.reset();
 
 \echo '✓ 70_products'
+
+\echo '── عرض فريق المتجر ──'
+begin;
+select t.login(:'ownerA');
+select t.ok((select count(*) = 5 from store_team where store_id = :'A'),
+            'المالك يرى كل أعضاء فريقه');
+select t.ok((select full_name is not distinct from null from store_team
+             where profile_id = :'prodA'),
+            'العرض يكشف الاسم (فارغ في البذرة) لا الصف كله');
+select t.empty('select 1 from store_team where store_id = ' || quote_literal(:'B'),
+               '★ المالك لا يرى فريق متجر آخر');
+rollback;
+
+begin;
+select t.login(:'csA');
+-- خدمة العملاء لا تملك members:view ⇒ ترى صفها وحده
+select t.ok((select count(*) = 1 from store_team),
+            '★ من لا يملك members:view يرى صفه هو فقط');
+select t.ok((select profile_id = :'csA' from store_team),
+            'والصف الظاهر هو صفه');
+rollback;
+
+begin;
+select t.logout();
+select t.empty('select 1 from store_team', '★ الزائر لا يرى أي عضو');
+rollback;
+select t.reset();
