@@ -1,5 +1,7 @@
 import 'server-only';
 import { createServiceClient } from '@/lib/supabase/service';
+import { runHealthChecks } from '@/lib/jobs/health-check';
+import { log } from '@/lib/observability/logger';
 
 /**
  * الصيانة اليومية.
@@ -15,9 +17,21 @@ export async function runDailyMaintenance(): Promise<{
   const supabase = createServiceClient();
   const { data, error } = await supabase.rpc('run_daily_maintenance' as never);
 
+  // الفحص يجري في الحالتين: يوم تفشل فيه الصيانة هو أحوج الأيام إلى
+  // معرفة أي مكوّن سقط، وفشله لا يُسقط المهمة.
+  try {
+    await runHealthChecks({ persist: true });
+  } catch (healthError) {
+    log.warn('maintenance.health_failed', {
+      reason: healthError instanceof Error ? healthError.message : 'unknown',
+    });
+  }
+
   if (error) {
-    console.error('[cron] فشلت الصيانة اليومية', error.message);
+    log.error('maintenance.failed', { reason: error.message });
     return { ok: false, summary: null, error: error.message };
   }
+
+  log.info('maintenance.done');
   return { ok: true, summary: (data ?? {}) as Record<string, unknown> };
 }

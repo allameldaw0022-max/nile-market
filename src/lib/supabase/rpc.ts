@@ -85,6 +85,26 @@ export type AdminTicket = {
   }[];
 };
 
+/** ناتج `store_analytics()` — أرقام مجمَّعة لا صفوف زيارات. */
+export type StoreAnalytics = {
+  days: number;
+  from: string;
+  series: {
+    date: string; visits: number; visitors: number;
+    orders: number; revenue: number;
+  }[];
+  totals: {
+    visits: number; visitors: number; orders: number; revenue: number;
+    new_customers: number; items_sold: number;
+    /** null ⇒ لا زوّار في المدة: «لا نعرف» ليست «صفر بالمئة». */
+    conversion: number | null;
+    aov: number | null;
+  };
+  top_products: { name: string; quantity: number; revenue: number }[];
+  top_pages: { path: string; visits: number }[];
+  by_status: Record<string, number>;
+};
+
 export type RpcMap = {
   create_store: {
     args: { p_name: string; p_slug: string;
@@ -471,6 +491,10 @@ export type RpcMap = {
   suspend_admin_member: {
     args: { p_member_id: string };
     returns: void;
+  };
+  store_analytics: {
+    args: { p_store_id: string; p_days?: number };
+    returns: StoreAnalytics;
   };
   admin_access_matrix: {
     args: Record<string, never>;

@@ -1,4 +1,5 @@
 import { notFound, permanentRedirect } from 'next/navigation';
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { MessageCircle, Search, ShoppingBag } from 'lucide-react';
 import { resolveStoreByHost } from '@/lib/tenant/resolve';
@@ -7,6 +8,37 @@ import { getActor } from '@/lib/auth/actor';
 import { loadCart } from '@/lib/cart/actions';
 import { readCartToken } from '@/lib/cart/token';
 import { GuestCartMerger } from '@/components/storefront/GuestCartMerger';
+import { ServiceWorkerRegister } from '@/components/pwa/ServiceWorkerRegister';
+import { InstallPrompt } from '@/components/pwa/InstallPrompt';
+import { trackVisit } from '@/lib/analytics/track';
+
+/**
+ * بيانات رأس الصفحة المشتركة لكل صفحات المتجر.
+ *
+ * ★ البيان والأيقونات هنا لا في كل صفحة: تكرارها كان سيجعل صفحة
+ * واحدة منسيّة تكسر التثبيت.
+ */
+export async function generateMetadata(
+  { params }: LayoutProps<'/sites/[host]'>,
+): Promise<Metadata> {
+  const { host } = await params;
+  const store = await resolveStoreByHost(host);
+
+  return {
+    manifest: '/manifest.webmanifest',
+    applicationName: store?.name,
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: 'default',
+      title: store?.name,
+    },
+    icons: {
+      icon: '/icons/icon-192.png',
+      apple: '/icons/apple-touch-icon.png',
+    },
+    formatDetection: { telephone: false },
+  };
+}
 
 /**
  * تخطيط المتجر المستأجر.
@@ -41,6 +73,10 @@ export default async function StorefrontLayout({
     getActor(),
     readCartToken(host),
   ]);
+
+  // إحصاء الزيارة بعد التأكّد من أن المتجر نشط ومرئي — لا تُحسب
+  // زيارة لمتجر موقوف. والقاعدة تتجاهل التكرار خلال دقيقة.
+  await trackVisit(store.storeId);
 
   const whatsapp = settings?.whatsapp_number ?? null;
   const cartCount = cartLines.reduce((sum, line) => sum + line.quantity, 0);
@@ -85,6 +121,8 @@ export default async function StorefrontLayout({
       </header>
 
       {needsMerge && <GuestCartMerger host={host} />}
+      <ServiceWorkerRegister />
+      <InstallPrompt label={`ثبّت ${store.name} على شاشتك`} />
 
       <main className="flex-1">{children}</main>
 

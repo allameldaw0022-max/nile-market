@@ -2,7 +2,9 @@ import { randomBytes } from 'node:crypto';
 import { NextResponse, type NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { isPlatformHost } from '@/lib/config';
-import { REFERRAL_COOKIE, REFERRAL_MAX_AGE } from '@/lib/referral';
+import {
+  REFERRAL_COOKIE, REFERRAL_MAX_AGE, VISITOR_COOKIE, VISITOR_MAX_AGE,
+} from '@/lib/referral';
 
 /**
  * Proxy (بديل middleware في Next.js 16، ويعمل على Node.js runtime).
@@ -90,11 +92,31 @@ export async function proxy(request: NextRequest) {
     return new NextResponse(null, { status: 404 });
   }
 
+  // ★ توكن الزائر للإحصاءات: عشوائي، HttpOnly، ولا يحمل أي معرّف
+  // شخصي. غرضه الوحيد أن تُعدّ الزيارة مرّة لا مرّتين — لا تتبّع عبر
+  // المتاجر: القيمة نفسها بلا معنى خارج جدول `store_visits`.
+  let visitor = request.cookies.get(VISITOR_COOKIE)?.value;
+  if (!visitor || visitor.length < 24) {
+    visitor = randomBytes(24).toString('hex');
+    response.cookies.set(VISITOR_COOKIE, visitor, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: VISITOR_MAX_AGE,
+    });
+  }
+
   const url = request.nextUrl.clone();
   url.pathname = `/sites/${host}${pathname === '/' ? '' : pathname}`;
   url.search = search;
 
-  const rewritten = NextResponse.rewrite(url, { request });
+  // التخطيط لا يرى المسار الأصلي بعد إعادة الكتابة — نمرّره ليُسجَّل
+  // في الإحصاءات كما رآه الزائر لا كما أعيد كتابته
+  const headers = new Headers(request.headers);
+  headers.set('x-nm-path', pathname);
+
+  const rewritten = NextResponse.rewrite(url, { request: { headers } });
   response.cookies.getAll().forEach((c) => rewritten.cookies.set(c));
   return rewritten;
 }
@@ -102,6 +124,9 @@ export async function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     // يستثني الأصول الثابتة حتى لا يُعطَّل تحميل CSS/JS/الصور
-    '/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|sw.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico|woff2?)$).*)',
+    // `manifest.webmanifest` **ليس** مستثنًى: لكل متجر بيانه الخاص
+    // ويجب أن يمرّ بإعادة الكتابة. و`sw.js` ملف ثابت في public
+    // يُخدَم كما هو على كل الدومينات.
+    '/((?!_next/static|_next/image|favicon.ico|sw.js|icons/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico|woff2?)$).*)',
   ],
 };

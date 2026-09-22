@@ -9,6 +9,8 @@ import { AddToCartButton } from '@/components/storefront/AddToCartButton';
 import { ProductCard, type StorefrontProduct } from '@/components/storefront/ProductCard';
 import { formatMoney } from '@/lib/money/format';
 import { publicUrl } from '@/lib/media/url';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { breadcrumbSchema, productSchema } from '@/lib/seo/schema';
 
 export const revalidate = 60;
 
@@ -96,28 +98,32 @@ export default async function ProductPage(
 
   const related = await loadRelated(store.storeId, product.category_id, product.id);
 
-  // بيانات منظَّمة: تظهر النتيجة في جوجل بسعرها وتوفّرها (§22)
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Product',
+  // بيانات منظَّمة: تظهر النتيجة في جوجل بسعرها وتوفّرها (§22).
+  // التوفّر من المخزون الحقيقي، ومتجر منتهي الاشتراك يُعلَن «طلب
+  // مسبق» لا «متوفّر»: إعلان توفّر لا يمكن شراؤه يُعاقَب عليه (D14).
+  const canonical = `https://${store.primaryHost}/products/${product.slug}`;
+  const schema = productSchema({
     name: product.name,
-    description: product.description ?? undefined,
-    sku: product.sku ?? undefined,
-    image: images.map((m) => publicUrl(m.bucket, m.path)),
-    offers: {
-      '@type': 'Offer',
-      price: Number(product.price),
-      priceCurrency: 'SDG',
-      availability: available > 0
-        ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-      url: `https://${store.primaryHost}/products/${product.slug}`,
-    },
-  };
+    description: product.description,
+    sku: product.sku,
+    price: Number(product.price),
+    image: images[0] ? publicUrl(images[0].bucket, images[0].path) : null,
+    url: canonical,
+    storeName: store.name,
+    inStock: product.track_inventory ? stock > 0 : null,
+    canBuy: store.canCheckout,
+  });
+
+  const trail = breadcrumbSchema(store.primaryHost, [
+    { name: 'الرئيسية', path: '/' },
+    { name: 'المنتجات', path: '/products' },
+    { name: product.name, path: `/products/${product.slug}` },
+  ]);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-6">
-      <script type="application/ld+json"
-              dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <JsonLd data={schema} />
+      <JsonLd data={trail} />
 
       <nav className="flex items-center gap-1 text-sm text-sand-600" aria-label="المسار">
         <Link href="/" className="hover:text-nile-600">الرئيسية</Link>
