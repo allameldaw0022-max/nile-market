@@ -9,6 +9,7 @@ import { Card, StatCard } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/States';
 import { formatDate, formatMoney, formatNumber } from '@/lib/money/format';
+import { searchTerm, ilikeAny } from '@/lib/search';
 
 export const metadata: Metadata = { title: 'العملاء' };
 
@@ -27,7 +28,7 @@ export default async function CustomersPage(
   const sp = await searchParams;
   const page = Math.max(1, Number(sp.page ?? 1) || 1);
   const from = (page - 1) * PAGE_SIZE;
-  const term = (typeof sp.q === 'string' ? sp.q : '').trim().slice(0, 60);
+  const term = searchTerm(sp.q);
 
   const supabase = await createClient();
   let query = supabase
@@ -36,10 +37,8 @@ export default async function CustomersPage(
     .eq('store_id', membership.storeId)
     .is('deleted_at', null);
 
-  if (term) {
-    const safe = term.replace(/["'(),*\\]/g, ' ').replace(/\s+/g, ' ').trim();
-    if (safe) query = query.or(`name.ilike."%${safe}%",phone.ilike."%${safe}%"`);
-  }
+  const search = ilikeAny(term, ['name', 'phone']);
+  if (search) query = query.or(search);
 
   const { data: customers, count } = await query
     .order('last_order_at', { ascending: false, nullsFirst: false })

@@ -11,6 +11,7 @@ import { EmptyState } from '@/components/ui/States';
 import { StatusChip } from '@/components/ui/Badge';
 import { ORDER_STATUS, PAYMENT_STATUS } from '@/lib/status';
 import { formatDateTime, formatMoney, formatNumber } from '@/lib/money/format';
+import { searchTerm, ilikeAny } from '@/lib/search';
 
 export const metadata: Metadata = { title: 'الطلبات' };
 
@@ -39,7 +40,7 @@ export default async function OrdersPage({ searchParams }: PageProps<'/dashboard
   const page = Math.max(1, Number(sp.page ?? 1) || 1);
   const from = (page - 1) * PAGE_SIZE;
   const status = typeof sp.status === 'string' ? sp.status : '';
-  const term = (typeof sp.q === 'string' ? sp.q : '').trim().slice(0, 60);
+  const term = searchTerm(sp.q);
 
   const supabase = await createClient();
 
@@ -50,14 +51,9 @@ export default async function OrdersPage({ searchParams }: PageProps<'/dashboard
     .eq('store_id', membership.storeId);
 
   if (isStatus(status)) query = query.eq('status', status);
-  if (term) {
-    const safe = term.replace(/["'(),*\\]/g, ' ').replace(/\s+/g, ' ').trim();
-    if (safe) {
-      query = query.or(
-        `order_number.ilike."%${safe}%",contact_phone.ilike."%${safe}%",` +
-        `contact_name.ilike."%${safe}%"`,
-      );
-    }
+  const search = ilikeAny(term, ['order_number', 'contact_phone', 'contact_name']);
+  if (search) {
+    query = query.or(search);
   }
 
   const [{ data: orderRows, count }, { data: openRows }] = await Promise.all([

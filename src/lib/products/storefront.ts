@@ -1,6 +1,7 @@
 import 'server-only';
 import { createClient } from '@/lib/supabase/server';
 import type { StorefrontProduct } from '@/components/storefront/ProductCard';
+import { searchTerm, ilikeAny } from '@/lib/search';
 
 export const STOREFRONT_SELECT =
   'id, name, slug, price, compare_at_price, ' +
@@ -31,13 +32,9 @@ export async function listStorefrontProducts(input: {
 
   if (input.categoryId) query = query.eq('category_id', input.categoryId);
 
-  if (input.term) {
-    // أحرف صيغة PostgREST تُنظَّف قبل بناء `or` من نص المستخدم
-    const safe = input.term.replace(/["'(),*\\]/g, ' ').replace(/\s+/g, ' ').trim();
-    if (safe) {
-      query = query.or(`name.ilike."%${safe}%",description.ilike."%${safe}%"`);
-    }
-  }
+  // التنظيف وحدّ الطول في `@/lib/search` — لا نسخة محلية تنحرف
+  const search = ilikeAny(searchTerm(input.term), ['name', 'description']);
+  if (search) query = query.or(search);
 
   query = input.sort === 'price_asc' ? query.order('price')
     : input.sort === 'price_desc' ? query.order('price', { ascending: false })

@@ -4,6 +4,7 @@ import { Search } from 'lucide-react';
 import { resolveStoreByHost } from '@/lib/tenant/resolve';
 import { ProductGrid } from '@/components/storefront/ProductGrid';
 import { listStorefrontProducts } from '@/lib/products/storefront';
+import { searchTerm } from '@/lib/search';
 
 export const metadata: Metadata = {
   title: 'البحث',
@@ -19,7 +20,7 @@ export default async function SearchPage(
   if (!store) notFound();
 
   const sp = await searchParams;
-  const term = (typeof sp.q === 'string' ? sp.q : '').trim().slice(0, 80);
+  const term = searchTerm(sp.q);
 
   const { products, total } = term.length >= 2
     ? await listStorefrontProducts({

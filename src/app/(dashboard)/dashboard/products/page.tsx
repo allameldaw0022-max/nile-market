@@ -16,6 +16,7 @@ import { PRODUCT_STATUS } from '@/lib/status';
 import { formatMoney } from '@/lib/money/format';
 import { loadCategories } from '@/lib/products/queries';
 import { mediaUrl } from '@/lib/media/url';
+import { searchTerm, ilikeAny } from '@/lib/search';
 
 export const metadata: Metadata = { title: 'المنتجات' };
 
@@ -43,7 +44,7 @@ export default async function ProductsPage({ searchParams }: PageProps<'/dashboa
   const sp = await searchParams;
   const page = Math.max(1, Number(sp.page ?? 1) || 1);
   const from = (page - 1) * PAGE_SIZE;
-  const term = typeof sp.q === 'string' ? sp.q.trim() : '';
+  const term = searchTerm(sp.q);
   const status = typeof sp.status === 'string' ? sp.status : '';
   const category = typeof sp.category === 'string' ? sp.category : '';
   const sort = typeof sp.sort === 'string' ? sp.sort : 'newest';
@@ -62,12 +63,9 @@ export default async function ProductsPage({ searchParams }: PageProps<'/dashboa
     .eq('store_id', membership.storeId)
     .is('deleted_at', null);
 
-  if (term) {
-    // `or` يُبنى نصًّا في PostgREST، فأي حرف له معنى في صيغته يُنظَّف
-    // من نص المستخدم قبل الإدراج: أقواس · فواصل · اقتباس · نجمة.
-    const safe = term.replace(/["'(),*\\]/g, ' ').replace(/\s+/g, ' ').trim();
-    if (safe) query = query.or(`name.ilike."%${safe}%",sku.ilike."%${safe}%"`);
-  }
+  // التنظيف وحدّ الطول في `@/lib/search` — لا نسخة محلية تنحرف
+  const search = ilikeAny(term, ['name', 'sku']);
+  if (search) query = query.or(search);
   // القيمة تُطابَق على قائمة معروفة قبل استخدامها في الاستعلام
   if (isProductStatus(status)) query = query.eq('status', status);
   if (category) query = query.eq('category_id', category);

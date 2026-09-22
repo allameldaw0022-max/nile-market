@@ -11,6 +11,7 @@ import { StatusChip } from '@/components/ui/Badge';
 import { StoreStatusActions } from '@/components/admin/StoreStatusActions';
 import { STORE_STATUS, SUBSCRIPTION_STATUS } from '@/lib/status';
 import { formatDate } from '@/lib/money/format';
+import { searchTerm, ilikeAny } from '@/lib/search';
 
 export const metadata: Metadata = {
   title: 'المتاجر — الإدارة',
@@ -37,7 +38,7 @@ export default async function AdminStoresPage(
   const sp = await searchParams;
   const page = Math.max(1, Number(sp.page ?? 1) || 1);
   const from = (page - 1) * PAGE_SIZE;
-  const term = (typeof sp.q === 'string' ? sp.q : '').trim().slice(0, 60);
+  const term = searchTerm(sp.q);
   const status = typeof sp.status === 'string' ? sp.status : '';
 
   const supabase = await createClient();
@@ -47,10 +48,8 @@ export default async function AdminStoresPage(
             { count: 'exact' })
     .is('deleted_at', null);
 
-  if (term) {
-    const safe = term.replace(/["'(),*\\]/g, ' ').replace(/\s+/g, ' ').trim();
-    if (safe) query = query.or(`name.ilike."%${safe}%",slug.ilike."%${safe}%"`);
-  }
+  const search = ilikeAny(term, ['name', 'slug']);
+  if (search) query = query.or(search);
   // القيمة تُطابَق على قائمة معروفة قبل استخدامها في الاستعلام
   if (isStoreStatus(status)) query = query.eq('status', status);
 
