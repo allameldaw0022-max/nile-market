@@ -299,4 +299,61 @@ select t.empty('select 1 from my_orders(' || quote_literal(:'A') || ')',
 rollback;
 select t.reset();
 
+
+\echo '── بيانات التحويل: لمن طلب بتحويل وأثبت صلته ──'
+begin;
+select t.reset();
+update store_settings set bank_transfer_enabled = true
+ where store_id = 'a0000000-0000-0000-0000-00000000000a';
+
+select t.logout();
+\o /dev/null
+select create_order(
+  :'A', ('[{"product_id":"' || :'P1' || '","quantity":1}]')::jsonb,
+  null, '{"name":"محوِّل","phone":"0913333333"}'::jsonb,
+  '{}'::jsonb, 'bank_transfer');
+\o
+
+select t.reset();
+select order_number as bnum, guest_token as btok from orders
+ where store_id = :'A' order by created_at desc limit 1
+\gset
+
+select t.logout();
+select t.ok((select jsonb_array_length(bank_accounts) = 1
+             from order_payment_instructions(:'A', :'bnum', :'btok')),
+            'صاحب الطلب يرى حساب التحويل');
+select t.ok((select amount_due = 20000
+             from order_payment_instructions(:'A', :'bnum', :'btok')),
+            'والمبلغ المتبقي معه');
+select t.empty('select 1 from order_payment_instructions(' || quote_literal(:'A')
+               || ', ' || quote_literal(:'bnum') || ')',
+               '★ رقم الطلب وحده لا يكشف الحساب البنكي');
+select t.empty('select 1 from order_payment_instructions(' || quote_literal(:'A')
+               || ', ' || quote_literal(:'bnum') || ', ''توكن-خاطئ'')',
+               '★ توكن خاطئ لا يكشف الحساب البنكي');
+select t.empty('select 1 from store_payment_settings',
+               '★ الزائر لا يقرأ جدول الإعدادات البنكية إطلاقًا');
+rollback;
+
+-- طلب بالدفع عند الاستلام لا يكشف حسابًا بنكيًا ولو بتوكن صحيح
+begin;
+select t.logout();
+\o /dev/null
+select create_order(
+  :'A', ('[{"product_id":"' || :'P1' || '","quantity":1}]')::jsonb,
+  null, '{"name":"نقدي","phone":"0914444444"}'::jsonb,
+  '{}'::jsonb, 'cash_on_delivery');
+\o
+select t.reset();
+select order_number as cnum, guest_token as ctok from orders
+ where store_id = :'A' order by created_at desc limit 1
+\gset
+select t.logout();
+select t.empty('select 1 from order_payment_instructions(' || quote_literal(:'A')
+               || ', ' || quote_literal(:'cnum') || ', ' || quote_literal(:'ctok') || ')',
+               '★ طلب نقدي لا يكشف حسابًا بنكيًا');
+rollback;
+select t.reset();
+
 \echo '✓ اختبارات السلة والمتجر مرّت'

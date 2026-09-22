@@ -35,6 +35,20 @@ async function clientKey() {
   return h.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
 }
 
+/**
+ * وجهة العودة بعد الدخول.
+ *
+ * ★ تُقبل المسارات النسبية داخل الموقع فقط. أي قيمة تبدأ بمخطَّط أو
+ * بشرطتين (`//evil.com`) تُهمَل، وإلا صار رابط الدخول أداة تحويل
+ * مفتوحة تُستخدم في التصيّد.
+ */
+function safeNext(value: FormDataEntryValue | null): string {
+  const raw = String(value ?? '').trim();
+  if (!raw.startsWith('/') || raw.startsWith('//')) return '/dashboard';
+  if (raw.includes('\\')) return '/dashboard';
+  return raw;
+}
+
 export async function signIn(_prev: AuthResult | null, formData: FormData): Promise<AuthResult> {
   const email = String(formData.get('email') ?? '').trim().toLowerCase();
   const password = String(formData.get('password') ?? '');
@@ -51,7 +65,7 @@ export async function signIn(_prev: AuthResult | null, formData: FormData): Prom
   if (error) return { ok: false, message: GENERIC_LOGIN_ERROR };
 
   await recordLoginEvent(null, 'password');
-  redirect('/dashboard');
+  redirect(safeNext(formData.get('next')));
 }
 
 export async function signUp(_prev: AuthResult | null, formData: FormData): Promise<AuthResult> {

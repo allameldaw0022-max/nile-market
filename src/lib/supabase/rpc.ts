@@ -154,6 +154,15 @@ export type RpcMap = {
       }[];
     }[];
   };
+  order_payment_instructions: {
+    args: { p_store_id: string; p_order_number: string;
+            p_guest_token?: string | null; p_phone?: string | null };
+    returns: {
+      bank_accounts: { bank?: string; account?: string; holder?: string }[];
+      bankak_number: string | null;
+      amount_due: number;
+    }[];
+  };
   my_orders: {
     args: { p_store_id: string };
     returns: {
@@ -174,6 +183,18 @@ export type RpcMap = {
     args: { p_domain_id: string; p_txt_records: string[] };
     returns: { verified: boolean; status: string; reason: string | null }[];
   };
+  add_custom_domain: {
+    args: { p_store_id: string; p_hostname: string };
+    returns: { domain_id: string; verification_token: string }[];
+  };
+  set_primary_domain: {
+    args: { p_domain_id: string };
+    returns: void;
+  };
+  remove_custom_domain: {
+    args: { p_domain_id: string };
+    returns: void;
+  };
   request_partner_payout: {
     args: { p_amount: number; p_idempotency_key: string };
     returns: { payout_id: string }[];
@@ -191,6 +212,23 @@ export type RpcMap = {
             p_reference?: string; p_proof_media_id?: string;
             p_idempotency_key: string };
     returns: { request_id: string }[];
+  };
+  invite_store_member: {
+    args: { p_store_id: string; p_email: string; p_role: string;
+            p_permissions?: string[] };
+    returns: { invitation_id: string; token: string; expires_at: string }[];
+  };
+  accept_store_invitation: {
+    args: { p_token: string };
+    returns: { store_id: string; role: string }[];
+  };
+  set_store_member_role: {
+    args: { p_member_id: string; p_role: string; p_permissions?: string[] | null };
+    returns: void;
+  };
+  remove_store_member: {
+    args: { p_member_id: string };
+    returns: void;
   };
   create_support_ticket: {
     args: { p_subject: string; p_category: string; p_body: string;

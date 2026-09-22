@@ -50,3 +50,36 @@ export async function readOrder(input: {
     })),
   };
 }
+
+export type PaymentInstructions = {
+  accounts: { bank?: string; account?: string; holder?: string }[];
+  bankakNumber: string | null;
+  amountDue: number;
+};
+
+/**
+ * بيانات التحويل لصاحب طلب تحويل بنكي.
+ * القاعدة (`order_payment_instructions`) تفتحها فقط لطلب تحويل قائم
+ * أثبت صاحبه صلته به — جدول الإعدادات البنكية نفسه لا يُقرأ للزائر.
+ */
+export async function readPaymentInstructions(input: {
+  storeId: string; orderNumber: string;
+  guestToken?: string | null; phone?: string | null;
+}): Promise<PaymentInstructions | null> {
+  const supabase = await createClient();
+  const { data, error } = await rpc(supabase, 'order_payment_instructions', {
+    p_store_id: input.storeId,
+    p_order_number: input.orderNumber,
+    p_guest_token: input.guestToken ?? null,
+    p_phone: input.phone ?? null,
+  });
+  if (error) return null;
+
+  const row = firstRow(data);
+  if (!row) return null;
+  return {
+    accounts: Array.isArray(row.bank_accounts) ? row.bank_accounts : [],
+    bankakNumber: row.bankak_number,
+    amountDue: Number(row.amount_due),
+  };
+}

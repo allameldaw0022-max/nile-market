@@ -6,9 +6,10 @@ import { resolveStoreByHost } from '@/lib/tenant/resolve';
 import { createClient } from '@/lib/supabase/server';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { formatMoney } from '@/lib/money/format';
 import { OrderSummary } from '@/components/storefront/OrderSummary';
 import { readLastOrder } from '@/lib/cart/token';
-import { readOrder } from '@/lib/cart/order-read';
+import { readOrder, readPaymentInstructions } from '@/lib/cart/order-read';
 
 export const metadata: Metadata = {
   title: 'تم استلام طلبك',
@@ -49,18 +50,19 @@ export default async function OrderConfirmationPage(
   if (!order) notFound();
 
   const supabase = await createClient();
-  const [{ data: settings }, { data: payment }] = await Promise.all([
+  const [{ data: settings }, instructions] = await Promise.all([
     supabase.from('store_settings').select('whatsapp_number')
       .eq('store_id', store.storeId).maybeSingle(),
-    // بيانات الحساب البنكي تُقرأ من جدولها المنفصل، ولا تظهر إلا
-    // لمن طلب فعلًا بتحويل بنكي
-    order.paymentMethod === 'bank_transfer' || order.paymentMethod === 'bankak'
-      ? supabase.from('store_payment_settings').select('bank_accounts')
-          .eq('store_id', store.storeId).maybeSingle()
-      : Promise.resolve({ data: null }),
+    // بيانات الحساب البنكي لا تُقرأ من الجدول مباشرة: سياساته تمنع
+    // الزائر. الدالة تفتحها لصاحب طلب التحويل وحده.
+    readPaymentInstructions({
+      storeId: store.storeId,
+      orderNumber: last.orderNumber,
+      guestToken: last.guestToken,
+    }),
   ]);
 
-  const accounts = (payment?.bank_accounts ?? []) as { bank?: string; account?: string }[];
+  const accounts = instructions?.accounts ?? [];
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
@@ -76,18 +78,30 @@ export default async function OrderConfirmationPage(
         <OrderSummary order={order} />
       </div>
 
-      {accounts.length > 0 && (
+      {instructions && (accounts.length > 0 || instructions.bankakNumber) && (
         <Card className="mt-5 p-5">
           <h2 className="font-bold text-navy-900">بيانات التحويل</h2>
           <p className="mt-1 text-sm text-sand-600">
-            حوّل المبلغ ثم أرسل صورة الإشعار للمتجر عبر واتساب.
+            حوّل <span className="font-bold tabular text-navy-900">
+              {formatMoney(instructions.amountDue)}
+            </span> ثم أرسل صورة الإشعار للمتجر عبر واتساب.
           </p>
           <ul className="mt-3 space-y-2">
+            {instructions.bankakNumber && (
+              <li className="flex items-center justify-between gap-3 rounded-[--radius-md]
+                             border border-sand-200 p-3 text-sm">
+                <span className="font-bold text-navy-900">بنكك</span>
+                <span className="tabular text-navy-700" dir="ltr">
+                  {instructions.bankakNumber}
+                </span>
+              </li>
+            )}
             {accounts.map((a, i) => (
               <li key={`${a.account}-${i}`}
-                  className="flex items-center justify-between gap-3 rounded-[--radius-md]
-                             border border-sand-200 p-3 text-sm">
+                  className="flex flex-wrap items-center justify-between gap-2
+                             rounded-[--radius-md] border border-sand-200 p-3 text-sm">
                 <span className="font-bold text-navy-900">{a.bank ?? 'بنك'}</span>
+                {a.holder && <span className="text-sand-600">{a.holder}</span>}
                 <span className="tabular text-navy-700" dir="ltr">{a.account}</span>
               </li>
             ))}

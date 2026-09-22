@@ -19,9 +19,12 @@ export function LoginForm() {
   const params = useSearchParams();
   const urlError = URL_ERRORS[params.get('error') ?? ''];
   const signedOutAll = params.get('signed_out') === 'all';
+  // وجهة العودة تمرّ كحقل مخفي ويُنقّيها الخادم — الواجهة لا تحوّل
+  const next = params.get('next') ?? '';
 
   return (
     <form action={action} className="mt-8 space-y-4">
+      {next && <input type="hidden" name="next" value={next} />}
       {signedOutAll && (
         <p role="status" className="rounded-[--radius-md] border border-nile-200
                        bg-nile-50 p-3 text-sm text-navy-700">
