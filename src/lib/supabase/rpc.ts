@@ -89,20 +89,21 @@ export type RpcMap = {
     returns: void;
   };
   cart_add_item: {
-    args: { p_store_id: string; p_product_id: string; p_variant_id?: string;
-            p_quantity: number; p_anon_token?: string };
-    returns: { cart_id: string }[];
+    args: { p_store_id: string; p_product_id: string; p_quantity: number;
+            p_variant_id?: string | null; p_anon_token?: string | null };
+    returns: { cart_id: string; quantity: number }[];
   };
   cart_set_quantity: {
-    args: { p_cart_id: string; p_item_id: string; p_quantity: number };
+    args: { p_store_id: string; p_item_id: string; p_quantity: number;
+            p_anon_token?: string | null };
     returns: void;
   };
   cart_merge_guest: {
     args: { p_store_id: string; p_anon_token: string };
-    returns: { cart_id: string }[];
+    returns: { cart_id: string; merged: number }[];
   };
   get_cart: {
-    args: { p_store_id: string; p_anon_token?: string };
+    args: { p_store_id: string; p_anon_token?: string | null };
     returns: {
       cart_id: string; item_id: string; product_id: string;
       variant_id: string | null; product_name: string; variant_name: string | null;
@@ -112,11 +113,53 @@ export type RpcMap = {
     }[];
   };
   quote_checkout: {
-    args: { p_store_id: string; p_anon_token?: string;
-            p_zone_id?: string; p_coupon_code?: string };
+    args: { p_store_id: string; p_anon_token?: string | null;
+            p_zone_id?: string | null; p_coupon_code?: string | null };
     returns: {
       subtotal: number; delivery_fee: number; discount_total: number;
       total: number; coupon_valid: boolean; coupon_message: string | null;
+      can_checkout: boolean; out_of_stock: boolean; item_count: number;
+    }[];
+  };
+  create_order: {
+    args: {
+      p_store_id: string;
+      p_items: { product_id: string; variant_id: string | null; quantity: number }[];
+      p_zone_id: string | null;
+      p_contact: { name: string; phone: string; email: string | null };
+      p_address: { line: string; landmark: string | null };
+      p_payment_method: 'cash_on_delivery' | 'bank_transfer' | 'bankak';
+      p_coupon_code?: string | null;
+      p_idempotency_key?: string | null;
+      p_note?: string | null;
+      p_cart_id?: string | null;
+    };
+    returns: {
+      order_id: string; order_number: string; total: number; guest_token: string;
+    }[];
+  };
+  order_details: {
+    args: { p_store_id: string; p_order_number: string;
+            p_guest_token?: string | null; p_phone?: string | null };
+    returns: {
+      order_id: string; order_number: string; status: string;
+      payment_status: string; payment_method: string;
+      contact_name: string; contact_phone: string;
+      delivery_zone_name: string | null; delivery_address: Record<string, unknown>;
+      subtotal: number; delivery_fee: number; discount_total: number; total: number;
+      coupon_code: string | null; note: string | null; created_at: string;
+      items: {
+        product_name: string; variant_name: string | null;
+        unit_price: number; quantity: number; line_total: number;
+      }[];
+    }[];
+  };
+  my_orders: {
+    args: { p_store_id: string };
+    returns: {
+      order_id: string; order_number: string; status: string;
+      payment_status: string; total: number; created_at: string;
+      item_count: number;
     }[];
   };
   track_order: {
@@ -124,6 +167,7 @@ export type RpcMap = {
     returns: {
       order_id: string; order_number: string; status: string;
       payment_status: string; total: number; created_at: string;
+      item_count: number;
     }[];
   };
   verify_domain: {

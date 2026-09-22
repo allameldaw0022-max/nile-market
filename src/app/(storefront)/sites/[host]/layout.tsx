@@ -3,6 +3,10 @@ import Link from 'next/link';
 import { MessageCircle, Search, ShoppingBag } from 'lucide-react';
 import { resolveStoreByHost } from '@/lib/tenant/resolve';
 import { createClient } from '@/lib/supabase/server';
+import { getActor } from '@/lib/auth/actor';
+import { loadCart } from '@/lib/cart/actions';
+import { readCartToken } from '@/lib/cart/token';
+import { GuestCartMerger } from '@/components/storefront/GuestCartMerger';
 
 /**
  * تخطيط المتجر المستأجر.
@@ -28,13 +32,20 @@ export default async function StorefrontLayout({
   if (store.status !== 'active')    notFound();
 
   const supabase = await createClient();
-  const { data: settings } = await supabase
-    .from('store_settings')
-    .select('whatsapp_number, theme')
-    .eq('store_id', store.storeId)
-    .maybeSingle();
+  const [{ data: settings }, cartLines, actor, guestToken] = await Promise.all([
+    supabase.from('store_settings')
+      .select('whatsapp_number, theme')
+      .eq('store_id', store.storeId)
+      .maybeSingle(),
+    loadCart(host),
+    getActor(),
+    readCartToken(host),
+  ]);
 
   const whatsapp = settings?.whatsapp_number ?? null;
+  const cartCount = cartLines.reduce((sum, line) => sum + line.quantity, 0);
+  // الدمج يُطلب فقط حين يوجد الطرفان: حساب مسجَّل وتوكن سلة زائر
+  const needsMerge = actor.kind === 'user' && Boolean(guestToken);
 
   return (
     <div className="flex min-h-screen flex-col bg-sand-50">
@@ -48,9 +59,18 @@ export default async function StorefrontLayout({
                   className="grid size-10 place-items-center rounded-[--radius-md] text-navy-700 hover:bg-sand-100">
               <Search size={20} />
             </Link>
-            <Link href="/cart" aria-label="السلة"
-                  className="grid size-10 place-items-center rounded-[--radius-md] text-navy-700 hover:bg-sand-100">
+            <Link href="/cart"
+                  aria-label={cartCount > 0 ? `السلة (${cartCount})` : 'السلة'}
+                  className="relative grid size-10 place-items-center rounded-[--radius-md]
+                             text-navy-700 hover:bg-sand-100">
               <ShoppingBag size={20} />
+              {cartCount > 0 && (
+                <span className="absolute -top-0.5 -end-0.5 grid min-w-5 place-items-center
+                                 rounded-full bg-nile-500 px-1 text-[11px] font-extrabold
+                                 text-white tabular">
+                  {cartCount}
+                </span>
+              )}
             </Link>
           </div>
         </div>
@@ -64,14 +84,19 @@ export default async function StorefrontLayout({
         )}
       </header>
 
+      {needsMerge && <GuestCartMerger host={host} />}
+
       <main className="flex-1">{children}</main>
 
       <footer className="border-t border-sand-200 bg-white">
         <div className="mx-auto max-w-6xl px-4 py-8 text-sm text-sand-600">
           <p className="font-bold text-navy-900">{store.name}</p>
           <div className="mt-3 flex flex-wrap gap-4">
+            <Link href="/products" className="hover:text-nile-600">كل المنتجات</Link>
+            <Link href="/orders/track" className="hover:text-nile-600">تتبّع طلبك</Link>
             <Link href="/pages/shipping" className="hover:text-nile-600">سياسة الشحن</Link>
             <Link href="/pages/returns" className="hover:text-nile-600">سياسة الاسترجاع</Link>
+            <Link href="/pages/privacy" className="hover:text-nile-600">الخصوصية</Link>
             <Link href="/contact" className="hover:text-nile-600">تواصل معنا</Link>
           </div>
           <p className="mt-6 border-t border-sand-200 pt-4 text-xs">
