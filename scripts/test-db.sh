@@ -13,4 +13,7 @@ fail=0
 for f in "$ROOT"/supabase/tests/[1-9]*.sql; do
   if ! $Q -f "$f" 2>&1 | grep -v '^$'; then fail=1; fi
 done
+# اختبار التزامن يحتاج اتصالات متوازية، فلا يمكن أن يعيش داخل معاملة
+"$ROOT/scripts/race-test.sh" || fail=1
+
 [ $fail -eq 0 ] && echo "══ كل اختبارات القاعدة مرّت ══" || { echo "══ فشل ══"; exit 1; }
