@@ -1,0 +1,42 @@
+# جدولة المهام المتكرّرة.
+#
+# خطة Vercel المجانية تسمح بمهمة يومية واحدة لكل مسار، وطابور البريد
+# لا يحتمل الانتظار يومًا: رسالة «تم اعتماد اشتراكك» تصل بعد يوم لا
+# قيمة لها. لذلك تبقى جدولة Vercel شبكة أمان يومية، ويتولّى هذا
+# الـworkflow التشغيل المتكرّر مجانًا.
+#
+# ★ السرّ في أسرار المستودع لا في الملف. المسارات نفسها تفحصه بمقارنة
+#   ثابتة الزمن وترفض بـ401 من دونه.
+#
+# الإعداد المطلوب مرّة واحدة (Settings ← Secrets and variables ← Actions):
+#   CRON_SECRET  — نفس قيمته في Vercel
+#   CRON_BASE_URL — مثال: https://nile-market.vercel.app
+name: cron
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'   # طابور البريد
+    - cron: '20 * * * *'     # الدومينات المنتظرة
+  workflow_dispatch:
+
+concurrency:
+  group: cron
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: تفريغ طابور البريد
+        if: github.event.schedule == '*/10 * * * *' || github.event_name == 'workflow_dispatch'
+        run: |
+          curl --fail-with-body -sS -m 60 \
+            -H "authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ secrets.CRON_BASE_URL }}/api/v1/cron/emails"
+
+      - name: متابعة الدومينات المنتظرة
+        if: github.event.schedule == '20 * * * *' || github.event_name == 'workflow_dispatch'
+        run: |
+          curl --fail-with-body -sS -m 60 \
+            -H "authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ secrets.CRON_BASE_URL }}/api/v1/cron/domains"
