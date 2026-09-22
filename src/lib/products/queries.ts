@@ -1,5 +1,6 @@
 import 'server-only';
 import { createClient } from '@/lib/supabase/server';
+import { rpc } from '@/lib/supabase/rpc';
 import { mediaUrl } from '@/lib/media/url';
 import type { CategoryOption, ProductFormValues } from '@/components/dashboard/ProductForm';
 
@@ -24,7 +25,7 @@ export async function loadCategories(storeId: string): Promise<CategoryOption[]>
 
 type ProductQueryRow = {
   id: string; name: string; slug: string; description: string | null;
-  price: number; compare_at_price: number | null; cost_price: number | null;
+  price: number; compare_at_price: number | null;
   sku: string | null; category_id: string | null; status: string;
   track_inventory: boolean; weight_grams: number | null;
   inventory: { quantity: number; low_stock_threshold: number | null }[] | null;
@@ -45,7 +46,7 @@ export async function loadProductForm(
   const { data } = await supabase
     .from('products')
     .select(
-      'id, name, slug, description, price, compare_at_price, cost_price, sku, ' +
+      'id, name, slug, description, price, compare_at_price, sku, ' +
       'category_id, status, track_inventory, weight_grams, ' +
       'inventory(quantity, low_stock_threshold), ' +
       'product_images(sort_order, media_file_id, media_files(bucket, path))',
@@ -57,6 +58,13 @@ export async function loadProductForm(
   if (!data) return null;
   const p = data as unknown as ProductQueryRow;
   const stock = p.inventory?.[0];
+
+  // ★ سعر التكلفة سرّ تجاري محجوب عن المسار العام على مستوى العمود
+  // (0038)، فيُقرأ من دالة تفحص `products:view` على هذا المتجر وحده.
+  const { data: costs } = await rpc(supabase, 'product_costs', {
+    p_store_id: storeId,
+  });
+  const cost = costs?.find((c) => c.product_id === productId)?.cost_price ?? null;
 
   const images = [...(p.product_images ?? [])]
     .sort((a, b) => a.sort_order - b.sort_order)
@@ -71,7 +79,7 @@ export async function loadProductForm(
     description: p.description ?? '',
     price: str(p.price),
     compareAtPrice: str(p.compare_at_price),
-    costPrice: str(p.cost_price),
+    costPrice: str(cost),
     sku: p.sku ?? '',
     categoryId: p.category_id ?? '',
     status: p.status,

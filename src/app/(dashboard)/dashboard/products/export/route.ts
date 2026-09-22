@@ -1,6 +1,7 @@
 import { getActor } from '@/lib/auth/actor';
 import { requireStoreAccess } from '@/lib/authz/guards';
 import { createClient } from '@/lib/supabase/server';
+import { rpc } from '@/lib/supabase/rpc';
 import { toCsv } from '@/lib/import/csv';
 import { PRODUCT_STATUS } from '@/lib/status';
 
@@ -31,13 +32,21 @@ export async function GET() {
       'رمز المنتج', 'الكمية', 'التصنيف', 'الوصف', 'الرابط', 'الحالة',
     ]];
 
+    // ★ التكاليف من دالة مُحكمة: العمود محجوب عن المسار العام (0038).
+    // تُقرأ مرّة واحدة لا لكل صفحة — لا N+1.
+    const { data: costRows } = await rpc(supabase, 'product_costs', {
+      p_store_id: membership.storeId,
+    });
+    const costs = new Map(
+      (costRows ?? []).map((c) => [c.product_id, c.cost_price]));
+
     // ترحيل بصفحات: تصدير متجر كبير في استعلام واحد يستهلك الذاكرة
     const PAGE = 500;
     for (let from = 0; ; from += PAGE) {
       const { data, error } = await supabase
         .from('products')
         .select(
-          'name, price, compare_at_price, cost_price, sku, slug, status, description, ' +
+          'id, name, price, compare_at_price, sku, slug, status, description, ' +
           'categories(name), inventory(quantity)',
         )
         .eq('store_id', membership.storeId)
@@ -50,14 +59,15 @@ export async function GET() {
 
       for (const raw of data) {
         const p = raw as unknown as {
+          id: string;
           name: string; price: number; compare_at_price: number | null;
-          cost_price: number | null; sku: string | null; slug: string;
+          sku: string | null; slug: string;
           status: string; description: string | null;
           categories: { name: string } | null;
           inventory: { quantity: number }[] | null;
         };
         rows.push([
-          p.name, p.price, p.compare_at_price, p.cost_price, p.sku,
+          p.name, p.price, p.compare_at_price, costs.get(p.id) ?? null, p.sku,
           (p.inventory ?? []).reduce((s, i) => s + i.quantity, 0),
           p.categories?.name ?? '', p.description ?? '', p.slug,
           PRODUCT_STATUS[p.status]?.label ?? p.status,

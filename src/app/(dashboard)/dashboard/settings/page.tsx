@@ -5,6 +5,7 @@ import { FileText, Globe, Truck, Users } from 'lucide-react';
 import { getActor } from '@/lib/auth/actor';
 import { can, requireStoreAccess } from '@/lib/authz/guards';
 import { createClient } from '@/lib/supabase/server';
+import { rpc } from '@/lib/supabase/rpc';
 import { Card } from '@/components/ui/Card';
 import { StoreProfileForm, type StoreProfile } from '@/components/dashboard/StoreProfileForm';
 import { BankAccountsForm } from '@/components/dashboard/BankAccountsForm';
@@ -34,18 +35,24 @@ export default async function SettingsPage() {
   const canBanking = can(membership, 'settings:banking');
 
   const supabase = await createClient();
-  const [{ data: store }, { data: settings }, { data: payment }] = await Promise.all([
+  const [{ data: store }, { data: settings }, { data: payment }, { data: ops }] =
+    await Promise.all([
     supabase.from('stores').select('name, business_type, description, slug')
       .eq('id', membership.storeId).maybeSingle(),
     supabase.from('store_settings')
-      .select('whatsapp_number, contact_phone, contact_email, address, order_prefix, low_stock_threshold, cod_enabled, bank_transfer_enabled, bankak_enabled')
+      .select('whatsapp_number, contact_phone, contact_email, address, cod_enabled, bank_transfer_enabled, bankak_enabled')
       .eq('store_id', membership.storeId).maybeSingle(),
     // يعود فارغًا لمن لا يملك settings:banking — وهذا هو المقصود
     canBanking
       ? supabase.from('store_payment_settings').select('bank_accounts, bankak_number')
           .eq('store_id', membership.storeId).maybeSingle()
       : Promise.resolve({ data: null }),
+    // ★ الإعدادات التشغيلية الداخلية محجوبة عن المسار العام على مستوى
+    // العمود (0038)، وتُقرأ من دالة تفحص `settings:view`.
+    rpc(supabase, 'store_operational_settings', { p_store_id: membership.storeId }),
   ]);
+
+  const operational = ops?.[0] ?? null;
 
   const address = (settings?.address ?? {}) as { city?: string; line?: string };
 
@@ -58,8 +65,8 @@ export default async function SettingsPage() {
     contactEmail: settings?.contact_email ?? '',
     city: address.city ?? '',
     addressLine: address.line ?? '',
-    orderPrefix: settings?.order_prefix ?? '',
-    lowStockThreshold: settings?.low_stock_threshold ?? 5,
+    orderPrefix: operational?.order_prefix ?? '',
+    lowStockThreshold: operational?.low_stock_threshold ?? 5,
     codEnabled: settings?.cod_enabled ?? false,
     bankTransferEnabled: settings?.bank_transfer_enabled ?? true,
     bankakEnabled: settings?.bankak_enabled ?? false,

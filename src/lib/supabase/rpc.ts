@@ -492,6 +492,20 @@ export type RpcMap = {
     args: { p_member_id: string };
     returns: void;
   };
+  product_costs: {
+    args: { p_store_id: string };
+    returns: { product_id: string; cost_price: number | null }[];
+  };
+  store_operational_settings: {
+    args: { p_store_id: string };
+    returns: {
+      low_stock_threshold: number | null;
+      auto_hide_out_of_stock: boolean | null;
+      order_prefix: string | null;
+      notification_prefs: Json;
+      maintenance_mode: boolean | null;
+    }[];
+  };
   legal_document: {
     args: { p_slug: string };
     returns: {
