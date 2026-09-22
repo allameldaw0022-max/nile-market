@@ -196,8 +196,9 @@ export type RpcMap = {
     returns: void;
   };
   request_partner_payout: {
-    args: { p_amount: number; p_idempotency_key: string };
-    returns: { payout_id: string }[];
+    args: { p_amount: number; p_note?: string | null;
+            p_idempotency_key?: string | null };
+    returns: { payout_id: string; amount: number }[];
   };
   approve_payout: {
     args: { p_payout_id: string };
@@ -208,10 +209,22 @@ export type RpcMap = {
     returns: void;
   };
   submit_subscription_request: {
-    args: { p_store_id: string; p_plan_id: string; p_amount: number;
-            p_reference?: string; p_proof_media_id?: string;
-            p_idempotency_key: string };
-    returns: { request_id: string }[];
+    args: { p_store_id: string; p_plan_id: string;
+            p_reference?: string | null; p_proof_media_id?: string | null;
+            p_idempotency_key?: string | null };
+    returns: { request_id: string; net_amount: number }[];
+  };
+  cancel_subscription_request: {
+    args: { p_request_id: string };
+    returns: void;
+  };
+  platform_payment_info: {
+    args: Record<string, never>;
+    returns: {
+      bank_accounts: { bank?: string; account?: string; holder?: string }[];
+      bankak_number: string | null;
+      payment_instructions: string | null;
+    }[];
   };
   invite_store_member: {
     args: { p_store_id: string; p_email: string; p_role: string;
