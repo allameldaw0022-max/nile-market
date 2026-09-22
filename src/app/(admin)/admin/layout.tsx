@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import {
   Activity, BadgeCheck, BarChart3, CreditCard, FileClock, Flag, Handshake,
   LayoutDashboard, LifeBuoy, Package, Settings, ShieldCheck, Store,
-  UserCog, Users, Wallet,
+  Undo2, UserCog, Users, Wallet,
 } from 'lucide-react';
 import { getActor, adminHasLevel } from '@/lib/auth/actor';
 import { Badge } from '@/components/ui/Badge';
@@ -28,6 +28,7 @@ const NAV: NavItem[] = [
   { href: '/admin/stores', label: 'المتاجر', icon: Store, section: 'stores' },
   { href: '/admin/subscriptions', label: 'الاشتراكات', icon: BadgeCheck, section: 'subscriptions' },
   { href: '/admin/payments', label: 'المدفوعات', icon: CreditCard, section: 'payments' },
+  { href: '/admin/refunds', label: 'الاستردادات', icon: Undo2, section: 'payments' },
   { href: '/admin/plans', label: 'الباقات', icon: Package, section: 'plans' },
   { href: '/admin/partners', label: 'الشركاء', icon: Handshake, section: 'partners' },
   { href: '/admin/payouts', label: 'الصرف', icon: Wallet, section: 'payouts' },

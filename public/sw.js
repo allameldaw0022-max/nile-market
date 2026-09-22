@@ -10,8 +10,14 @@
  *
  * ★ كل الكتابات على الطلبات غير GET تمرّ مباشرة: لا تخزين ولا إعادة
  * إرسال صامتة — دفعة تُرسَل مرتين ليست ميزة دون اتصال.
+ *
+ * ★★ `no-store` يُحترم حرفيًا. صفحات المتجر كلّها تقرأ الكوكيز، فتردّ
+ * Next بـ`Cache-Control: private, no-store`. تخزينها كان يكتب صفحة
+ * مُصيَّرة لزبون مسجَّل — باسمه وسلّته — في ذاكرة يتقاسمها كل من
+ * يستخدم الجهاز، وتُعرض بعد خروجه. قائمة المسارات الممنوعة أدناه
+ * تبقى حزامًا ثانيًا، لكن الحاجز الحقيقي هو ترويسة الرد نفسها.
  */
-const VERSION = 'nm-v1';
+const VERSION = 'nm-v2';
 const SHELL = `${VERSION}-shell`;
 const PAGES = `${VERSION}-pages`;
 const ASSETS = `${VERSION}-assets`;
@@ -59,6 +65,20 @@ function isSameOrigin(url) {
   return url.origin === self.location.origin;
 }
 
+/**
+ * هل يُسمح بتخزين هذا الرد؟
+ *
+ * الرد الخاص بجلسة يحمل `no-store` (أو `private`)، وتخزينه في ذاكرة
+ * مشتركة يسرّبه لمن يأتي بعده على الجهاز نفسه.
+ */
+function mayStore(response) {
+  if (!response || !response.ok || response.type !== 'basic') return false;
+  const cc = (response.headers.get('cache-control') || '').toLowerCase();
+  if (cc.includes('no-store') || cc.includes('private')) return false;
+  if (response.headers.get('set-cookie')) return false;
+  return true;
+}
+
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET') return;
@@ -70,7 +90,7 @@ self.addEventListener('fetch', (event) => {
   if (isAsset(url)) {
     event.respondWith(
       caches.match(request).then((hit) => hit || fetch(request).then((res) => {
-        if (res.ok && res.type === 'basic') {
+        if (mayStore(res)) {
           const copy = res.clone();
           caches.open(ASSETS).then((c) => c.put(request, copy)).catch(() => {});
         }
@@ -82,11 +102,15 @@ self.addEventListener('fetch', (event) => {
 
   // الصفحات: الشبكة أولًا ثم آخر نسخة، وصفحة «دون اتصال» أخيرًا.
   // العكس كان سيعرض سعرًا قديمًا لمنتج تغيّر سعره.
+  //
+  // عمليًا صفحات المتجر كلها `no-store`، فلا تُخزَّن ويبقى البديل دون
+  // اتصال هو صفحة «لا يوجد اتصال». هذا هو السلوك الصحيح: صفحة مخزَّنة
+  // لزبون آخر أسوأ من صفحة اعتذار.
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)
         .then((res) => {
-          if (res.ok && res.type === 'basic') {
+          if (mayStore(res)) {
             const copy = res.clone();
             caches.open(PAGES).then((c) => c.put(request, copy)).catch(() => {});
           }

@@ -20,8 +20,7 @@ export default async function PlatformLayout({ children }: LayoutProps<'/'>) {
 
           <div className="hidden flex-1 items-center gap-6 text-sm font-medium text-navy-700 md:flex">
             <Link href="/pricing" className="hover:text-nile-600">الباقات</Link>
-            <Link href="/features" className="hover:text-nile-600">المميزات</Link>
-            <Link href="/help" className="hover:text-nile-600">المساعدة</Link>
+            <Link href="/support" className="hover:text-nile-600">الدعم</Link>
           </div>
 
           <div className="ms-auto flex items-center gap-2">
@@ -66,8 +65,8 @@ export default async function PlatformLayout({ children }: LayoutProps<'/'>) {
               <p className="font-bold text-navy-900">المنصة</p>
               <ul className="mt-2 space-y-1.5 text-sand-600">
                 <li><Link href="/pricing" className="hover:text-nile-600">الباقات</Link></li>
-                <li><Link href="/help" className="hover:text-nile-600">مركز المساعدة</Link></li>
-                <li><Link href="/contact" className="hover:text-nile-600">تواصل معنا</Link></li>
+                <li><Link href="/support" className="hover:text-nile-600">الدعم والمساعدة</Link></li>
+                <li><Link href="/support/new" className="hover:text-nile-600">تواصل معنا</Link></li>
               </ul>
             </div>
             <div>

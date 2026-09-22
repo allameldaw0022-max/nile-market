@@ -2144,6 +2144,7 @@ export type Database = {
           expiring_warning_days: number
           grace_period_days: number
           id: boolean
+          legal: Json
           maintenance_message: string | null
           maintenance_mode: boolean
           min_payout_amount: number | null
@@ -2165,6 +2166,7 @@ export type Database = {
           expiring_warning_days?: number
           grace_period_days?: number
           id?: boolean
+          legal?: Json
           maintenance_message?: string | null
           maintenance_mode?: boolean
           min_payout_amount?: number | null
@@ -2186,6 +2188,7 @@ export type Database = {
           expiring_warning_days?: number
           grace_period_days?: number
           id?: boolean
+          legal?: Json
           maintenance_message?: string | null
           maintenance_mode?: boolean
           min_payout_amount?: number | null
@@ -4002,7 +4005,20 @@ export type Database = {
           to_email: string
         }[]
       }
+      claim_pending_domains: {
+        Args: { p_limit?: number }
+        Returns: {
+          attempts_age: string
+          domain_id: string
+          hostname: string
+          store_id: string
+        }[]
+      }
       close_my_ticket: { Args: { p_ticket_id: string }; Returns: undefined }
+      complete_refund: {
+        Args: { p_reference?: string; p_refund_id: string }
+        Returns: Json
+      }
       create_order: {
         Args: {
           p_address: Json
@@ -4116,6 +4132,15 @@ export type Database = {
         Args: { p_slug: string; p_store_id?: string }
         Returns: boolean
       }
+      legal_document: {
+        Args: { p_slug: string }
+        Returns: {
+          body: string
+          slug: string
+          title: string
+          updated_at: string
+        }[]
+      }
       mark_email_failed: {
         Args: { p_error: string; p_id: string }
         Returns: undefined
@@ -4137,6 +4162,10 @@ export type Database = {
           status: Database["public"]["Enums"]["order_status"]
           total: number
         }[]
+      }
+      notify_domain_verified: {
+        Args: { p_domain_id: string }
+        Returns: boolean
       }
       order_details: {
         Args: {
@@ -4305,6 +4334,15 @@ export type Database = {
           total: number
         }[]
       }
+      record_health_check: {
+        Args: {
+          p_component: string
+          p_detail?: string
+          p_latency_ms?: number
+          p_status: Database["public"]["Enums"]["health_status"]
+        }
+        Returns: string
+      }
       record_payment: {
         Args: {
           p_amount: number
@@ -4327,6 +4365,25 @@ export type Database = {
         }
         Returns: boolean
       }
+      refunds_page: {
+        Args: { p_limit?: number; p_offset?: number; p_status?: string }
+        Returns: {
+          amount: number
+          approved_by: string
+          created_at: string
+          initiated_by: string
+          kind: string
+          order_number: string
+          payment_id: string
+          reason: string
+          refund_id: string
+          requested_by: string
+          status: string
+          store_id: string
+          store_name: string
+          total_count: number
+        }[]
+      }
       release_expired_slugs: { Args: never; Returns: number }
       remove_custom_domain: {
         Args: { p_domain_id: string }
@@ -4344,6 +4401,19 @@ export type Database = {
           payout_id: string
         }[]
       }
+      request_refund: {
+        Args: {
+          p_amount: number
+          p_idempotency_key?: string
+          p_payment_id: string
+          p_reason: string
+        }
+        Returns: {
+          amount: number
+          refund_id: string
+          status: Database["public"]["Enums"]["refund_status"]
+        }[]
+      }
       resolve_store_by_host: {
         Args: { p_host: string }
         Returns: {
@@ -4359,6 +4429,10 @@ export type Database = {
       }
       review_payout: {
         Args: { p_action: string; p_payout_id: string; p_reason?: string }
+        Returns: Json
+      }
+      review_refund: {
+        Args: { p_action: string; p_reason?: string; p_refund_id: string }
         Returns: Json
       }
       review_subscription_request: {
@@ -4438,6 +4512,10 @@ export type Database = {
           p_ticket_id: string
         }
         Returns: undefined
+      }
+      store_analytics: {
+        Args: { p_days?: number; p_store_id: string }
+        Returns: Json
       }
       submit_subscription_request: {
         Args: {

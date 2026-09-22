@@ -492,6 +492,36 @@ export type RpcMap = {
     args: { p_member_id: string };
     returns: void;
   };
+  legal_document: {
+    args: { p_slug: string };
+    returns: {
+      slug: string; title: string; body: string | null; updated_at: string;
+    }[];
+  };
+  request_refund: {
+    args: { p_payment_id: string; p_amount: number; p_reason: string;
+            p_idempotency_key?: string | null };
+    returns: { refund_id: string; amount: number; status: string }[];
+  };
+  review_refund: {
+    args: { p_refund_id: string; p_action: string; p_reason?: string | null };
+    returns: { status: string };
+  };
+  complete_refund: {
+    args: { p_refund_id: string; p_reference?: string | null };
+    returns: { status: string; commission_reversal?: string | null;
+               already?: boolean };
+  };
+  refunds_page: {
+    args: { p_status?: string | null; p_limit?: number; p_offset?: number };
+    returns: {
+      refund_id: string; payment_id: string; store_id: string | null;
+      store_name: string | null; order_number: string | null;
+      kind: string | null; amount: number; reason: string; status: string;
+      initiated_by: string | null; requested_by: string | null;
+      approved_by: string | null; created_at: string; total_count: number;
+    }[];
+  };
   claim_pending_domains: {
     args: { p_limit?: number };
     returns: {

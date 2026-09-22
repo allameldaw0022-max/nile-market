@@ -28,7 +28,7 @@ export default async function AdminSettingsPage() {
   const supabase = await createClient();
   const [{ data, error }, { data: launch }] = await Promise.all([
     supabase.from('platform_settings')
-      .select('maintenance_mode, maintenance_message, commercial_launch_enabled, grace_period_days, expiring_warning_days, default_partner_rate, support_email, bank_accounts, bankak_number, payment_instructions')
+      .select('maintenance_mode, maintenance_message, commercial_launch_enabled, grace_period_days, expiring_warning_days, default_partner_rate, support_email, bank_accounts, bankak_number, payment_instructions, legal')
       .eq('id', true).maybeSingle(),
     supabase.rpc('plan_configuration_status').maybeSingle(),
   ]);
@@ -71,6 +71,7 @@ export default async function AdminSettingsPage() {
           bankAccounts: (data.bank_accounts ?? []) as BankAccount[],
           bankakNumber: data.bankak_number,
           paymentInstructions: data.payment_instructions,
+          legal: (data.legal ?? {}) as Record<string, string>,
         }}
       />
     </div>

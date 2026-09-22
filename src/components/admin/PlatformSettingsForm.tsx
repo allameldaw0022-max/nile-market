@@ -20,7 +20,15 @@ export type PlatformSettings = {
   bankAccounts: BankAccount[];
   bankakNumber: string | null;
   paymentInstructions: string | null;
+  legal: Record<string, string>;
 };
+
+const LEGAL_DOCS = [
+  { key: 'terms',        label: 'الشروط والأحكام' },
+  { key: 'privacy',      label: 'سياسة الخصوصية' },
+  { key: 'subscription', label: 'سياسة الاشتراك' },
+  { key: 'cancellation', label: 'سياسة الإلغاء والاسترداد' },
+];
 
 /**
  * نموذج إعدادات المنصة.
@@ -54,6 +62,7 @@ export function PlatformSettingsForm({ settings, canManage, launchBlockers }: {
       bankAccounts: s.bankAccounts.filter((b) => b.bank.trim() && b.account.trim()),
       bankakNumber: s.bankakNumber,
       paymentInstructions: s.paymentInstructions,
+      legal: s.legal,
     });
     if (!res.ok) { setError(res.message); return; }
     setSaved(true);
@@ -162,6 +171,28 @@ export function PlatformSettingsForm({ settings, canManage, launchBlockers }: {
                     disabled={!canManage}
                     hint="تظهر للتاجر مع بيانات الحساب."
                     onChange={(e) => set('paymentInstructions', e.target.value)} />
+        </div>
+      </Card>
+
+      <Card>
+        <CardHeader
+          title="الوثائق القانونية"
+          description="تُعرض على /legal — وما لا يُكتب هنا يظهر «لم تُنشر بعد» لا نصًّا افتراضيًا."
+        />
+        <div className="space-y-4 p-5">
+          <p className="rounded-[--radius-md] bg-sand-50 p-3 text-xs text-sand-700">
+            صفحة التسجيل تطلب الموافقة على الشروط وسياسة الخصوصية، فاكتبهما
+            قبل فتح التسجيل. ويجب أن توثّق سياسة الخصوصية نطاق إخفاء الهوية:
+            يشمل بيانات الحسابات والعملاء ولا يمسّ الطلبات ولا السجلات
+            المالية (D32).
+          </p>
+          {LEGAL_DOCS.map((doc) => (
+            <Textarea key={doc.key} label={doc.label} disabled={!canManage}
+                      value={s.legal[doc.key] ?? ''}
+                      className="min-h-32"
+                      onChange={(e) => set('legal',
+                        { ...s.legal, [doc.key]: e.target.value })} />
+          ))}
         </div>
       </Card>
 

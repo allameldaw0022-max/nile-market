@@ -5,7 +5,7 @@ import { requirePlatformAccess } from '@/lib/authz/guards';
 import { createClient } from '@/lib/supabase/server';
 import { errors, fromPostgres } from '@/lib/authz/errors';
 import { actionError, ok, type ActionResult } from '@/lib/action-result';
-import { rpc } from '@/lib/supabase/rpc';
+import { firstRow, rpc } from '@/lib/supabase/rpc';
 
 /**
  * أفعال لوحة الإدارة.
@@ -208,6 +208,7 @@ export async function savePlatformSettings(input: {
   bankAccounts?: { bank: string; account: string; holder?: string }[];
   bankakNumber?: string | null;
   paymentInstructions?: string | null;
+  legal?: Record<string, string>;
 }): Promise<ActionResult> {
   try {
     const actor = await requirePlatformAccess('settings', 'manage');
@@ -233,6 +234,7 @@ export async function savePlatformSettings(input: {
       bank_accounts?: { bank: string; account: string; holder?: string }[];
       bankak_number?: string | null;
       payment_instructions?: string | null;
+      legal?: Record<string, string>;
     };
     const patch: SettingsPatch = { updated_by: actor.userId };
     if (input.maintenanceMode !== undefined)
@@ -255,6 +257,17 @@ export async function savePlatformSettings(input: {
       patch.bankak_number = input.bankakNumber?.trim() || null;
     if (input.paymentInstructions !== undefined)
       patch.payment_instructions = input.paymentInstructions?.trim() || null;
+    if (input.legal !== undefined) {
+      // قائمة بيضاء صريحة: مفتاح غير معروف لا يُخزَّن، فلا تنشأ
+      // «وثيقة» لا تعرضها أي صفحة
+      const allowed = ['terms', 'privacy', 'subscription', 'cancellation'];
+      const legal: Record<string, string> = {};
+      for (const key of allowed) {
+        const body = input.legal[key]?.trim();
+        if (body) legal[key] = body;
+      }
+      patch.legal = legal;
+    }
 
     const supabase = await createClient();
     const { error } = await supabase
@@ -266,6 +279,86 @@ export async function savePlatformSettings(input: {
     revalidatePath('/admin/settings');
     revalidatePath('/admin');
     return ok(undefined);
+  } catch (err) {
+    return actionError(err);
+  }
+}
+
+/**
+ * الاستردادات.
+ *
+ * ★ فصل المهام (D30) في قيود CHECK على `refunds`: المبادِر والمسجِّل
+ * والمعتمِد ثلاثة أشخاص مختلفون، والقيد يسري على service_role أيضًا.
+ * هذه الأفعال تسهّل النداء ولا تحلّ محلّ القيد.
+ */
+export async function reviewRefund(input: {
+  refundId: string; action: 'record' | 'approve' | 'reject'; reason?: string;
+}): Promise<ActionResult<{ status: string }>> {
+  try {
+    await requirePlatformAccess('payments', input.action === 'record' ? 'edit' : 'approve');
+    if (input.action === 'reject' && !input.reason?.trim())
+      throw errors.validation('سبب الرفض إلزامي', 'reason');
+
+    const supabase = await createClient();
+    const { data, error } = await rpc(supabase, 'review_refund', {
+      p_refund_id: input.refundId,
+      p_action: input.action,
+      p_reason: input.reason?.trim() || null,
+    });
+    if (error) throw fromPostgres(error);
+
+    revalidatePath('/admin/refunds');
+    return ok({ status: String(data?.status ?? input.action) });
+  } catch (err) {
+    return actionError(err);
+  }
+}
+
+/** إتمام الاسترداد: قيد الدفتر وعكس عمولة الشريك في معاملة واحدة. */
+export async function completeRefund(input: {
+  refundId: string; reference?: string;
+}): Promise<ActionResult<{ status: string }>> {
+  try {
+    await requirePlatformAccess('payments', 'approve');
+    const supabase = await createClient();
+    const { data, error } = await rpc(supabase, 'complete_refund', {
+      p_refund_id: input.refundId,
+      p_reference: input.reference?.trim() || null,
+    });
+    if (error) throw fromPostgres(error);
+
+    revalidatePath('/admin/refunds');
+    revalidatePath('/admin/payments');
+    return ok({ status: String(data?.status ?? 'completed') });
+  } catch (err) {
+    return actionError(err);
+  }
+}
+
+/** طلب استرداد يبادر به موظف منصة على دفعة. */
+export async function requestRefund(input: {
+  paymentId: string; amount: number; reason: string; idempotencyKey: string;
+}): Promise<ActionResult<{ refundId: string }>> {
+  try {
+    await requirePlatformAccess('payments', 'approve');
+    if (!Number.isFinite(input.amount) || input.amount <= 0)
+      throw errors.validation('أدخل مبلغًا صحيحًا', 'amount');
+    if (input.reason.trim().length < 3)
+      throw errors.validation('سبب الاسترداد إلزامي', 'reason');
+
+    const supabase = await createClient();
+    const { data, error } = await rpc(supabase, 'request_refund', {
+      p_payment_id: input.paymentId,
+      p_amount: input.amount,
+      p_reason: input.reason.trim(),
+      p_idempotency_key: input.idempotencyKey,
+    });
+    if (error) throw fromPostgres(error);
+    const row = firstRow(data);
+    if (!row) throw errors.internal();
+
+    revalidatePath('/admin/refunds');
+    return ok({ refundId: row.refund_id });
   } catch (err) {
     return actionError(err);
   }
