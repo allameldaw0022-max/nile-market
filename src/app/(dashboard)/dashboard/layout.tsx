@@ -9,6 +9,7 @@ import { NotificationBell } from '@/components/dashboard/NotificationBell';
 import { GlobalSearch } from '@/components/dashboard/GlobalSearch';
 import { NavDrawer, SideNav } from '@/components/dashboard/SideNav';
 import { StoreMenu } from '@/components/dashboard/StoreMenu';
+import { AccountMenu } from '@/components/dashboard/AccountMenu';
 import { SkipLink } from '@/components/ui/SkipLink';
 import { NAV_GROUPS } from '@/lib/dashboard-nav';
 
@@ -79,6 +80,7 @@ export default async function DashboardLayout({ children }: LayoutProps<'/dashbo
             {domain?.hostname && (
               <StoreMenu hostname={domain.hostname} storeName={membership.storeName} />
             )}
+            <AccountMenu email={actor.email} isPlatformStaff={Boolean(actor.admin)} />
           </div>
         </div>
       </header>
