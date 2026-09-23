@@ -104,7 +104,12 @@ function CreateStoreStep({ onCreated }: { onCreated: (s: WizardInitial) => void 
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
   const [businessType, setBusinessType] = useState('');
-  const [slugState, setSlugState] = useState<'idle' | 'checking' | 'free' | 'taken'>('idle');
+  // ★ `error` حالة مستقلّة عن `taken`: فشل الفحص ليس حجزًا.
+  // دمجهما كان يجعل الواجهة تخبر التاجر أن رابطًا متاحًا «محجوز»،
+  // وتمنعه من المتابعة بناءً على خبر لم يحدث.
+  const [slugState, setSlugState] =
+    useState<'idle' | 'checking' | 'free' | 'taken' | 'error'>('idle');
+  const [slugError, setSlugError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
 
@@ -121,7 +126,14 @@ function CreateStoreStep({ onCreated }: { onCreated: (s: WizardInitial) => void 
         className="mt-8 space-y-4"
         action={(fd) => start(async () => {
           setError(null);
-          const res = await createStore(fd);
+          let res: Awaited<ReturnType<typeof createStore>>;
+          try {
+            res = await createStore(fd);
+          } catch {
+            // فشل الاستدعاء نفسه ⇒ رسالة داخل النموذج، لا سقوط الصفحة
+            setError('تعذّر الاتصال بالخادم — حاول مرة أخرى');
+            return;
+          }
           if (!res.ok) { setError(res.message); return; }
           onCreated({
             storeId: res.data.storeId, name, slug: slug || autoSlug(name),
@@ -150,13 +162,36 @@ function CreateStoreStep({ onCreated }: { onCreated: (s: WizardInitial) => void 
           <Input
             name="slug" label="رابط المتجر" required dir="ltr"
             value={slug || autoSlug(name)}
-            onChange={(e) => { setSlug(autoSlug(e.target.value)); setSlugState('idle'); }}
+            onChange={(e) => {
+              setSlug(autoSlug(e.target.value));
+              setSlugState('idle');
+              setSlugError(null);
+            }}
             onBlur={() => start(async () => {
               const value = slug || autoSlug(name);
               if (value.length < 3) return;
               setSlugState('checking');
-              const res = await checkSlug(value);
-              setSlugState(res.ok ? (res.data.available ? 'free' : 'taken') : 'taken');
+              // ★ الاستدعاء نفسه قد يفشل شبكيًا (Server Action لم يصل).
+              // بلا هذا الـcatch يهرب الرفض من الـtransition إلى حدّ
+              // الخطأ فيسقط الصفحة كلها بدل حقل واحد.
+              let res: Awaited<ReturnType<typeof checkSlug>>;
+              try {
+                res = await checkSlug(value);
+              } catch {
+                setSlugState('error');
+                setSlugError('تعذّر الاتصال');
+                return;
+              }
+              if (!res.ok) {
+                // لا نزعم أنه محجوز: نقول إن الفحص لم يتمّ، ونترك
+                // القرار للقاعدة عند الإنشاء — وهي الحاجز الحقيقي.
+                // الرمز يُعرض ليكون العطل قابلًا للتشخيص من لقطة شاشة.
+                setSlugState('error');
+                setSlugError(`${res.code}: ${res.message}`);
+                return;
+              }
+              setSlugError(null);
+              setSlugState(res.data.available ? 'free' : 'taken');
             })}
             hint={`سيكون متجرك على: ${slug || autoSlug(name) || 'اسم-متجرك'}.nilemarket.online`}
             error={slugState === 'taken' ? 'هذا الرابط محجوز — اختر غيره' : undefined}
@@ -164,6 +199,12 @@ function CreateStoreStep({ onCreated }: { onCreated: (s: WizardInitial) => void 
           {slugState === 'free' && (
             <p className="mt-1 flex items-center gap-1 text-xs font-bold text-success">
               <Check size={13} /> الرابط متاح
+            </p>
+          )}
+          {slugState === 'error' && (
+            <p role="status" className="mt-1 text-xs text-ink-500">
+              تعذّر التحقّق من الرابط الآن{slugError ? ` (${slugError})` : ''} —
+              يمكنك المتابعة، وسيُتحقَّق منه عند الإنشاء.
             </p>
           )}
         </div>
@@ -180,7 +221,7 @@ function CreateStoreStep({ onCreated }: { onCreated: (s: WizardInitial) => void 
         </div>
 
         <Button type="submit" className="w-full" size="lg" loading={pending}
-                disabled={slugState === 'taken'}>
+                disabled={slugState === 'taken' || slugState === 'checking'}>
           إنشاء المتجر
         </Button>
       </form>
