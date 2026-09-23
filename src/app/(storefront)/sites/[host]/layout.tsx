@@ -1,5 +1,6 @@
 import { notFound, permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 import { Heart, MessageCircle, Search, ShoppingBag, User } from 'lucide-react';
 import { resolveStoreByHost } from '@/lib/tenant/resolve';
@@ -96,9 +97,11 @@ export default async function StorefrontLayout({
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4">
           <Link href="/" className="flex min-w-0 shrink-0 items-center gap-2.5">
             {branding?.logo_url && (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img src={branding.logo_url} alt="" width={32} height={32}
-                   className="size-8 shrink-0 rounded-sm object-cover" />
+              /* ★ كان <img> خامًا: الشعار المخزَّن قد يبلغ ٥ م.ب ويُنزَّل
+                 كاملًا لخانة 32px في كل صفحة متجر. `next/image` يخدم
+                 النسخة بحجم العرض وصيغة حديثة. */
+              <Image src={branding.logo_url} alt="" width={32} height={32}
+                     className="size-8 shrink-0 rounded-sm object-cover" />
             )}
             <span className="truncate text-[17px] font-bold text-ink-900">{store.name}</span>
           </Link>

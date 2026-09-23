@@ -27,6 +27,13 @@ export async function runDailyMaintenance(): Promise<{
     });
   }
 
+  // ★ قياس الموارد مرّة يوميًا: كافٍ لمعرفة الاتجاه، ولا يُثقل القاعدة
+  // بصفوف مراقبة. فشله لا يُسقط الصيانة.
+  const usage = await supabase.rpc('record_resource_usage' as never);
+  if (usage.error) {
+    log.warn('maintenance.usage_failed', { reason: usage.error.message });
+  }
+
   if (error) {
     log.error('maintenance.failed', { reason: error.message });
     return { ok: false, summary: null, error: error.message };

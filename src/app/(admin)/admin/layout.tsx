@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import {
-  Activity, BadgeCheck, BarChart3, CreditCard, FileClock, Flag, Handshake,
+  Activity, BadgeCheck, BarChart3, CreditCard, FileClock, Flag, Gauge, Handshake,
   LayoutDashboard, LifeBuoy, Package, Settings, ShieldCheck, Store,
   Undo2, UserCog, Users, Wallet,
 } from 'lucide-react';
@@ -40,6 +40,7 @@ const NAV: NavItem[] = [
   { href: '/admin/audit', label: 'سجل التدقيق', icon: FileClock, section: 'audit_logs' },
   { href: '/admin/flags', label: 'الميزات', icon: Flag, section: 'feature_flags' },
   { href: '/admin/health', label: 'صحة النظام', icon: Activity, section: 'system_health' },
+  { href: '/admin/usage', label: 'استهلاك الموارد', icon: Gauge, section: 'system_health' },
   { href: '/admin/settings', label: 'الإعدادات', icon: Settings, section: 'settings' },
 ];
 

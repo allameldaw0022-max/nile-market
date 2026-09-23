@@ -119,6 +119,18 @@ export type RpcMap = {
     args: { p_store_id: string };
     returns: { ok: boolean; missing: string[] }[];
   };
+  resource_usage_latest: {
+    args: Record<string, never>;
+    returns: {
+      resource: string; value_bytes: number; limit_bytes: number | null;
+      percentage: number | null; source: string;
+      detail: { file_count?: number }; measured_at: string;
+    }[];
+  };
+  record_resource_usage: {
+    args: Record<string, never>;
+    returns: number;
+  };
   is_slug_available: {
     args: { p_slug: string; p_store_id?: string };
     returns: boolean;
