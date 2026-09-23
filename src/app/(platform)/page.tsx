@@ -1,27 +1,30 @@
 import Link from 'next/link';
-import { ArrowLeft, BarChart3, Check, Globe, Package, ShieldCheck, Smartphone } from 'lucide-react';
+import { ArrowLeft, Check } from 'lucide-react';
+import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
-import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
-import { formatMoney } from '@/lib/money/format';
+import { buttonClass } from '@/components/ui/Button';
+import {
+  DashboardPreview, MobilePreview, OrdersPreview, ProductsPreview,
+} from '@/components/marketing/ProductPreview';
+import { PlanGrid } from '@/components/marketing/PlanGrid';
+import { Faq } from '@/components/marketing/Faq';
 
 export const revalidate = 300;
 
-const FEATURES = [
-  { icon: Package,     title: 'إدارة كاملة للمنتجات',
-    body: 'منتجات ومتغيرات ومخزون وتنبيهات نفاد — كل شيء من لوحة واحدة.' },
-  { icon: Smartphone,  title: 'متجر سريع على الهاتف',
-    body: 'مصمَّم ليفتح بسرعة على الشبكات الضعيفة، بالعربية وبواجهة RTL حقيقية.' },
-  { icon: Globe,       title: 'رابط متجرك ودومينك',
-    body: 'رابط فرعي مجاني لكل متجر، مع إمكانية ربط دومينك الخاص.' },
-  { icon: ShieldCheck, title: 'أمان على مستوى قاعدة البيانات',
-    body: 'بيانات متجرك معزولة فعليًا عن غيره، لا على مستوى الواجهة فقط.' },
-  { icon: BarChart3,   title: 'إحصائيات تفهمها',
-    body: 'مبيعاتك وطلباتك وعملاؤك وأكثر منتجاتك مبيعًا في مكان واحد.' },
-  { icon: Check,       title: 'واتساب في صميم البيع',
-    body: 'شارك منتجاتك واستقبل طلبات عملائك عبر واتساب مباشرة.' },
-];
+export const metadata: Metadata = {
+  description:
+    'سوق النيل منصة لإنشاء متجرك الإلكتروني وإدارة منتجاتك وطلباتك ومخزونك وعملائك من لوحة واحدة.',
+};
 
+/**
+ * الصفحة الرئيسية — Product-first.
+ *
+ * ★ المنتج هو العنصر البصري لا الزخرفة: كل قسم يعرض شاشة حيّة مبنية
+ * من نفس أساسيات لوحة التاجر (لا صور ولا Mockups)، ولكل قسم تخطيط
+ * مختلف — عمودان متفاوتان، ثم شريط داكن، ثم قائمة خطوات مرقّمة، ثم
+ * لوح تحليلات. تكرار «أيقونة + عنوان + وصف» في بطاقات متطابقة هو ما
+ * يجعل الموقع يبدو مولَّدًا، فلا يتكرّر هنا قسم بتخطيط قسم آخر.
+ */
 export default async function HomePage() {
   const supabase = await createClient();
   const { data: plans } = await supabase
@@ -32,80 +35,163 @@ export default async function HomePage() {
 
   return (
     <>
-      <section className="bg-gradient-to-b from-teal-50 to-transparent">
-        <div className="mx-auto max-w-6xl px-4 py-16 text-center sm:py-24">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-gold-500/30
-                           bg-gold-300/10 px-3 py-1 text-xs font-bold text-gold-700">
-            منصة سودانية
-          </span>
-          <h1 className="mt-5 text-3xl font-extrabold leading-tight text-ink-900 sm:text-5xl">
-            متجرك الإلكتروني
-            <br className="sm:hidden" />
-            <span className="text-teal-700"> جاهز خلال دقائق</span>
-          </h1>
-          <p className="mx-auto mt-4 max-w-xl text-base text-ink-500 sm:text-lg">
-            أنشئ متجرك، أضف منتجاتك، واستقبل طلبات عملائك — بالعربية،
-            وبتجربة سريعة تناسب السوق السوداني.
-          </p>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <Link href="/signup">
-              <Button size="lg" icon={<ArrowLeft size={18} className="flip-rtl" />}>
-                ابدأ مجانًا
-              </Button>
-            </Link>
-            <Link href="/pricing">
-              <Button size="lg" variant="outline">شاهد الباقات</Button>
-            </Link>
+      {/* ───────────────── Hero: عمودان متفاوتان، المنتج هو البطل ──── */}
+      <section className="border-b border-ink-200 bg-white">
+        <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 lg:grid-cols-[minmax(0,42%)_minmax(0,1fr)]
+                        lg:items-center lg:gap-12 lg:py-20">
+          <div>
+            <h1 className="text-ink-900">
+              تجارتك تبدأ
+              <span className="block text-teal-700">من هنا.</span>
+            </h1>
+            <p className="prose-width mt-5 text-[17px] leading-relaxed text-ink-500">
+              أنشئ متجرك، أضف منتجاتك، واستقبل الطلبات وتابع المخزون والعملاء
+              من لوحة واحدة — بالعربية، وبواجهة تعمل على الشبكات الضعيفة.
+            </p>
+
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              <Link href="/signup" className={buttonClass('primary', 'lg')}>
+                أنشئ متجرك مجانًا
+                <ArrowLeft size={18} className="flip-rtl" aria-hidden />
+              </Link>
+              <Link href="#how" className={buttonClass('outline', 'lg')}>
+                شاهد كيف يعمل
+              </Link>
+            </div>
+
+            <ul className="mt-7 flex flex-wrap gap-x-5 gap-y-2 text-[13px] text-ink-500">
+              {['بلا رسوم إعداد', 'رابط متجر فوري', 'تحكّم كامل في منتجاتك'].map((t) => (
+                <li key={t} className="flex items-center gap-1.5">
+                  <Check size={14} className="text-teal-600" aria-hidden />{t}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <DashboardPreview />
+        </div>
+      </section>
+
+      {/* ───────────────── كيف يعمل: خطوات مرقّمة + شاشة المنتجات ──── */}
+      <section id="how" className="border-b border-ink-200 bg-ink-50">
+        <div className="mx-auto grid max-w-6xl gap-10 px-4 py-16 lg:grid-cols-2 lg:items-center lg:py-20">
+          <div className="order-2 lg:order-1">
+            <ProductsPreview />
+          </div>
+
+          <div className="order-1 lg:order-2">
+            <h2>من المنتج إلى الطلب في ثلاث خطوات</h2>
+            <p className="prose-width mt-3 text-ink-500">
+              لا إعدادات معقّدة ولا انتظار. تنشئ المتجر وتضيف أول منتج
+              وتشارك الرابط — في الجلسة نفسها.
+            </p>
+
+            <ol className="mt-8 space-y-6">
+              {[
+                { t: 'أنشئ متجرك', b: 'اسم المتجر ونوع النشاط، وتحصل على رابط خاص بك فورًا.' },
+                { t: 'أضف منتجاتك', b: 'صور وأسعار ومتغيّرات ومخزون. أو استورد قائمتك دفعة واحدة من ملف.' },
+                { t: 'شارك واستقبل الطلبات', b: 'رابط متجرك جاهز للنشر، والطلبات تصلك في اللوحة وعبر واتساب.' },
+              ].map((s, i) => (
+                <li key={s.t} className="flex gap-4">
+                  <span aria-hidden className="grid size-8 shrink-0 place-items-center rounded-full
+                                   border border-teal-600 text-[13px] font-bold tabular text-teal-700">
+                    {i + 1}
+                  </span>
+                  <span>
+                    <span className="block font-semibold text-ink-900">{s.t}</span>
+                    <span className="mt-1 block text-sm leading-relaxed text-ink-500">{s.b}</span>
+                  </span>
+                </li>
+              ))}
+            </ol>
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-16">
-        <h2 className="text-center text-2xl font-extrabold text-ink-900">كل ما تحتاجه لتبيع</h2>
-        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {FEATURES.map((f) => (
-            <Card key={f.title} className="p-5">
-              <span className="grid size-10 place-items-center rounded-[--radius-md] bg-teal-50 text-teal-700">
-                <f.icon size={20} />
-              </span>
-              <h3 className="mt-3 font-bold text-ink-900">{f.title}</h3>
-              <p className="mt-1 text-sm text-ink-500">{f.body}</p>
-            </Card>
-          ))}
+      {/* ───────────────── الطلبات: شريط داكن، الشاشة بعرض كامل ───── */}
+      <section className="border-b border-ink-200 bg-ink-800">
+        <div className="mx-auto max-w-6xl px-4 py-16 lg:py-20">
+          <div className="max-w-2xl">
+            <h2 className="text-white">تابع طلباتك لحظة بلحظة</h2>
+            <p className="mt-3 text-[15px] leading-relaxed text-white/70">
+              كل طلب بحالته ومدينته وطريقة دفعه. تصفية بالحالة، وبحث برقم الطلب
+              أو هاتف العميل، وتحديث الحالة بضغطة — مع سجلّ يوضّح من غيّر ماذا ومتى.
+            </p>
+          </div>
+          <div className="mt-9">
+            <OrdersPreview className="border-white/10" />
+          </div>
         </div>
       </section>
 
-      <section id="pricing" className="bg-white py-16">
-        <div className="mx-auto max-w-5xl px-4">
-          <h2 className="text-center text-2xl font-extrabold text-ink-900">الباقات</h2>
-          <p className="mt-2 text-center text-sm text-ink-500">
-            ابدأ بالباقة المجانية، وارقِ متى احتجت.
-          </p>
-          <div className="mt-10 grid gap-4 sm:grid-cols-3">
-            {(plans ?? []).map((p) => (
-              <Card key={p.id}
-                    className={p.code === 'basic' ? 'border-teal-600 p-5 ring-1 ring-teal-600' : 'p-5'}>
-                <h3 className="font-extrabold text-ink-900">{p.name}</h3>
-                <p className="mt-2 text-2xl font-extrabold text-teal-700 tabular">
-                  {p.is_free
-                    ? 'مجانًا'
-                    : p.price_configured_at
-                      ? <>{formatMoney(p.price)}<span className="text-sm font-medium text-ink-500"> / شهريًا</span></>
-                      : <span className="text-base text-ink-500">قريبًا</span>}
-                </p>
-                {p.description && <p className="mt-2 text-sm text-ink-500">{p.description}</p>}
-                <Link href="/signup" className="mt-5 block">
-                  <Button className="w-full"
-                          variant={p.code === 'basic' ? 'primary' : 'outline'}>
-                    اختر {p.name}
-                  </Button>
-                </Link>
-              </Card>
-            ))}
+      {/* ───────────────── الهاتف: نصّ + جهاز، بلا بطاقات ─────────── */}
+      <section className="border-b border-ink-200 bg-white">
+        <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 py-16 lg:grid-cols-[1fr_auto] lg:py-20">
+          <div>
+            <h2>عميلك يشتري من هاتفه</h2>
+            <p className="prose-width mt-3 text-ink-500">
+              متجرك مبني للهاتف أولًا: صور خفيفة، وبحث سريع، وسلّة لا تضيع،
+              وإتمام طلب من شاشة واحدة. لأن أغلب زبائنك لن يفتحوا حاسوبًا.
+            </p>
+            <dl className="mt-8 grid max-w-md grid-cols-2 gap-x-6 gap-y-5">
+              {[
+                ['يعمل بلا إنترنت', 'تصفّح ما سبق فتحه حتى بانقطاع الشبكة.'],
+                ['يُثبَّت كتطبيق', 'أيقونة على شاشة الهاتف باسم متجرك أنت.'],
+                ['دفع عند الاستلام', 'وتحويل بنكي وبنكك — تختار ما يناسبك.'],
+                ['واتساب مدمج', 'العميل يسألك عن المنتج مباشرة من صفحته.'],
+              ].map(([t, b]) => (
+                <div key={t}>
+                  <dt className="text-[14px] font-semibold text-ink-900">{t}</dt>
+                  <dd className="mt-1 text-[13px] leading-relaxed text-ink-500">{b}</dd>
+                </div>
+              ))}
+            </dl>
           </div>
-          <p className="mt-6 text-center text-xs text-ink-500">
-            الأسعار والحدود تُدار من لوحة الإدارة وتظهر هنا فور ضبطها.
+          <MobilePreview />
+        </div>
+      </section>
+
+      {/* ───────────────── الباقات ─────────────────────────────────── */}
+      <section id="pricing" className="border-b border-ink-200 bg-ink-50">
+        <div className="mx-auto max-w-5xl px-4 py-16 lg:py-20">
+          <div className="max-w-2xl">
+            <h2>الباقات</h2>
+            <p className="mt-3 text-ink-500">
+              ابدأ بالمجانية بلا بطاقة، وارقِ حين يكبر متجرك.
+            </p>
+          </div>
+          <PlanGrid plans={plans ?? []} className="mt-9" />
+          <p className="mt-6 text-[13px] text-ink-500">
+            تريد المقارنة التفصيلية بين الباقات؟{' '}
+            <Link href="/pricing" className="font-medium text-teal-700 underline underline-offset-4">
+              صفحة الباقات
+            </Link>
           </p>
+        </div>
+      </section>
+
+      {/* ───────────────── الأسئلة الشائعة ─────────────────────────── */}
+      <section id="faq" className="border-b border-ink-200 bg-white">
+        <div className="mx-auto max-w-5xl px-4 py-16 lg:py-20">
+          <h2>أسئلة يسألها التجّار قبل البدء</h2>
+          <Faq className="mt-8" />
+        </div>
+      </section>
+
+      {/* ───────────────── نداء أخير: سطر واحد، لا بطاقة ───────────── */}
+      <section className="bg-ink-800">
+        <div className="mx-auto flex max-w-5xl flex-col items-start gap-6 px-4 py-14
+                        sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-white">جاهز تبدأ؟</h2>
+            <p className="mt-2 text-[15px] text-white/70">
+              أنشئ متجرك الآن — الباقة المجانية تكفي لتبيع أول منتج اليوم.
+            </p>
+          </div>
+          <Link href="/signup" className={buttonClass('primary', 'lg', 'shrink-0')}>
+            أنشئ متجرك مجانًا
+            <ArrowLeft size={18} className="flip-rtl" aria-hidden />
+          </Link>
         </div>
       </section>
     </>
