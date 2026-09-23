@@ -22,7 +22,7 @@ export function AcceptPartnership({ token }: { token: string }) {
   if (joined) {
     return (
       <Card className="p-6 text-center">
-        <CheckCircle2 className="mx-auto text-[--color-success]" size={40} />
+        <CheckCircle2 className="mx-auto text-success" size={40} />
         <h1 className="mt-3 text-lg font-extrabold text-ink-900">
           صرت شريكًا في سوق النيل
         </h1>
@@ -47,9 +47,9 @@ export function AcceptPartnership({ token }: { token: string }) {
       </p>
 
       {error && (
-        <p role="alert" className="mt-4 flex items-start gap-2 rounded-[--radius-md]
-                        border border-[--color-danger]/30 bg-[--color-danger-bg] p-3
-                        text-start text-sm text-[--color-danger]">
+        <p role="alert" className="mt-4 flex items-start gap-2 rounded-md
+                        border border-danger/30 bg-danger-bg p-3
+                        text-start text-sm text-danger">
           <AlertTriangle size={15} className="mt-0.5 shrink-0" />{error}
         </p>
       )}

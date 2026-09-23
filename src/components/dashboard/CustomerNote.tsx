@@ -41,7 +41,7 @@ export function CustomerNote({ storeId, customerId, initial, canEdit }: {
                 placeholder="مثال: يفضّل التوصيل بعد العصر." />
 
       {error && (
-        <p role="alert" className="flex items-center gap-1.5 text-sm text-[--color-danger]">
+        <p role="alert" className="flex items-center gap-1.5 text-sm text-danger">
           <AlertTriangle size={14} />{error}
         </p>
       )}
@@ -50,7 +50,7 @@ export function CustomerNote({ storeId, customerId, initial, canEdit }: {
         <Button size="sm" loading={pending} onClick={submit}>حفظ الملاحظة</Button>
         {saved && (
           <span className="inline-flex items-center gap-1 text-xs font-bold
-                           text-[--color-success]">
+                           text-success">
             <Check size={13} /> حُفظت
           </span>
         )}

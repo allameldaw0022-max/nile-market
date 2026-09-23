@@ -76,9 +76,9 @@ export function FirstProductStep({ storeId, count, onChange, onNext }: {
 
       <div className="space-y-4 p-5">
         {error && (
-          <div role="alert" className="flex items-start gap-2 rounded-[--radius-md] border
-                          border-[--color-danger]/30 bg-[--color-danger-bg] p-3
-                          text-sm text-[--color-danger]">
+          <div role="alert" className="flex items-start gap-2 rounded-md border
+                          border-danger/30 bg-danger-bg p-3
+                          text-sm text-danger">
             <AlertTriangle size={16} className="mt-0.5 shrink-0" />{error}
           </div>
         )}
@@ -86,10 +86,10 @@ export function FirstProductStep({ storeId, count, onChange, onNext }: {
         {loading ? (
           <p className="text-sm text-ink-500">يحمّل المنتجات…</p>
         ) : products.length > 0 && (
-          <ul className="divide-y divide-ink-200 rounded-[--radius-md] border border-ink-200">
+          <ul className="divide-y divide-ink-200 rounded-md border border-ink-200">
             {products.map((p) => (
               <li key={p.id} className="flex items-center gap-3 p-3">
-                <div className="relative size-12 shrink-0 overflow-hidden rounded-[--radius-md]
+                <div className="relative size-12 shrink-0 overflow-hidden rounded-md
                                 border border-ink-200 bg-ink-50">
                   {p.imageUrl ? (
                     <Image src={p.imageUrl} alt="" fill sizes="48px" className="object-cover" />
@@ -107,7 +107,7 @@ export function FirstProductStep({ storeId, count, onChange, onNext }: {
                 </div>
                 <button type="button" aria-label={`حذف ${p.name}`}
                         onClick={() => remove(p.id)} disabled={pending}
-                        className="rounded p-2 text-[--color-danger] hover:bg-[--color-danger-bg]
+                        className="rounded p-2 text-danger hover:bg-danger-bg
                                    disabled:opacity-50">
                   <Trash2 size={15} />
                 </button>
@@ -117,7 +117,7 @@ export function FirstProductStep({ storeId, count, onChange, onNext }: {
         )}
 
         {showForm ? (
-          <form action={submit} className="space-y-4 rounded-[--radius-md]
+          <form action={submit} className="space-y-4 rounded-md
                                            border border-ink-200 p-4">
             <Input name="name" label="اسم المنتج" required maxLength={200}
                    placeholder="مثال: قميص قطن رجالي"
@@ -143,9 +143,9 @@ export function FirstProductStep({ storeId, count, onChange, onNext }: {
             <input type="hidden" name="status" value="draft" />
 
             {fieldError && !fieldError.field && (
-              <div role="alert" className="flex items-start gap-2 rounded-[--radius-md] border
-                              border-[--color-danger]/30 bg-[--color-danger-bg] p-3
-                              text-sm text-[--color-danger]">
+              <div role="alert" className="flex items-start gap-2 rounded-md border
+                              border-danger/30 bg-danger-bg p-3
+                              text-sm text-danger">
                 <AlertTriangle size={16} className="mt-0.5 shrink-0" />{fieldError.message}
               </div>
             )}

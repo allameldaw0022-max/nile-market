@@ -62,7 +62,7 @@ export default async function CheckoutPage({ params }: PageProps<'/sites/[host]/
       <h1 className="text-xl font-extrabold text-ink-900">إتمام الطلب</h1>
 
       {!store.canCheckout && (
-        <p role="alert" className="mt-4 rounded-[--radius-md] border border-ink-300
+        <p role="alert" className="mt-4 rounded-md border border-ink-300
                         bg-ink-100 p-4 text-sm font-bold text-ink-600">
           هذا المتجر غير متاح للشراء حاليًا. يمكنك التواصل معه عبر واتساب.
         </p>

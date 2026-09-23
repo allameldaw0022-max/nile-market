@@ -176,7 +176,7 @@ export default async function ProductsPage({ searchParams }: PageProps<'/dashboa
                   <Link href={`/dashboard/products/${p.id}/edit`}
                         className="flex min-w-0 flex-1 items-center gap-3">
                     <div className="relative size-11 shrink-0 overflow-hidden
-                                    rounded-[--radius-md] border border-ink-200 bg-ink-50">
+                                    rounded-md border border-ink-200 bg-ink-50">
                       {coverUrl ? (
                         <Image src={coverUrl} alt="" fill sizes="44px" className="object-cover" />
                       ) : (
@@ -193,7 +193,7 @@ export default async function ProductsPage({ searchParams }: PageProps<'/dashboa
                         </span>
                         {p.sku && <span className="tabular" dir="ltr">{p.sku}</span>}
                         <span className={qty <= threshold
-                          ? 'font-bold text-[--color-danger]' : ''}>
+                          ? 'font-bold text-danger' : ''}>
                           المخزون: <span className="tabular">{qty}</span>
                         </span>
                       </p>

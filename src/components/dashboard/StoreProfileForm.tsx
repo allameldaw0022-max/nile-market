@@ -64,9 +64,9 @@ export function StoreProfileForm({ storeId, initial, canEdit }: {
   return (
     <form action={submit} className="space-y-5">
       {error && !error.field && (
-        <div role="alert" className="flex items-start gap-2 rounded-[--radius-md] border
-                        border-[--color-danger]/30 bg-[--color-danger-bg] p-3
-                        text-sm text-[--color-danger]">
+        <div role="alert" className="flex items-start gap-2 rounded-md border
+                        border-danger/30 bg-danger-bg p-3
+                        text-sm text-danger">
           <AlertTriangle size={16} className="mt-0.5 shrink-0" />{error.message}
         </div>
       )}
@@ -122,7 +122,7 @@ export function StoreProfileForm({ storeId, initial, canEdit }: {
                   hint="تحويل عبر بنكك بإثبات يدوي — لا يوجد تكامل آلي."
                   defaultChecked={initial.bankakEnabled} />
           {fieldError('payments') && (
-            <p role="alert" className="text-sm text-[--color-danger]">
+            <p role="alert" className="text-sm text-danger">
               {fieldError('payments')}
             </p>
           )}
@@ -148,7 +148,7 @@ export function StoreProfileForm({ storeId, initial, canEdit }: {
           <Button type="submit" size="lg" loading={pending}>حفظ الإعدادات</Button>
           {saved && (
             <span role="status" className="inline-flex items-center gap-1 text-sm
-                             font-bold text-[--color-success]">
+                             font-bold text-success">
               <Check size={15} /> حُفظت التغييرات
             </span>
           )}

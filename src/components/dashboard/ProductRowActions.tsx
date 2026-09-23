@@ -50,7 +50,7 @@ export function ProductRowActions({ storeId, productId, status, canDelete }: {
         <>
           <button type="button" aria-label="إغلاق القائمة" className="fixed inset-0 z-30
                   cursor-default" onClick={() => setOpen(false)} />
-          <div className="absolute end-0 z-40 mt-1 w-52 overflow-hidden rounded-[--radius-md]
+          <div className="absolute end-0 z-40 mt-1 w-52 overflow-hidden rounded-md
                           border border-ink-200 bg-white shadow-lg">
             {status !== 'active' && (
               <button type="button" className={item} disabled={pending}
@@ -79,7 +79,7 @@ export function ProductRowActions({ storeId, productId, status, canDelete }: {
             </button>
             {canDelete && (
               <button type="button" disabled={pending}
-                      className={`${item} text-[--color-danger] hover:bg-[--color-danger-bg]`}
+                      className={`${item} text-danger hover:bg-danger-bg`}
                       onClick={() => {
                         if (!confirm('حذف هذا المنتج؟ تبقى الطلبات السابقة كما هي.')) return;
                         run(() => deleteProduct(storeId, productId));
@@ -92,9 +92,9 @@ export function ProductRowActions({ storeId, productId, status, canDelete }: {
       )}
 
       {error && (
-        <p role="alert" className="absolute end-0 top-full z-40 mt-1 w-56 rounded-[--radius-md]
-                        border border-[--color-danger]/30 bg-[--color-danger-bg] p-2
-                        text-xs text-[--color-danger]">
+        <p role="alert" className="absolute end-0 top-full z-40 mt-1 w-56 rounded-md
+                        border border-danger/30 bg-danger-bg p-2
+                        text-xs text-danger">
           {error}
         </p>
       )}

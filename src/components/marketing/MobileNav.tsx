@@ -42,7 +42,7 @@ export function MobileNav({ items, signedIn, appHref, appLabel }: {
         aria-expanded={open}
         aria-controls="mobile-nav"
         aria-label={open ? 'إغلاق القائمة' : 'فتح القائمة'}
-        className="grid size-10 place-items-center rounded-[--radius-md] border border-ink-200
+        className="grid size-10 place-items-center rounded-md border border-ink-200
                    text-ink-700 transition-colors hover:border-ink-300 lg:hidden"
       >
         {open ? <X size={18} aria-hidden /> : <Menu size={18} aria-hidden />}
@@ -68,19 +68,19 @@ export function MobileNav({ items, signedIn, appHref, appLabel }: {
             <div className="mt-4 grid gap-2">
               {signedIn ? (
                 <Link href={appHref} onClick={() => setOpen(false)}
-                      className="inline-flex h-11 items-center justify-center rounded-[--radius-md]
+                      className="inline-flex h-11 items-center justify-center rounded-md
                                  bg-teal-600 font-semibold text-white">
                   {appLabel}
                 </Link>
               ) : (
                 <>
                   <Link href="/signup" onClick={() => setOpen(false)}
-                        className="inline-flex h-11 items-center justify-center rounded-[--radius-md]
+                        className="inline-flex h-11 items-center justify-center rounded-md
                                    bg-teal-600 font-semibold text-white">
                     أنشئ متجرك
                   </Link>
                   <Link href="/login" onClick={() => setOpen(false)}
-                        className="inline-flex h-11 items-center justify-center rounded-[--radius-md]
+                        className="inline-flex h-11 items-center justify-center rounded-md
                                    border border-ink-200 font-semibold text-ink-900">
                     تسجيل الدخول
                   </Link>

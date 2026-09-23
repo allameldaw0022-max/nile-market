@@ -71,7 +71,7 @@ export function OnboardingWizard({ initial }: { initial: WizardInitial | null })
                 className={`flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5
                             text-xs font-bold transition-colors ${
                   active ? 'border-teal-600 bg-teal-600 text-white'
-                  : done ? 'border-[--color-success]/40 bg-[--color-success-bg] text-[--color-success]'
+                  : done ? 'border-success/40 bg-success-bg text-success'
                   : 'border-ink-300 bg-white text-ink-500'}`}
               >
                 {done ? <Check size={13} /> : <s.icon size={13} />}
@@ -133,9 +133,9 @@ function CreateStoreStep({ onCreated }: { onCreated: (s: WizardInitial) => void 
         })}
       >
         {error && (
-          <div role="alert" className="flex items-start gap-2 rounded-[--radius-md] border
-                          border-[--color-danger]/30 bg-[--color-danger-bg] p-3
-                          text-sm text-[--color-danger]">
+          <div role="alert" className="flex items-start gap-2 rounded-md border
+                          border-danger/30 bg-danger-bg p-3
+                          text-sm text-danger">
             <AlertTriangle size={16} className="mt-0.5 shrink-0" />{error}
           </div>
         )}
@@ -162,7 +162,7 @@ function CreateStoreStep({ onCreated }: { onCreated: (s: WizardInitial) => void 
             error={slugState === 'taken' ? 'هذا الرابط محجوز — اختر غيره' : undefined}
           />
           {slugState === 'free' && (
-            <p className="mt-1 flex items-center gap-1 text-xs font-bold text-[--color-success]">
+            <p className="mt-1 flex items-center gap-1 text-xs font-bold text-success">
               <Check size={13} /> الرابط متاح
             </p>
           )}
@@ -172,7 +172,7 @@ function CreateStoreStep({ onCreated }: { onCreated: (s: WizardInitial) => void 
           <label htmlFor="bt" className="block text-[13px] font-bold text-ink-700">نوع النشاط</label>
           <select id="bt" name="business_type" value={businessType}
                   onChange={(e) => setBusinessType(e.target.value)}
-                  className="h-11 w-full rounded-[--radius-md] border border-[--color-ink-400] bg-white
+                  className="h-11 w-full rounded-md border border-ink-400 bg-white
                              px-3 text-[15px] text-ink-900 focus:border-teal-600">
             <option value="">اختر نوع النشاط</option>
             {BUSINESS_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
@@ -256,7 +256,7 @@ function StoreInfoStep({ store, setStore, onNext }: StepProps) {
         <label htmlFor="bt2" className="block text-[13px] font-bold text-ink-700">نوع النشاط</label>
         <select id="bt2" value={store.businessType}
                 onChange={(e) => { setStore({ ...store, businessType: e.target.value }); markDirty(); }}
-                className="h-11 w-full rounded-[--radius-md] border border-[--color-ink-400] bg-white
+                className="h-11 w-full rounded-md border border-ink-400 bg-white
                            px-3 text-[15px] text-ink-900 focus:border-teal-600">
           <option value="">اختر نوع النشاط</option>
           {BUSINESS_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
@@ -341,9 +341,9 @@ function Toggle({ label, hint, checked, onChange }: {
   label: string; hint: string; checked: boolean; onChange: (v: boolean) => void;
 }) {
   return (
-    <label className="flex cursor-pointer items-start gap-3 rounded-[--radius-md]
+    <label className="flex cursor-pointer items-start gap-3 rounded-md
                       border border-ink-200 p-3.5 hover:border-teal-300">
-      <input type="checkbox" checked={checked} className="mt-1 size-4 accent-[--color-teal-600]"
+      <input type="checkbox" checked={checked} className="mt-1 size-4 accent-teal-600"
              onChange={(e) => onChange(e.target.checked)} />
       <span>
         <span className="block text-sm font-bold text-ink-900">{label}</span>
@@ -384,7 +384,7 @@ function PaymentStep({ store, setStore, onNext }: StepProps) {
               checked={store.bankakEnabled}
               onChange={(v) => set({ bankakEnabled: v })} />
       {none && (
-        <p className="text-sm text-[--color-danger]">اختر طريقة دفع واحدة على الأقل.</p>
+        <p className="text-sm text-danger">اختر طريقة دفع واحدة على الأقل.</p>
       )}
     </StepShell>
   );
@@ -398,7 +398,7 @@ function PublishStep({ store, onDone }: { store: WizardInitial; onDone: () => vo
   if (result?.published) {
     return (
       <Card className="p-6 text-center">
-        <CheckCircle2 className="mx-auto text-[--color-success]" size={40} />
+        <CheckCircle2 className="mx-auto text-success" size={40} />
         <h2 className="mt-3 text-lg font-extrabold text-ink-900">متجرك منشور الآن</h2>
         {result.host && (
           <a href={`https://${result.host}`} target="_blank" rel="noopener noreferrer"
@@ -439,15 +439,15 @@ function PublishStep({ store, onDone }: { store: WizardInitial; onDone: () => vo
       </dl>
 
       {error && (
-        <div role="alert" className="flex items-start gap-2 rounded-[--radius-md] border
-                        border-[--color-danger]/30 bg-[--color-danger-bg] p-3
-                        text-sm text-[--color-danger]">
+        <div role="alert" className="flex items-start gap-2 rounded-md border
+                        border-danger/30 bg-danger-bg p-3
+                        text-sm text-danger">
           <AlertTriangle size={16} className="mt-0.5 shrink-0" />{error}
         </div>
       )}
 
       {result && !result.published && result.missing.length > 0 && (
-        <div className="rounded-[--radius-md] border border-gold-500/40 bg-gold-300/10 p-4">
+        <div className="rounded-md border border-gold-500/40 bg-gold-300/10 p-4">
           <p className="text-sm font-bold text-ink-900">ينقص متجرك قبل النشر:</p>
           <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-ink-700">
             {result.missing.map((m) => <li key={m}>{m}</li>)}

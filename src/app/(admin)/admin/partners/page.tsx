@@ -86,8 +86,8 @@ export default async function AdminPartnersPage(
       <form className="flex flex-wrap items-center gap-2" action="/admin/partners">
         <input name="q" defaultValue={term} maxLength={60}
                placeholder="الاسم أو البريد أو رمز الإحالة" aria-label="بحث في الشركاء"
-               className="h-10 min-w-52 flex-1 rounded-[--radius-md] border
-                          border-[--color-ink-400] bg-white px-3 text-[14px] text-ink-900
+               className="h-10 min-w-52 flex-1 rounded-md border
+                          border-ink-400 bg-white px-3 text-[14px] text-ink-900
                           placeholder:text-ink-400 focus:border-teal-600" />
         <input type="hidden" name="status" value={status} />
         <Button type="submit" variant="outline" size="sm">بحث</Button>

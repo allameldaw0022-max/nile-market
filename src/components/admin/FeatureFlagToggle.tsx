@@ -32,7 +32,7 @@ export function FeatureFlagToggle({ flagKey, enabled }: {
         </Button>
       </div>
       {error && (
-        <p role="alert" className="flex items-start gap-1 text-xs text-[--color-danger]">
+        <p role="alert" className="flex items-start gap-1 text-xs text-danger">
           <AlertTriangle size={12} className="mt-0.5 shrink-0" />{error}
         </p>
       )}

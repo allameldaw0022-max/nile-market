@@ -89,7 +89,7 @@ export function PartnerDashboard({
       </div>
 
       {!isActive && (
-        <p role="status" className="rounded-[--radius-md] border border-gold-500/40
+        <p role="status" className="rounded-md border border-gold-500/40
                         bg-gold-300/10 p-3.5 text-sm text-ink-700">
           حسابك كشريك غير نشط حاليًا. تواصل مع فريق سوق النيل لتفعيله.
         </p>
@@ -103,7 +103,7 @@ export function PartnerDashboard({
           كل من يفتح هذا الرابط ثم ينشئ متجرًا خلال 30 يومًا يُحتسب لك.
         </p>
         <div className="mt-3 flex items-center gap-2">
-          <code className="min-w-0 flex-1 truncate rounded-[--radius-md] border
+          <code className="min-w-0 flex-1 truncate rounded-md border
                            border-ink-200 bg-ink-50 px-3 py-2 text-xs text-ink-900"
                 dir="ltr">{profile.referralUrl}</code>
           <Button variant="outline" size="sm" onClick={copy}
@@ -121,9 +121,9 @@ export function PartnerDashboard({
       </div>
 
       {error && (
-        <div role="alert" className="flex items-start gap-2 rounded-[--radius-md] border
-                        border-[--color-danger]/30 bg-[--color-danger-bg] p-3
-                        text-sm text-[--color-danger]">
+        <div role="alert" className="flex items-start gap-2 rounded-md border
+                        border-danger/30 bg-danger-bg p-3
+                        text-sm text-danger">
           <AlertTriangle size={16} className="mt-0.5 shrink-0" />{error}
         </div>
       )}
@@ -176,7 +176,7 @@ export function PartnerDashboard({
                     {formatDate(p.createdAt)}
                     {p.paidAt && ` · صُرف ${formatDate(p.paidAt)}`}
                     {p.rejectedReason && (
-                      <span className="block text-[--color-danger]">
+                      <span className="block text-danger">
                         السبب: {p.rejectedReason}
                       </span>
                     )}
@@ -205,10 +205,10 @@ export function PartnerDashboard({
                 <li key={c.id}
                     className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3">
                   <TrendingUp size={14}
-                              className={c.amount < 0 ? 'text-[--color-danger]'
-                                : 'text-[--color-success]'} />
+                              className={c.amount < 0 ? 'text-danger'
+                                : 'text-success'} />
                   <span className={`font-bold tabular ${c.amount < 0
-                    ? 'text-[--color-danger]' : 'text-ink-900'}`} dir="ltr">
+                    ? 'text-danger' : 'text-ink-900'}`} dir="ltr">
                     {formatMoney(c.amount)}
                   </span>
                   <span className="min-w-0 flex-1 text-xs text-ink-500 tabular">

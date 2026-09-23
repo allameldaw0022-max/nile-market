@@ -79,13 +79,13 @@ export default async function AdminAuditPage(
       <form className="flex flex-wrap items-center gap-2" action="/admin/audit">
         <input name="action" defaultValue={action} maxLength={60}
                placeholder="الإجراء — مثل partner. أو store." aria-label="تصفية بالإجراء"
-               className="h-10 min-w-44 flex-1 rounded-[--radius-md] border
-                          border-[--color-ink-400] bg-white px-3 text-[14px] text-ink-900
+               className="h-10 min-w-44 flex-1 rounded-md border
+                          border-ink-400 bg-white px-3 text-[14px] text-ink-900
                           placeholder:text-ink-400 focus:border-teal-600" />
         <input name="resource" defaultValue={resource} maxLength={40}
                placeholder="نوع المورد" aria-label="تصفية بنوع المورد"
-               className="h-10 min-w-36 rounded-[--radius-md] border
-                          border-[--color-ink-400] bg-white px-3 text-[14px] text-ink-900
+               className="h-10 min-w-36 rounded-md border
+                          border-ink-400 bg-white px-3 text-[14px] text-ink-900
                           placeholder:text-ink-400 focus:border-teal-600" />
         <Button type="submit" variant="outline" size="sm">تصفية</Button>
       </form>

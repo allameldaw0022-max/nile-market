@@ -77,7 +77,7 @@ export default async function PricingPage() {
             <p className="mt-3 text-ink-500">ما تحصل عليه في كل باقة، صفًّا بصف.</p>
 
             <div role="region" aria-label="مقارنة الباقات" tabIndex={0}
-                 className="mt-7 overflow-x-auto rounded-[--radius-lg] border border-ink-200 bg-white
+                 className="mt-7 overflow-x-auto rounded-lg border border-ink-200 bg-white
                             focus-visible:outline-2 focus-visible:outline-teal-600">
               <table className="w-full min-w-[32rem] border-collapse text-sm">
                 <caption className="sr-only">مقارنة حدود وميزات الباقات</caption>

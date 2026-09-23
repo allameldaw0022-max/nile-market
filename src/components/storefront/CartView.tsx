@@ -43,16 +43,16 @@ export function CartView({ host, lines, quote, canCheckout }: {
   }
 
   const short = lines.some((l) => l.quantity > l.available);
-  const step = 'flex size-9 items-center justify-center rounded-[--radius-md] ' +
+  const step = 'flex size-9 items-center justify-center rounded-md ' +
                'border border-ink-300 text-ink-700 disabled:opacity-40';
 
   return (
     <div className="grid gap-5 lg:grid-cols-[1fr_320px]">
       <div className="space-y-3">
         {error && (
-          <div role="alert" className="flex items-start gap-2 rounded-[--radius-md] border
-                          border-[--color-danger]/30 bg-[--color-danger-bg] p-3
-                          text-sm text-[--color-danger]">
+          <div role="alert" className="flex items-start gap-2 rounded-md border
+                          border-danger/30 bg-danger-bg p-3
+                          text-sm text-danger">
             <AlertTriangle size={16} className="mt-0.5 shrink-0" />{error}
           </div>
         )}
@@ -61,7 +61,7 @@ export function CartView({ host, lines, quote, canCheckout }: {
           const over = line.quantity > line.available;
           return (
             <Card key={line.itemId} className="flex gap-3 p-3">
-              <div className="relative size-20 shrink-0 overflow-hidden rounded-[--radius-md]
+              <div className="relative size-20 shrink-0 overflow-hidden rounded-md
                               border border-ink-200 bg-ink-100">
                 {line.imageUrl ? (
                   <Image src={line.imageUrl} alt="" fill sizes="80px" className="object-cover" />
@@ -85,7 +85,7 @@ export function CartView({ host, lines, quote, canCheckout }: {
                 </p>
 
                 {over && (
-                  <p className="mt-1 flex items-center gap-1 text-xs font-bold text-[--color-danger]">
+                  <p className="mt-1 flex items-center gap-1 text-xs font-bold text-danger">
                     <AlertTriangle size={12} />
                     المتوفّر <span className="tabular">{line.available}</span> فقط
                   </p>
@@ -109,8 +109,8 @@ export function CartView({ host, lines, quote, canCheckout }: {
                   <button type="button" aria-label={`حذف ${line.productName}`}
                           disabled={pending}
                           onClick={() => change(line.itemId, 0)}
-                          className="ms-auto rounded p-2 text-[--color-danger]
-                                     hover:bg-[--color-danger-bg] disabled:opacity-40">
+                          className="ms-auto rounded p-2 text-danger
+                                     hover:bg-danger-bg disabled:opacity-40">
                     <Trash2 size={15} />
                   </button>
                 </div>
@@ -138,14 +138,14 @@ export function CartView({ host, lines, quote, canCheckout }: {
         </p>
 
         {!canCheckout ? (
-          <p className="mt-4 rounded-[--radius-md] border border-ink-300 bg-ink-100 p-3
+          <p className="mt-4 rounded-md border border-ink-300 bg-ink-100 p-3
                         text-center text-sm font-bold text-ink-600">
             الشراء غير متاح من هذا المتجر حاليًا
           </p>
         ) : short ? (
-          <p className="mt-4 rounded-[--radius-md] border border-[--color-danger]/30
-                        bg-[--color-danger-bg] p-3 text-center text-sm
-                        font-bold text-[--color-danger]">
+          <p className="mt-4 rounded-md border border-danger/30
+                        bg-danger-bg p-3 text-center text-sm
+                        font-bold text-danger">
             عدّل الكميات غير المتوفرة للمتابعة
           </p>
         ) : (

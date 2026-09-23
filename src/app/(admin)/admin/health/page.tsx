@@ -54,8 +54,8 @@ export default async function AdminHealthPage() {
       </div>
 
       {alerts.length > 0 ? (
-        <Card className="border-[--color-danger]/30 bg-[--color-danger-bg] p-5">
-          <h2 className="flex items-center gap-2 font-bold text-[--color-danger]">
+        <Card className="border-danger/30 bg-danger-bg p-5">
+          <h2 className="flex items-center gap-2 font-bold text-danger">
             <AlertTriangle size={17} />
             يحتاج انتباهك
           </h2>
@@ -64,8 +64,8 @@ export default async function AdminHealthPage() {
           </ul>
         </Card>
       ) : (
-        <Card className="border-[--color-success]/25 bg-[--color-success-bg] p-5">
-          <p className="flex items-center gap-2 font-bold text-[--color-success]">
+        <Card className="border-success/25 bg-success-bg p-5">
+          <p className="flex items-center gap-2 font-bold text-success">
             <CheckCircle2 size={17} />
             لا تنبيهات — الطوابير والمهام تسير.
           </p>
@@ -85,7 +85,7 @@ export default async function AdminHealthPage() {
           <p className="border-t border-ink-200 px-5 py-3 text-xs text-ink-500">
             أقدم رسالة منتظرة منذ {formatDateTime(h.email.oldest_queued_at)}
             {h.email.last_error && (
-              <span className="mt-1 block text-[--color-danger]">
+              <span className="mt-1 block text-danger">
                 آخر خطأ: {h.email.last_error}
               </span>
             )}

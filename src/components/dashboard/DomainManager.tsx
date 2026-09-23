@@ -90,16 +90,16 @@ export function DomainManager({ storeId, domains, canManage, rootDomain }: {
   return (
     <div className="space-y-5">
       {error && (
-        <div role="alert" className="flex items-start gap-2 rounded-[--radius-md] border
-                        border-[--color-danger]/30 bg-[--color-danger-bg] p-3
-                        text-sm text-[--color-danger]">
+        <div role="alert" className="flex items-start gap-2 rounded-md border
+                        border-danger/30 bg-danger-bg p-3
+                        text-sm text-danger">
           <AlertTriangle size={16} className="mt-0.5 shrink-0" />{error.message}
         </div>
       )}
 
       {notice && (
-        <div role="status" className="rounded-[--radius-md] border border-teal-300
-                        bg-[--color-teal-50] p-3 text-sm text-ink-700">
+        <div role="status" className="rounded-md border border-teal-300
+                        bg-teal-50 p-3 text-sm text-ink-700">
           {notice}
         </div>
       )}
@@ -134,7 +134,7 @@ export function DomainManager({ storeId, domains, canManage, rootDomain }: {
 
                 <div className="space-y-4 px-5 py-4">
                   {needsDns && (
-                    <div className="space-y-3 rounded-[--radius-md] border border-ink-200
+                    <div className="space-y-3 rounded-md border border-ink-200
                                     bg-ink-50 p-4">
                       <p className="text-sm font-bold text-ink-900">
                         أضف سجل TXT التالي عند مزوّد الدومين
@@ -163,7 +163,7 @@ export function DomainManager({ storeId, domains, canManage, rootDomain }: {
                               copied={copied === `${domain.id}-cname`} />
 
                       {domain.failureReason && (
-                        <p className="text-xs font-bold text-[--color-danger]">
+                        <p className="text-xs font-bold text-danger">
                           آخر محاولة: {domain.failureReason}
                         </p>
                       )}
@@ -253,7 +253,7 @@ function DnsRow({ label, value, onCopy, copied }: {
         <button type="button" onClick={onCopy}
                 aria-label={`نسخ ${label}`}
                 className="rounded p-1.5 text-ink-500 hover:bg-white hover:text-teal-700">
-          {copied ? <Check size={14} className="text-[--color-success]" /> : <Copy size={14} />}
+          {copied ? <Check size={14} className="text-success" /> : <Copy size={14} />}
         </button>
       )}
     </div>

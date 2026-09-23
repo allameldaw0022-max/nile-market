@@ -87,9 +87,9 @@ function PlanCard({ plan, canEdit }: { plan: PlanRow; canEdit: boolean }) {
 
       <div className="space-y-4 p-5">
         {error && (
-          <p role="alert" className="flex items-start gap-2 rounded-[--radius-md] border
-                          border-[--color-danger]/30 bg-[--color-danger-bg] p-3
-                          text-sm text-[--color-danger]">
+          <p role="alert" className="flex items-start gap-2 rounded-md border
+                          border-danger/30 bg-danger-bg p-3
+                          text-sm text-danger">
             <AlertTriangle size={15} className="mt-0.5 shrink-0" />{error}
           </p>
         )}
@@ -136,7 +136,7 @@ function PlanCard({ plan, canEdit }: { plan: PlanRow; canEdit: boolean }) {
                   <label className="flex items-center gap-2 text-sm">
                     <input type="checkbox" defaultChecked={row.boolValue ?? false}
                            disabled={!canEdit || pending}
-                           className="size-4 accent-[--color-teal-600]"
+                           className="size-4 accent-teal-600"
                            onChange={(e) => saveEntitlement(row, e.target.checked)} />
                     متاحة
                   </label>
@@ -151,13 +151,13 @@ function PlanCard({ plan, canEdit }: { plan: PlanRow; canEdit: boolean }) {
                            const before = row.limitValue === null ? '' : String(row.limitValue);
                            if (next !== before) saveEntitlement(row, next);
                          }}
-                         className="h-9 w-28 rounded-[--radius-md] border border-ink-300
+                         className="h-9 w-28 rounded-md border border-ink-300
                                     bg-white px-2 text-sm tabular text-ink-900
                                     focus:border-teal-600 disabled:bg-ink-100" />
                 )}
 
                 {saved === row.featureKey && (
-                  <Check size={14} className="text-[--color-success]" />
+                  <Check size={14} className="text-success" />
                 )}
               </li>
             ))}

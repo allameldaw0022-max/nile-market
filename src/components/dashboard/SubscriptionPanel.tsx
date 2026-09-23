@@ -94,9 +94,9 @@ export function SubscriptionPanel({
   return (
     <div className="space-y-5">
       {error && (
-        <div role="alert" className="flex items-start gap-2 rounded-[--radius-md] border
-                        border-[--color-danger]/30 bg-[--color-danger-bg] p-3
-                        text-sm text-[--color-danger]">
+        <div role="alert" className="flex items-start gap-2 rounded-md border
+                        border-danger/30 bg-danger-bg p-3
+                        text-sm text-danger">
           <AlertTriangle size={16} className="mt-0.5 shrink-0" />{error}
         </div>
       )}
@@ -125,7 +125,7 @@ export function SubscriptionPanel({
               </dl>
 
               {(current.status === 'expired' || current.status === 'suspended') && (
-                <p className="rounded-[--radius-md] border border-gold-500/40
+                <p className="rounded-md border border-gold-500/40
                               bg-gold-300/10 p-3.5 text-sm text-ink-700">
                   الشراء من متجرك متوقف حاليًا. بياناتك ومنتجاتك وطلباتك محفوظة
                   بالكامل، وتعود فور اعتماد التجديد.
@@ -178,7 +178,7 @@ export function SubscriptionPanel({
                     .filter((e) => e.configured)
                     .map((e) => (
                       <li key={e.key} className="flex items-start gap-1.5">
-                        <Check size={12} className="mt-0.5 shrink-0 text-[--color-success]" />
+                        <Check size={12} className="mt-0.5 shrink-0 text-success" />
                         <span>
                           {FEATURE_LABEL[e.key] ?? e.key}
                           {e.bool !== null
@@ -213,7 +213,7 @@ export function SubscriptionPanel({
           <CardHeader title={`طلب باقة ${selected.name}`}
                       description="حوّل المبلغ ثم أرسل الطلب برقم العملية." />
           <div className="space-y-4 p-5">
-            <p className="rounded-[--radius-md] border border-ink-200 bg-ink-50 p-3.5
+            <p className="rounded-md border border-ink-200 bg-ink-50 p-3.5
                           text-sm">
               <span className="text-ink-500">المبلغ المطلوب: </span>
               <span className="font-extrabold tabular text-ink-900">
@@ -222,7 +222,7 @@ export function SubscriptionPanel({
             </p>
 
             {payment && (payment.accounts.length > 0 || payment.bankak) && (
-              <div className="space-y-2 rounded-[--radius-md] border border-ink-200 p-4">
+              <div className="space-y-2 rounded-md border border-ink-200 p-4">
                 <p className="flex items-center gap-1.5 text-sm font-bold text-ink-900">
                   <Landmark size={14} /> حوّل إلى أحد حسابات سوق النيل
                 </p>
@@ -283,7 +283,7 @@ export function SubscriptionPanel({
                     {formatDate(r.createdAt)}
                     {r.reference && <span dir="ltr"> · {r.reference}</span>}
                     {r.rejectionReason && (
-                      <span className="block text-[--color-danger]">
+                      <span className="block text-danger">
                         السبب: {r.rejectionReason}
                       </span>
                     )}
@@ -296,7 +296,7 @@ export function SubscriptionPanel({
                     </Button>
                   )}
                   {r.status === 'approved' && (
-                    <CheckCircle2 size={16} className="text-[--color-success]" />
+                    <CheckCircle2 size={16} className="text-success" />
                   )}
                 </li>
               );
@@ -329,7 +329,7 @@ function AccountRow({ bank, account, holder, onCopy, copied }: {
                        text-ink-900" dir="ltr">{account}</code>
       <button type="button" onClick={onCopy} aria-label={`نسخ رقم ${bank}`}
               className="rounded p-1.5 text-ink-500 hover:text-teal-700">
-        {copied ? <Check size={14} className="text-[--color-success]" /> : <Copy size={14} />}
+        {copied ? <Check size={14} className="text-success" /> : <Copy size={14} />}
       </button>
     </div>
   );

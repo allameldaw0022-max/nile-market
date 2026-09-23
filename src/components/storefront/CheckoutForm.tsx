@@ -96,9 +96,9 @@ export function CheckoutForm({
     <form action={submit} className="grid gap-5 lg:grid-cols-[1fr_340px]">
       <div className="space-y-5">
         {error && !error.field && (
-          <div role="alert" className="flex items-start gap-2 rounded-[--radius-md] border
-                          border-[--color-danger]/30 bg-[--color-danger-bg] p-3
-                          text-sm text-[--color-danger]">
+          <div role="alert" className="flex items-start gap-2 rounded-md border
+                          border-danger/30 bg-danger-bg p-3
+                          text-sm text-danger">
             <AlertTriangle size={16} className="mt-0.5 shrink-0" />{error.message}
           </div>
         )}
@@ -125,7 +125,7 @@ export function CheckoutForm({
           </h2>
           <div className="space-y-4 p-5">
             {zones.length === 0 ? (
-              <p className="text-sm text-[--color-danger]">
+              <p className="text-sm text-danger">
                 لم يحدّد المتجر مناطق توصيل بعد — تواصل معه لإتمام الطلب.
               </p>
             ) : (
@@ -135,13 +135,13 @@ export function CheckoutForm({
                 </legend>
                 {zones.map((z) => (
                   <label key={z.id}
-                         className={`flex cursor-pointer items-center gap-3 rounded-[--radius-md]
+                         className={`flex cursor-pointer items-center gap-3 rounded-md
                                      border p-3.5 ${zoneId === z.id
-                                       ? 'border-teal-600 bg-[--color-teal-50]'
+                                       ? 'border-teal-600 bg-teal-50'
                                        : 'border-ink-200 hover:border-teal-300'}`}>
                     <input type="radio" name="zone" value={z.id} checked={zoneId === z.id}
                            onChange={() => setZoneId(z.id)}
-                           className="size-4 accent-[--color-teal-600]" />
+                           className="size-4 accent-teal-600" />
                     <span className="flex-1 text-sm font-bold text-ink-900">{z.name}</span>
                     <span className="text-sm font-bold tabular text-ink-700">
                       {formatMoney(z.fee)}
@@ -168,14 +168,14 @@ export function CheckoutForm({
           <div className="space-y-2 p-5">
             {payments.map((p) => (
               <label key={p.value}
-                     className={`flex cursor-pointer items-start gap-3 rounded-[--radius-md]
+                     className={`flex cursor-pointer items-start gap-3 rounded-md
                                  border p-3.5 ${payment === p.value
-                                   ? 'border-teal-600 bg-[--color-teal-50]'
+                                   ? 'border-teal-600 bg-teal-50'
                                    : 'border-ink-200 hover:border-teal-300'}`}>
                 <input type="radio" name="payment" value={p.value}
                        checked={payment === p.value}
                        onChange={() => setPayment(p.value)}
-                       className="mt-0.5 size-4 accent-[--color-teal-600]" />
+                       className="mt-0.5 size-4 accent-teal-600" />
                 <span>
                   <span className="block text-sm font-bold text-ink-900">{p.label}</span>
                   <span className="block text-xs text-ink-500">{p.hint}</span>
@@ -212,7 +212,7 @@ export function CheckoutForm({
           </Button>
         </div>
         {appliedCoupon && quote.couponValid && (
-          <p className="mt-1 flex items-center gap-1 text-xs font-bold text-[--color-success]">
+          <p className="mt-1 flex items-center gap-1 text-xs font-bold text-success">
             <Check size={12} /> {quote.couponMessage}
           </p>
         )}
@@ -252,7 +252,7 @@ function Line({ label, value, good = false }: {
   return (
     <div className="flex items-center justify-between gap-3">
       <dt className="text-ink-500">{label}</dt>
-      <dd className={`font-bold tabular ${good ? 'text-[--color-success]' : 'text-ink-900'}`}>
+      <dd className={`font-bold tabular ${good ? 'text-success' : 'text-ink-900'}`}>
         {value}
       </dd>
     </div>

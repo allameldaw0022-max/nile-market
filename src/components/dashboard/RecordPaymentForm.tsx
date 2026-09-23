@@ -49,7 +49,7 @@ export function RecordPaymentForm({ storeId, orderId, remaining, idempotencyKey 
   }
 
   return (
-    <form action={submit} className="space-y-3 rounded-[--radius-md] border
+    <form action={submit} className="space-y-3 rounded-md border
                                      border-ink-200 p-4">
       <p className="text-sm font-bold text-ink-900">تسجيل دفعة</p>
       <p className="text-xs text-ink-500 tabular">
@@ -57,9 +57,9 @@ export function RecordPaymentForm({ storeId, orderId, remaining, idempotencyKey 
       </p>
 
       {error && !error.field && (
-        <p role="alert" className="flex items-start gap-2 rounded-[--radius-md] border
-                        border-[--color-danger]/30 bg-[--color-danger-bg] p-3
-                        text-sm text-[--color-danger]">
+        <p role="alert" className="flex items-start gap-2 rounded-md border
+                        border-danger/30 bg-danger-bg p-3
+                        text-sm text-danger">
           <AlertTriangle size={15} className="mt-0.5 shrink-0" />{error.message}
         </p>
       )}

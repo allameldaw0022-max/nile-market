@@ -98,7 +98,7 @@ export default async function StorefrontLayout({
             {branding?.logo_url && (
               /* eslint-disable-next-line @next/next/no-img-element */
               <img src={branding.logo_url} alt="" width={32} height={32}
-                   className="size-8 shrink-0 rounded-[--radius-sm] object-cover" />
+                   className="size-8 shrink-0 rounded-sm object-cover" />
             )}
             <span className="truncate text-[17px] font-bold text-ink-900">{store.name}</span>
           </Link>
@@ -107,7 +107,7 @@ export default async function StorefrontLayout({
               خلف نقرة يكلّف كل زائر خطوة في كل مرّة. يبقى أيقونة على
               الشاشات الضيّقة حيث لا تتّسع الترويسة لحقل. */}
           <form role="search" action="/search"
-                className="mx-1 hidden h-10 min-w-0 flex-1 items-center gap-2 rounded-[--radius-md]
+                className="mx-1 hidden h-10 min-w-0 flex-1 items-center gap-2 rounded-md
                            border border-ink-200 bg-white ps-3 focus-within:border-teal-600 sm:flex">
             <Search size={16} className="shrink-0 text-ink-400" aria-hidden />
             <label htmlFor="store-search" className="sr-only">ابحث في منتجات المتجر</label>
@@ -119,12 +119,12 @@ export default async function StorefrontLayout({
 
           <div className="ms-auto flex shrink-0 items-center gap-1">
             <Link href="/search" aria-label="البحث"
-                  className="grid size-10 place-items-center rounded-[--radius-md] text-ink-700 hover:bg-ink-100 sm:hidden">
+                  className="grid size-10 place-items-center rounded-md text-ink-700 hover:bg-ink-100 sm:hidden">
               <Search size={20} />
             </Link>
             <Link href="/cart"
                   aria-label={cartCount > 0 ? `السلة (${cartCount})` : 'السلة'}
-                  className="relative grid size-10 place-items-center rounded-[--radius-md]
+                  className="relative grid size-10 place-items-center rounded-md
                              text-ink-700 hover:bg-ink-100">
               <ShoppingBag size={20} />
               {cartCount > 0 && (
@@ -192,7 +192,7 @@ export default async function StorefrontLayout({
           target="_blank" rel="noopener noreferrer"
           aria-label="تواصل عبر واتساب"
           className="fixed bottom-5 start-5 z-50 grid size-12 place-items-center
-                     rounded-full bg-[#25D366] text-white shadow-[--shadow-popover]
+                     rounded-full bg-[#25D366] text-white shadow-popover
                      transition-transform hover:scale-105"
         >
           <MessageCircle size={23} aria-hidden />

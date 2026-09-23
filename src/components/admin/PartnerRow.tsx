@@ -47,7 +47,7 @@ export function PartnerRow({ partnerId, status, rate, canEdit, canRate }: {
             <input type="number" min={0} max={100} step="0.01" value={value}
                    aria-label="نسبة العمولة"
                    onChange={(e) => setValue(e.target.value)}
-                   className="h-8 w-20 rounded-[--radius-md] border border-[--color-ink-400]
+                   className="h-8 w-20 rounded-md border border-ink-400
                               px-2 text-sm tabular text-ink-900" />
             <Button size="sm" loading={pending} onClick={saveRate}>حفظ</Button>
             <Button size="sm" variant="ghost"
@@ -78,7 +78,7 @@ export function PartnerRow({ partnerId, status, rate, canEdit, canRate }: {
       </div>
 
       {error && (
-        <p role="alert" className="flex items-start gap-1 text-xs text-[--color-danger]">
+        <p role="alert" className="flex items-start gap-1 text-xs text-danger">
           <AlertTriangle size={12} className="mt-0.5 shrink-0" />{error}
         </p>
       )}

@@ -81,8 +81,8 @@ export default async function AdminSupportPage(
       <form className="flex flex-wrap items-center gap-2" action="/admin/support">
         <input name="q" defaultValue={term} maxLength={60}
                placeholder="رقم التذكرة أو الموضوع أو الاسم" aria-label="بحث في التذاكر"
-               className="h-10 min-w-52 flex-1 rounded-[--radius-md] border
-                          border-[--color-ink-400] bg-white px-3 text-[14px] text-ink-900
+               className="h-10 min-w-52 flex-1 rounded-md border
+                          border-ink-400 bg-white px-3 text-[14px] text-ink-900
                           placeholder:text-ink-400 focus:border-teal-600" />
         <input type="hidden" name="status" value={status} />
         {mine && <input type="hidden" name="mine" value="1" />}

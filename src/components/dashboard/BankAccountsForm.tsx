@@ -50,16 +50,16 @@ export function BankAccountsForm({ storeId, initialAccounts, initialBankak, canE
         </p>
 
         {error && (
-          <div role="alert" className="flex items-start gap-2 rounded-[--radius-md] border
-                          border-[--color-danger]/30 bg-[--color-danger-bg] p-3
-                          text-sm text-[--color-danger]">
+          <div role="alert" className="flex items-start gap-2 rounded-md border
+                          border-danger/30 bg-danger-bg p-3
+                          text-sm text-danger">
             <AlertTriangle size={16} className="mt-0.5 shrink-0" />{error}
           </div>
         )}
 
         <ul className="space-y-3">
           {accounts.map((account, i) => (
-            <li key={i} className="grid gap-3 rounded-[--radius-md] border
+            <li key={i} className="grid gap-3 rounded-md border
                                    border-ink-200 p-3 sm:grid-cols-[1fr_1fr_1fr_auto]
                                    sm:items-end">
               <Input label="البنك" value={account.bank} disabled={!canEdit}
@@ -77,8 +77,8 @@ export function BankAccountsForm({ storeId, initialAccounts, initialBankak, canE
                           setAccounts(accounts.filter((_, j) => j !== i));
                           setSaved(false);
                         }}
-                        className="mb-1.5 rounded p-2 text-[--color-danger]
-                                   hover:bg-[--color-danger-bg]">
+                        className="mb-1.5 rounded p-2 text-danger
+                                   hover:bg-danger-bg">
                   <Trash2 size={15} />
                 </button>
               )}
@@ -104,7 +104,7 @@ export function BankAccountsForm({ storeId, initialAccounts, initialBankak, canE
             <Button loading={pending} onClick={submit}>حفظ بيانات التحويل</Button>
             {saved && (
               <span role="status" className="inline-flex items-center gap-1 text-sm
-                               font-bold text-[--color-success]">
+                               font-bold text-success">
                 <Check size={15} /> حُفظت
               </span>
             )}

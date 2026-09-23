@@ -4,10 +4,10 @@ import type { ReactNode } from 'react';
 
 const TONES: Record<StatusTone, string> = {
   neutral: 'bg-ink-100 text-ink-700 border-ink-200',
-  info:    'bg-[--color-teal-50] text-teal-700 border-teal-200',
-  success: 'bg-[--color-success-bg] text-[--color-success] border-[--color-success]/25',
-  warning: 'bg-[--color-warning-bg] text-gold-700 border-gold-500/30',
-  danger:  'bg-[--color-danger-bg] text-[--color-danger] border-[--color-danger]/25',
+  info:    'bg-teal-50 text-teal-700 border-teal-200',
+  success: 'bg-success-bg text-success border-success/25',
+  warning: 'bg-warning-bg text-gold-700 border-gold-500/30',
+  danger:  'bg-danger-bg text-danger border-danger/25',
   gold:    'bg-gold-300/15 text-gold-700 border-gold-500/30',
 };
 

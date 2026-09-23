@@ -48,18 +48,18 @@ export default async function TrackOrderPage(
             <span className="mb-1.5 block text-[13px] font-bold text-ink-700">رقم الطلب</span>
             <input name="number" defaultValue={number} dir="ltr" required maxLength={40}
                    placeholder="NM-00001"
-                   className="h-11 w-full rounded-[--radius-md] border border-[--color-ink-400]
+                   className="h-11 w-full rounded-md border border-ink-400
                               bg-white px-3 text-[15px] text-ink-900 focus:border-teal-600" />
           </label>
           <label className="block">
             <span className="mb-1.5 block text-[13px] font-bold text-ink-700">رقم الهاتف</span>
             <input name="phone" defaultValue={phone} dir="ltr" type="tel" required
                    maxLength={20} placeholder="0912345678"
-                   className="h-11 w-full rounded-[--radius-md] border border-[--color-ink-400]
+                   className="h-11 w-full rounded-md border border-ink-400
                               bg-white px-3 text-[15px] text-ink-900 focus:border-teal-600" />
           </label>
           <button type="submit"
-                  className="h-11 rounded-[--radius-md] bg-teal-600 px-5 font-bold text-white
+                  className="h-11 rounded-md bg-teal-600 px-5 font-bold text-white
                              hover:bg-teal-700">
             تتبّع
           </button>
@@ -67,7 +67,7 @@ export default async function TrackOrderPage(
       </Card>
 
       {searched && !order && (
-        <div role="alert" className="mt-5 rounded-[--radius-lg] border border-ink-300
+        <div role="alert" className="mt-5 rounded-lg border border-ink-300
                         bg-white px-6 py-10 text-center">
           <PackageSearch className="mx-auto text-ink-400" size={32} strokeWidth={1.5} />
           <p className="mt-3 font-bold text-ink-900">لم نجد طلبًا مطابقًا</p>

@@ -92,9 +92,9 @@ export function TeamManager({ storeId, members, invitations, canManage, isOwner 
       {limit && <UpgradeCard message={limit} />}
 
       {error && !error.field && (
-        <div role="alert" className="flex items-start gap-2 rounded-[--radius-md] border
-                        border-[--color-danger]/30 bg-[--color-danger-bg] p-3
-                        text-sm text-[--color-danger]">
+        <div role="alert" className="flex items-start gap-2 rounded-md border
+                        border-danger/30 bg-danger-bg p-3
+                        text-sm text-danger">
           <AlertTriangle size={16} className="mt-0.5 shrink-0" />{error.message}
         </div>
       )}
@@ -125,7 +125,7 @@ export function TeamManager({ storeId, members, invitations, canManage, isOwner 
                           storeId, memberId: m.memberId,
                           role: e.target.value as StoreRole,
                         }))}
-                        className="h-9 rounded-[--radius-md] border border-[--color-ink-400] bg-white
+                        className="h-9 rounded-md border border-ink-400 bg-white
                                    px-2 text-[13px] font-bold text-ink-900
                                    focus:border-teal-600">
                   {roles.map((r) => (
@@ -145,8 +145,8 @@ export function TeamManager({ storeId, members, invitations, canManage, isOwner 
                           if (confirm('إزالة هذا العضو؟ سجل ما نفّذه يبقى كما هو.'))
                             act(() => removeMember({ storeId, memberId: m.memberId }));
                         }}
-                        className="rounded p-2 text-[--color-danger]
-                                   hover:bg-[--color-danger-bg] disabled:opacity-50">
+                        className="rounded p-2 text-danger
+                                   hover:bg-danger-bg disabled:opacity-50">
                   <Trash2 size={15} />
                 </button>
               )}
@@ -176,8 +176,8 @@ export function TeamManager({ storeId, members, invitations, canManage, isOwner 
                           onClick={() => act(() => revokeInvitation({
                             storeId, invitationId: inv.id,
                           }))}
-                          className="rounded p-2 text-[--color-danger]
-                                     hover:bg-[--color-danger-bg] disabled:opacity-50">
+                          className="rounded p-2 text-danger
+                                     hover:bg-danger-bg disabled:opacity-50">
                     <Trash2 size={15} />
                   </button>
                 )}
@@ -194,7 +194,7 @@ export function TeamManager({ storeId, members, invitations, canManage, isOwner 
             أرسل هذا الرابط للموظف. يظهر مرة واحدة فقط — لا نحتفظ بنسخة منه.
           </p>
           <div className="mt-3 flex items-center gap-2">
-            <code className="min-w-0 flex-1 truncate rounded-[--radius-md] border
+            <code className="min-w-0 flex-1 truncate rounded-md border
                              border-ink-200 bg-ink-50 px-3 py-2 text-xs text-ink-900"
                   dir="ltr">{inviteUrl}</code>
             <Button variant="outline" size="sm" onClick={() => copy(inviteUrl)}

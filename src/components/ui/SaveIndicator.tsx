@@ -6,9 +6,9 @@ export function SaveIndicator({ state, error }: { state: SaveState; error?: stri
   if (state === 'idle') return null;
   const map = {
     saving:  { icon: <Loader2 size={13} className="animate-spin" />, text: 'يحفظ…',        cls: 'text-ink-500' },
-    saved:   { icon: <Check size={13} />,                           text: 'تم الحفظ',      cls: 'text-[--color-success]' },
+    saved:   { icon: <Check size={13} />,                           text: 'تم الحفظ',      cls: 'text-success' },
     offline: { icon: <WifiOff size={13} />,                         text: 'بلا اتصال — سيُحفظ تلقائيًا', cls: 'text-gold-700' },
-    error:   { icon: <AlertTriangle size={13} />,                   text: error ?? 'تعذّر الحفظ — نعيد المحاولة', cls: 'text-[--color-danger]' },
+    error:   { icon: <AlertTriangle size={13} />,                   text: error ?? 'تعذّر الحفظ — نعيد المحاولة', cls: 'text-danger' },
   } as const;
   const v = map[state];
   return (

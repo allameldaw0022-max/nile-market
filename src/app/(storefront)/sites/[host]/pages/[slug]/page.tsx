@@ -54,7 +54,7 @@ export default async function PolicyPage({ params }: PageProps<'/sites/[host]/pa
           {body}
         </div>
       ) : (
-        <p className="mt-5 rounded-[--radius-lg] border border-dashed border-ink-300
+        <p className="mt-5 rounded-lg border border-dashed border-ink-300
                       bg-white px-6 py-10 text-center text-sm text-ink-500">
           لم يضِف المتجر هذه السياسة بعد. تواصل معه لأي استفسار.
         </p>

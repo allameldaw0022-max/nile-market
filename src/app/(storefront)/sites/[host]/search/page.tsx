@@ -37,12 +37,12 @@ export default async function SearchPage(
           <Search size={16} className="absolute start-3 top-1/2 -translate-y-1/2 text-ink-400" />
           <input name="q" defaultValue={term} maxLength={80}
                  placeholder="اكتب اسم المنتج" aria-label="كلمة البحث"
-                 className="h-12 w-full rounded-[--radius-md] border border-[--color-ink-400] bg-white
+                 className="h-12 w-full rounded-md border border-ink-400 bg-white
                             ps-10 pe-3 text-[15px] text-ink-900 placeholder:text-ink-400
                             focus:border-teal-600" />
         </div>
         <button type="submit"
-                className="h-12 rounded-[--radius-md] bg-teal-600 px-5 font-bold text-white
+                className="h-12 rounded-md bg-teal-600 px-5 font-bold text-white
                            hover:bg-teal-700">
           بحث
         </button>
@@ -54,7 +54,7 @@ export default async function SearchPage(
 
       <div className="mt-6">
         {term.length < 2 ? (
-          <p className="rounded-[--radius-lg] border border-dashed border-ink-300 bg-white
+          <p className="rounded-lg border border-dashed border-ink-300 bg-white
                         px-6 py-12 text-center text-sm text-ink-500">
             اكتب حرفين على الأقل للبحث.
           </p>

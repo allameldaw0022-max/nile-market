@@ -43,8 +43,8 @@ export function ReviewActions({ actions, onRun, hint }: {
 
   if (asking) {
     return (
-      <div className="w-full space-y-3 rounded-[--radius-md] border
-                      border-[--color-danger]/30 p-4">
+      <div className="w-full space-y-3 rounded-md border
+                      border-danger/30 p-4">
         <p className="text-sm font-bold text-ink-900">
           {asking.reasonLabel ?? 'السبب'}
         </p>
@@ -55,7 +55,7 @@ export function ReviewActions({ actions, onRun, hint }: {
                   aria-label={asking.reasonLabel ?? 'السبب'} />
         {error && (
           <p role="alert" className="flex items-center gap-1.5 text-sm
-                          text-[--color-danger]">
+                          text-danger">
             <AlertTriangle size={14} />{error}
           </p>
         )}
@@ -98,7 +98,7 @@ export function ReviewActions({ actions, onRun, hint }: {
 
       {error && (
         <p role="alert" className="flex items-start gap-1.5 text-xs
-                        text-[--color-danger]">
+                        text-danger">
           <AlertTriangle size={12} className="mt-0.5 shrink-0" />{error}
         </p>
       )}

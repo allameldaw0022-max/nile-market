@@ -109,7 +109,7 @@ export default async function AdminPayoutsPage() {
                   <span className="text-xs text-ink-500">
                     {formatDateTime(r.paid_at ?? r.created_at)}
                     {r.rejected_reason && (
-                      <span className="block text-[--color-danger]">
+                      <span className="block text-danger">
                         {r.rejected_reason}
                       </span>
                     )}

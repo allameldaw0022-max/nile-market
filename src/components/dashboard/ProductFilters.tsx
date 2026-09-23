@@ -34,7 +34,7 @@ export function ProductFilters({ categories }: {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [term]);
 
-  const select = 'h-10 rounded-[--radius-md] border border-ink-300 bg-white px-2.5 ' +
+  const select = 'h-10 rounded-md border border-ink-300 bg-white px-2.5 ' +
                  'text-[13px] font-bold text-ink-900 focus:border-teal-600';
 
   return (
@@ -43,7 +43,7 @@ export function ProductFilters({ categories }: {
         <Search size={15} className="absolute start-3 top-1/2 -translate-y-1/2 text-ink-400" />
         <input value={term} onChange={(e) => setTerm(e.target.value)}
                placeholder="ابحث بالاسم أو الرمز" aria-label="بحث في المنتجات"
-               className="h-10 w-full rounded-[--radius-md] border border-[--color-ink-400] bg-white
+               className="h-10 w-full rounded-md border border-ink-400 bg-white
                           ps-9 pe-8 text-[14px] text-ink-900 placeholder:text-ink-400
                           focus:border-teal-600" />
         {term && (

@@ -113,7 +113,7 @@ export default async function DashboardHome() {
 
       {seesProducts && (lowStock.count ?? 0) > 0 && (
         <Link href="/dashboard/inventory?low=1"
-              className="flex items-center gap-2.5 rounded-[--radius-md] border border-gold-500/40
+              className="flex items-center gap-2.5 rounded-md border border-gold-500/40
                          bg-gold-50 px-4 py-3 text-[14px] text-ink-900 transition-colors
                          hover:border-gold-500">
           <TriangleAlert size={17} className="shrink-0 text-gold-700" aria-hidden />

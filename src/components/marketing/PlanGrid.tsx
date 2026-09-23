@@ -21,7 +21,7 @@ export type PublicPlan = {
 export function PlanGrid({ plans, className }: { plans: PublicPlan[]; className?: string }) {
   if (plans.length === 0) {
     return (
-      <p className={cn('rounded-[--radius-lg] border border-dashed border-ink-300 bg-white p-6 text-sm text-ink-500', className)}>
+      <p className={cn('rounded-lg border border-dashed border-ink-300 bg-white p-6 text-sm text-ink-500', className)}>
         لا توجد باقات معروضة حاليًا.
       </p>
     );
@@ -36,13 +36,13 @@ export function PlanGrid({ plans, className }: { plans: PublicPlan[]; className?
 
         return (
           <div key={p.id} className={cn(
-            'flex flex-col rounded-[--radius-lg] border bg-white p-5',
+            'flex flex-col rounded-lg border bg-white p-5',
             featured ? 'border-teal-600' : 'border-ink-200',
           )}>
             <div className="flex items-center justify-between gap-2">
               <h3 className="text-[17px] font-bold text-ink-900">{p.name}</h3>
               {featured && (
-                <span className="rounded-[--radius-xs] bg-teal-50 px-2 py-0.5
+                <span className="rounded-xs bg-teal-50 px-2 py-0.5
                                  text-[11px] font-semibold text-teal-700">
                   الأكثر ملاءمة
                 </span>

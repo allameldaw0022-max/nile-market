@@ -117,7 +117,7 @@ function MemberRow({ member, canManage, onEdit }: {
         {member.isOwner && <Badge tone="gold" className="mt-1">مالك المنصة</Badge>}
         {error && (
           <p role="alert" className="mt-1 flex items-start gap-1 text-xs
-                          text-[--color-danger]">
+                          text-danger">
             <AlertTriangle size={12} className="mt-0.5 shrink-0" />{error}
           </p>
         )}
@@ -130,7 +130,7 @@ function MemberRow({ member, canManage, onEdit }: {
         <p className="mt-1 flex items-center gap-1 text-[11px] text-ink-500">
           {member.mfaRequired
             ? <><ShieldCheck size={11} />تحقق بخطوتين إلزامي</>
-            : <><ShieldOff size={11} className="text-[--color-danger]" />بلا تحقق</>}
+            : <><ShieldOff size={11} className="text-danger" />بلا تحقق</>}
         </p>
       </td>
 
@@ -223,7 +223,7 @@ function MemberEditor({ member, onDone }: {
       </div>
 
       {!member && (
-        <div className="space-y-3 rounded-[--radius-md] border border-ink-200 p-4">
+        <div className="space-y-3 rounded-md border border-ink-200 p-4">
           <p className="text-[13px] font-bold text-ink-700">
             اختر حسابًا مسجَّلًا لترقيته
           </p>
@@ -237,7 +237,7 @@ function MemberEditor({ member, onDone }: {
           </div>
 
           {found.length > 0 && (
-            <ul className="divide-y divide-ink-200 rounded-[--radius-md]
+            <ul className="divide-y divide-ink-200 rounded-md
                            border border-ink-200">
               {found.map((u) => (
                 <li key={u.profileId}>
@@ -286,9 +286,9 @@ function MemberEditor({ member, onDone }: {
       </div>
 
       {error && (
-        <p role="alert" className="flex items-start gap-2 rounded-[--radius-md]
-                        border border-[--color-danger]/30 bg-[--color-danger-bg]
-                        p-3 text-sm text-[--color-danger]">
+        <p role="alert" className="flex items-start gap-2 rounded-md
+                        border border-danger/30 bg-danger-bg
+                        p-3 text-sm text-danger">
           <AlertTriangle size={15} className="mt-0.5 shrink-0" />{error}
         </p>
       )}

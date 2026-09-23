@@ -62,7 +62,7 @@ export default async function CustomerPage(
       </div>
 
       {anonymized && (
-        <p role="status" className="rounded-[--radius-md] border border-ink-300
+        <p role="status" className="rounded-md border border-ink-300
                         bg-ink-100 p-3.5 text-sm text-ink-600">
           طلب هذا العميل حذف بياناته. الطلبات والفواتير تبقى كما هي لأنها سجل
           مالي، وبياناته الشخصية أُزيلت.
@@ -123,14 +123,14 @@ export default async function CustomerPage(
                   {phone && (
                     <div className="flex flex-wrap gap-2">
                       <a href={`tel:${phone}`}
-                         className="inline-flex items-center gap-1.5 rounded-[--radius-md]
+                         className="inline-flex items-center gap-1.5 rounded-md
                                     border border-ink-300 px-3 py-2 text-[13px] font-bold
                                     text-ink-700 hover:border-teal-600">
                         <Phone size={14} /> اتصال
                       </a>
                       <a href={`https://wa.me/${waNumber}`} target="_blank"
                          rel="noopener noreferrer"
-                         className="inline-flex items-center gap-1.5 rounded-[--radius-md]
+                         className="inline-flex items-center gap-1.5 rounded-md
                                     border border-ink-300 px-3 py-2 text-[13px] font-bold
                                     text-ink-700 hover:border-teal-600">
                         <MessageCircle size={14} /> واتساب

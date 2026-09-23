@@ -133,7 +133,7 @@ export default async function ProductPage(
 
       <div className="mt-5 grid gap-6 md:grid-cols-2">
         <div className="space-y-2">
-          <div className="relative aspect-square overflow-hidden rounded-[--radius-lg]
+          <div className="relative aspect-square overflow-hidden rounded-lg
                           border border-ink-200 bg-ink-100">
             {images[0] ? (
               <Image src={publicUrl(images[0].bucket, images[0].path)} alt={product.name}
@@ -152,7 +152,7 @@ export default async function ProductPage(
             <ul className="grid grid-cols-5 gap-2">
               {images.slice(1, 6).map((m) => (
                 <li key={m.path}
-                    className="relative aspect-square overflow-hidden rounded-[--radius-md]
+                    className="relative aspect-square overflow-hidden rounded-md
                                border border-ink-200 bg-ink-100">
                   <Image src={publicUrl(m.bucket, m.path)} alt="" fill sizes="80px"
                          className="object-cover" />

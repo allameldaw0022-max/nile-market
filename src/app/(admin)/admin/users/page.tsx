@@ -81,8 +81,8 @@ export default async function AdminUsersPage(
       <form className="flex flex-wrap items-center gap-2" action="/admin/users">
         <input name="q" defaultValue={term} maxLength={60}
                placeholder="البريد أو الاسم أو الهاتف" aria-label="بحث في الحسابات"
-               className="h-10 min-w-52 flex-1 rounded-[--radius-md] border
-                          border-[--color-ink-400] bg-white px-3 text-[14px] text-ink-900
+               className="h-10 min-w-52 flex-1 rounded-md border
+                          border-ink-400 bg-white px-3 text-[14px] text-ink-900
                           placeholder:text-ink-400 focus:border-teal-600" />
         <input type="hidden" name="status" value={status} />
         <Button type="submit" variant="outline" size="sm">بحث</Button>

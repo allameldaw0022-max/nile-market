@@ -38,9 +38,9 @@ export function PoliciesForm({ storeId, initial, canEdit }: {
   return (
     <div className="space-y-5">
       {error && (
-        <div role="alert" className="flex items-start gap-2 rounded-[--radius-md] border
-                        border-[--color-danger]/30 bg-[--color-danger-bg] p-3
-                        text-sm text-[--color-danger]">
+        <div role="alert" className="flex items-start gap-2 rounded-md border
+                        border-danger/30 bg-danger-bg p-3
+                        text-sm text-danger">
           <AlertTriangle size={16} className="mt-0.5 shrink-0" />{error}
         </div>
       )}
@@ -68,7 +68,7 @@ export function PoliciesForm({ storeId, initial, canEdit }: {
           <Button size="lg" loading={pending} onClick={submit}>حفظ السياسات</Button>
           {saved && (
             <span role="status" className="inline-flex items-center gap-1 text-sm
-                             font-bold text-[--color-success]">
+                             font-bold text-success">
               <Check size={15} /> حُفظت
             </span>
           )}

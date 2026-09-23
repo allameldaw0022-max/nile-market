@@ -82,8 +82,8 @@ export default async function AdminStoresPage(
       <form className="flex flex-wrap items-center gap-2" action="/admin/stores">
         <input name="q" defaultValue={term} maxLength={60}
                placeholder="اسم المتجر أو رابطه" aria-label="بحث في المتاجر"
-               className="h-10 min-w-52 flex-1 rounded-[--radius-md] border
-                          border-[--color-ink-400] bg-white px-3 text-[14px] text-ink-900
+               className="h-10 min-w-52 flex-1 rounded-md border
+                          border-ink-400 bg-white px-3 text-[14px] text-ink-900
                           placeholder:text-ink-400 focus:border-teal-600" />
         <input type="hidden" name="status" value={status} />
         <Button type="submit" variant="outline" size="sm">بحث</Button>
@@ -116,7 +116,7 @@ export default async function AdminStoresPage(
                       {s.slug} · {formatDate(s.created_at)}
                     </p>
                     {s.suspended_reason && (
-                      <p className="text-xs text-[--color-danger]">
+                      <p className="text-xs text-danger">
                         سبب الإيقاف: {s.suspended_reason}
                       </p>
                     )}

@@ -33,7 +33,7 @@ export function MfaSection({ enabled, factorId, adminLocked }: {
 
       <div className="space-y-4 p-5">
         {adminLocked && (
-          <div className="flex items-start gap-2 rounded-[--radius-md] border border-teal-200
+          <div className="flex items-start gap-2 rounded-md border border-teal-200
                           bg-teal-50 p-3 text-sm text-ink-700">
             <Lock size={16} className="mt-0.5 shrink-0 text-teal-700" />
             التحقق بخطوتين <b>إلزامي</b> لحسابات الإدارة، ولا يمكن إلغاؤه.
@@ -51,7 +51,7 @@ export function MfaSection({ enabled, factorId, adminLocked }: {
               <form action={disableAction}>
                 <input type="hidden" name="factor_id" value={factorId} />
                 {disableState && !disableState.ok && (
-                  <p role="alert" className="mb-2 text-sm text-[--color-danger]">
+                  <p role="alert" className="mb-2 text-sm text-danger">
                     {disableState.message}
                   </p>
                 )}
@@ -67,7 +67,7 @@ export function MfaSection({ enabled, factorId, adminLocked }: {
             <p className="text-sm text-ink-500">
               1) امسح الرمز بتطبيق المصادقة. 2) أدخل الرمز المكوّن من 6 أرقام.
             </p>
-            <div className="flex flex-col items-center gap-3 rounded-[--radius-md]
+            <div className="flex flex-col items-center gap-3 rounded-md
                             border border-ink-200 bg-ink-50 p-4">
               {/* QR يأتي كـdata:image/svg من Supabase */}
               <Image src={enroll.qr} alt="رمز QR للتحقق بخطوتين"
@@ -80,9 +80,9 @@ export function MfaSection({ enabled, factorId, adminLocked }: {
               </div>
             </div>
             {verifyState && !verifyState.ok && (
-              <div role="alert" className="flex items-start gap-2 rounded-[--radius-md] border
-                              border-[--color-danger]/30 bg-[--color-danger-bg] p-3
-                              text-sm text-[--color-danger]">
+              <div role="alert" className="flex items-start gap-2 rounded-md border
+                              border-danger/30 bg-danger-bg p-3
+                              text-sm text-danger">
                 <AlertTriangle size={16} className="mt-0.5 shrink-0" />{verifyState.message}
               </div>
             )}
@@ -93,10 +93,10 @@ export function MfaSection({ enabled, factorId, adminLocked }: {
         ) : (
           <>
             {enroll && !enroll.ok && (
-              <p role="alert" className="text-sm text-[--color-danger]">{enroll.message}</p>
+              <p role="alert" className="text-sm text-danger">{enroll.message}</p>
             )}
             {verifyState?.ok && (
-              <p className="flex items-center gap-2 text-sm text-[--color-success]">
+              <p className="flex items-center gap-2 text-sm text-success">
                 <CheckCircle2 size={16} />{verifyState.message}
               </p>
             )}

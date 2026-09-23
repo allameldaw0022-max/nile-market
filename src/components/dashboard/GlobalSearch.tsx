@@ -56,7 +56,7 @@ export function GlobalSearch({ allowed }: { allowed: string[] }) {
     >
       <label htmlFor="global-search" className="sr-only">ابحث في {current.label}</label>
 
-      <div className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-[--radius-md]
+      <div className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-md
                       border border-ink-200 bg-white ps-3 focus-within:border-teal-600">
         <Search size={15} className="shrink-0 text-ink-400" aria-hidden />
         <input
@@ -77,7 +77,7 @@ export function GlobalSearch({ allowed }: { allowed: string[] }) {
               id="global-scope"
               value={scope}
               onChange={(e) => setScope(e.target.value)}
-              className="h-full shrink-0 rounded-e-[--radius-md] border-s border-ink-200
+              className="h-full shrink-0 rounded-e-md border-s border-ink-200
                          bg-ink-50 px-2 text-[13px] font-medium text-ink-600 outline-none"
             >
               {scopes.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}

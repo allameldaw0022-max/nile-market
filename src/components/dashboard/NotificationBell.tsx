@@ -52,12 +52,12 @@ export function NotificationBell({ initialUnread }: { initialUnread: number }) {
     <div className="relative">
       <button type="button" onClick={toggle} aria-expanded={open}
               aria-label={unread > 0 ? `التنبيهات (${unread} غير مقروء)` : 'التنبيهات'}
-              className="relative grid size-10 place-items-center rounded-[--radius-md]
+              className="relative grid size-10 place-items-center rounded-md
                          text-ink-700 hover:bg-ink-100">
         <Bell size={19} />
         {unread > 0 && (
           <span className="absolute -top-0.5 -end-0.5 grid min-w-5 place-items-center
-                           rounded-full bg-[--color-danger] px-1 text-[11px]
+                           rounded-full bg-danger px-1 text-[11px]
                            font-extrabold text-white tabular">
             {unread > 99 ? '99+' : unread}
           </span>
@@ -70,8 +70,8 @@ export function NotificationBell({ initialUnread }: { initialUnread: number }) {
                   className="fixed inset-0 z-30 cursor-default"
                   onClick={() => setOpen(false)} />
           <div className="absolute end-0 z-40 mt-1 w-80 overflow-hidden
-                          rounded-[--radius-lg] border border-ink-200 bg-white
-                          shadow-[--shadow-popover]">
+                          rounded-lg border border-ink-200 bg-white
+                          shadow-popover">
             <div className="flex items-center justify-between gap-2 border-b
                             border-ink-200 px-4 py-2.5">
               <span className="text-sm font-bold text-ink-900">التنبيهات</span>
@@ -111,7 +111,7 @@ export function NotificationBell({ initialUnread }: { initialUnread: number }) {
                       </>
                     );
                     const cls = `block px-4 py-3 hover:bg-ink-50 ${
-                      n.readAt ? '' : 'border-e-2 border-e-teal-600 bg-[--color-teal-50]'}`;
+                      n.readAt ? '' : 'border-e-2 border-e-teal-600 bg-teal-50'}`;
 
                     return (
                       <li key={n.id}>

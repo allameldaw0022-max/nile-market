@@ -141,9 +141,9 @@ export function PlatformSettingsForm({ settings, canManage, launchBlockers }: {
                 <button type="button" aria-label="حذف الحساب"
                         onClick={() => set('bankAccounts',
                           s.bankAccounts.filter((_, j) => j !== i))}
-                        className="mt-6 h-11 rounded-[--radius-md] border
-                                   border-ink-300 px-3 text-[--color-danger]
-                                   hover:border-[--color-danger]">
+                        className="mt-6 h-11 rounded-md border
+                                   border-ink-300 px-3 text-danger
+                                   hover:border-danger">
                   <Trash2 size={15} />
                 </button>
               )}
@@ -180,7 +180,7 @@ export function PlatformSettingsForm({ settings, canManage, launchBlockers }: {
           description="تُعرض على /legal — وما لا يُكتب هنا يظهر «لم تُنشر بعد» لا نصًّا افتراضيًا."
         />
         <div className="space-y-4 p-5">
-          <p className="rounded-[--radius-md] bg-ink-50 p-3 text-xs text-ink-600">
+          <p className="rounded-md bg-ink-50 p-3 text-xs text-ink-600">
             صفحة التسجيل تطلب الموافقة على الشروط وسياسة الخصوصية، فاكتبهما
             قبل فتح التسجيل. ويجب أن توثّق سياسة الخصوصية نطاق إخفاء الهوية:
             يشمل بيانات الحسابات والعملاء ولا يمسّ الطلبات ولا السجلات
@@ -197,15 +197,15 @@ export function PlatformSettingsForm({ settings, canManage, launchBlockers }: {
       </Card>
 
       {error && (
-        <p role="alert" className="flex items-start gap-2 rounded-[--radius-md] border
-                        border-[--color-danger]/30 bg-[--color-danger-bg] p-3 text-sm
-                        text-[--color-danger]">
+        <p role="alert" className="flex items-start gap-2 rounded-md border
+                        border-danger/30 bg-danger-bg p-3 text-sm
+                        text-danger">
           <AlertTriangle size={15} className="mt-0.5 shrink-0" />{error}
         </p>
       )}
 
       {saved && (
-        <p className="flex items-center gap-2 text-sm text-[--color-success]">
+        <p className="flex items-center gap-2 text-sm text-success">
           <CheckCircle2 size={15} />حُفظت الإعدادات.
         </p>
       )}

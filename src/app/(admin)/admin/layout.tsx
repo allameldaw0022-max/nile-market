@@ -77,11 +77,11 @@ export default async function AdminLayout({ children }: LayoutProps<'/admin'>) {
           </Badge>
 
           <div className="ms-auto flex items-center gap-2">
-            <div className="rounded-[--radius-md] bg-white/10">
+            <div className="rounded-md bg-white/10">
               <NotificationBell initialUnread={unread ?? 0} />
             </div>
             <Link href="/dashboard"
-                  className="rounded-[--radius-md] px-3 py-1.5 text-[13px] font-bold
+                  className="rounded-md px-3 py-1.5 text-[13px] font-bold
                              text-white/80 hover:bg-white/10 hover:text-white">
               الخروج من الإدارة
             </Link>

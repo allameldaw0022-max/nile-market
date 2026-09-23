@@ -85,9 +85,9 @@ export function CouponManager({ storeId, coupons, canManage }: {
       {limit && <UpgradeCard message={limit} />}
 
       {error && !error.field && (
-        <div role="alert" className="flex items-start gap-2 rounded-[--radius-md] border
-                        border-[--color-danger]/30 bg-[--color-danger-bg] p-3
-                        text-sm text-[--color-danger]">
+        <div role="alert" className="flex items-start gap-2 rounded-md border
+                        border-danger/30 bg-danger-bg p-3
+                        text-sm text-danger">
           <AlertTriangle size={16} className="mt-0.5 shrink-0" />{error.message}
         </div>
       )}
@@ -210,8 +210,8 @@ export function CouponManager({ storeId, coupons, canManage }: {
                               if (confirm(`حذف الكود ${c.code}؟ الطلبات التي استخدمته تبقى كما هي.`))
                                 remove(c);
                             }}
-                            className="rounded p-2 text-[--color-danger]
-                                       hover:bg-[--color-danger-bg] disabled:opacity-50">
+                            className="rounded p-2 text-danger
+                                       hover:bg-danger-bg disabled:opacity-50">
                       <Trash2 size={15} />
                     </button>
                   </div>

@@ -11,7 +11,7 @@ export function EmptyState({ icon, title, description, action }: {
   icon?: ReactNode; title: string; description?: string; action?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-[--radius-lg]
+    <div className="flex flex-col items-center justify-center rounded-lg
                     border border-dashed border-ink-300 bg-white px-6 py-14 text-center">
       <div className="mb-3 text-ink-400">{icon ?? <Inbox size={36} strokeWidth={1.5} />}</div>
       <h3 className="text-base font-bold text-ink-900">{title}</h3>
@@ -25,9 +25,9 @@ export function ErrorState({ title = 'تعذّر تحميل البيانات', d
   title?: string; description?: string; onRetry?: () => void; reference?: string;
 }) {
   return (
-    <div className="rounded-[--radius-lg] border border-[--color-danger]/30
-                    bg-[--color-danger-bg] px-6 py-10 text-center">
-      <AlertTriangle className="mx-auto mb-3 text-[--color-danger]" size={32} strokeWidth={1.5} />
+    <div className="rounded-lg border border-danger/30
+                    bg-danger-bg px-6 py-10 text-center">
+      <AlertTriangle className="mx-auto mb-3 text-danger" size={32} strokeWidth={1.5} />
       <h3 className="text-base font-bold text-ink-900">{title}</h3>
       {description && <p className="mt-1 text-sm text-ink-500">{description}</p>}
       {reference && (
@@ -60,7 +60,7 @@ export function UpgradeCard({ message, used, limit }: {
   message: string; used?: number; limit?: number;
 }) {
   return (
-    <div className="rounded-[--radius-lg] border border-gold-500/40 bg-gold-300/10 p-5">
+    <div className="rounded-lg border border-gold-500/40 bg-gold-300/10 p-5">
       <div className="flex items-start gap-3">
         <span className="mt-0.5 shrink-0 rounded-full bg-gold-500/20 p-2 text-gold-700">
           <AlertTriangle size={18} />
@@ -94,12 +94,12 @@ export function OfflineBanner() {
 }
 
 export function Skeleton({ className }: { className?: string }) {
-  return <div className={cn('skeleton rounded-[--radius-md]', className)} aria-hidden />;
+  return <div className={cn('skeleton rounded-md', className)} aria-hidden />;
 }
 
 export function CardSkeleton() {
   return (
-    <div className="rounded-[--radius-lg] border border-ink-200 bg-white p-4">
+    <div className="rounded-lg border border-ink-200 bg-white p-4">
       <Skeleton className="h-32 w-full" />
       <Skeleton className="mt-3 h-4 w-3/4" />
       <Skeleton className="mt-2 h-4 w-1/3" />

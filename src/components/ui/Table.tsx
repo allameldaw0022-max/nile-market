@@ -18,7 +18,7 @@ export function TableWrap({ label, children }: { label: string; children: ReactN
       role="region"
       aria-label={label}
       tabIndex={0}
-      className="overflow-x-auto rounded-[--radius-lg] border border-ink-200 bg-white
+      className="overflow-x-auto rounded-lg border border-ink-200 bg-white
                  focus-visible:outline-2 focus-visible:outline-teal-600"
     >
       <table className="w-full min-w-[34rem] border-collapse text-sm">{children}</table>

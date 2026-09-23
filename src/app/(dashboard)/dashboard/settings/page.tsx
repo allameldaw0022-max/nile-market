@@ -89,8 +89,8 @@ export default async function SettingsPage() {
         {LINKS.map((link) => (
           <Link key={link.href} href={link.href}>
             <Card className="flex items-center gap-3 p-4 hover:border-teal-400">
-              <span className="grid size-10 shrink-0 place-items-center rounded-[--radius-md]
-                               bg-[--color-teal-50] text-teal-700">
+              <span className="grid size-10 shrink-0 place-items-center rounded-md
+                               bg-teal-50 text-teal-700">
                 <link.icon size={18} />
               </span>
               <span className="min-w-0">

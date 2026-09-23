@@ -107,7 +107,7 @@ export default async function InventoryPage({ searchParams }: PageProps<'/dashbo
       </div>
 
       {lowCount > 0 && !lowOnly && (
-        <div className="flex flex-wrap items-center gap-2 rounded-[--radius-md]
+        <div className="flex flex-wrap items-center gap-2 rounded-md
                         border border-gold-500/40 bg-gold-300/10 p-3.5 text-sm">
           <TriangleAlert size={16} className="text-gold-700" />
           <span className="flex-1 text-ink-700">
@@ -202,7 +202,7 @@ export default async function InventoryPage({ searchParams }: PageProps<'/dashbo
                   {m.products?.name ?? '—'}
                 </span>
                 <span className={`font-bold tabular ${m.delta > 0
-                  ? 'text-[--color-success]' : 'text-[--color-danger]'}`} dir="ltr">
+                  ? 'text-success' : 'text-danger'}`} dir="ltr">
                   {m.delta > 0 ? `+${m.delta}` : m.delta}
                 </span>
                 <span className="text-xs text-ink-500">

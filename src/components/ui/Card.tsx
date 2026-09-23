@@ -12,7 +12,7 @@ export function Card({ as: Tag = 'div', className, children }: {
   className?: string; children: ReactNode;
 }) {
   return (
-    <Tag className={cn('rounded-[--radius-lg] border border-ink-200 bg-white', className)}>
+    <Tag className={cn('rounded-lg border border-ink-200 bg-white', className)}>
       {children}
     </Tag>
   );
@@ -49,8 +49,8 @@ export function StatCard({ label, value, hint, trend, tone = 'default' }: {
         tone === 'gold' ? 'text-gold-700' : 'text-ink-900')}>{value}</p>
       {trend && (
         <p className={cn('mt-2 text-xs font-medium',
-          trend.direction === 'up' ? 'text-[--color-success]'
-          : trend.direction === 'down' ? 'text-[--color-danger]' : 'text-ink-500')}>
+          trend.direction === 'up' ? 'text-success'
+          : trend.direction === 'down' ? 'text-danger' : 'text-ink-500')}>
           {trend.direction === 'up' ? '▲' : trend.direction === 'down' ? '▼' : '—'}{' '}
           {trend.label}
         </p>

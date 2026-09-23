@@ -63,9 +63,9 @@ export function DeliveryZonesManager({ storeId, zones, canManage }: {
   return (
     <div className="space-y-5">
       {error && !error.field && (
-        <div role="alert" className="flex items-start gap-2 rounded-[--radius-md] border
-                        border-[--color-danger]/30 bg-[--color-danger-bg] p-3
-                        text-sm text-[--color-danger]">
+        <div role="alert" className="flex items-start gap-2 rounded-md border
+                        border-danger/30 bg-danger-bg p-3
+                        text-sm text-danger">
           <AlertTriangle size={16} className="mt-0.5 shrink-0" />{error.message}
         </div>
       )}
@@ -160,8 +160,8 @@ export function DeliveryZonesManager({ storeId, zones, canManage }: {
                               if (confirm(`حذف منطقة ${z.name}؟ الطلبات السابقة تبقى كما هي.`))
                                 remove(z);
                             }}
-                            className="rounded p-2 text-[--color-danger]
-                                       hover:bg-[--color-danger-bg] disabled:opacity-50">
+                            className="rounded p-2 text-danger
+                                       hover:bg-danger-bg disabled:opacity-50">
                       <Trash2 size={15} />
                     </button>
                   </div>

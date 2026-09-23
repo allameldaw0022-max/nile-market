@@ -28,23 +28,23 @@ export function LoginForm() {
     <form action={action} className="mt-8 space-y-4">
       {next && <input type="hidden" name="next" value={next} />}
       {signedOutAll && (
-        <p role="status" className="rounded-[--radius-md] border border-teal-200
+        <p role="status" className="rounded-md border border-teal-200
                        bg-teal-50 p-3 text-sm text-ink-700">
           أُنهيت كل جلساتك على جميع الأجهزة. سجّل الدخول من جديد.
         </p>
       )}
       {urlError && (
-        <div role="alert" className="flex items-start gap-2 rounded-[--radius-md] border
-                        border-[--color-danger]/30 bg-[--color-danger-bg] p-3
-                        text-sm text-[--color-danger]">
+        <div role="alert" className="flex items-start gap-2 rounded-md border
+                        border-danger/30 bg-danger-bg p-3
+                        text-sm text-danger">
           <AlertTriangle size={16} className="mt-0.5 shrink-0" />{urlError}
         </div>
       )}
       {state && !state.ok && (
         <div role="alert"
-             className="flex items-start gap-2 rounded-[--radius-md] border
-                        border-[--color-danger]/30 bg-[--color-danger-bg] p-3
-                        text-sm text-[--color-danger]">
+             className="flex items-start gap-2 rounded-md border
+                        border-danger/30 bg-danger-bg p-3
+                        text-sm text-danger">
           <AlertTriangle size={16} className="mt-0.5 shrink-0" />
           {state.message}
         </div>

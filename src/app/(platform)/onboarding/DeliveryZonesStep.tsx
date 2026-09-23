@@ -75,9 +75,9 @@ export function DeliveryZonesStep({ storeId, count, onChange, onNext }: {
 
       <div className="space-y-4 p-5">
         {error && (
-          <div role="alert" className="flex items-start gap-2 rounded-[--radius-md] border
-                          border-[--color-danger]/30 bg-[--color-danger-bg] p-3
-                          text-sm text-[--color-danger]">
+          <div role="alert" className="flex items-start gap-2 rounded-md border
+                          border-danger/30 bg-danger-bg p-3
+                          text-sm text-danger">
             <AlertTriangle size={16} className="mt-0.5 shrink-0" />{error}
           </div>
         )}
@@ -85,19 +85,19 @@ export function DeliveryZonesStep({ storeId, count, onChange, onNext }: {
         {loading ? (
           <p className="text-sm text-ink-500">يحمّل المناطق…</p>
         ) : active.length === 0 ? (
-          <div className="flex items-center gap-2 rounded-[--radius-md] border border-dashed
+          <div className="flex items-center gap-2 rounded-md border border-dashed
                           border-ink-300 p-4 text-sm text-ink-500">
             <Truck size={16} /> لم تُضِف أي منطقة بعد.
           </div>
         ) : (
-          <ul className="divide-y divide-ink-200 rounded-[--radius-md] border border-ink-200">
+          <ul className="divide-y divide-ink-200 rounded-md border border-ink-200">
             {active.map((z) => (
               <li key={z.id} className="flex items-center gap-3 px-3 py-2.5">
                 <span className="flex-1 truncate font-bold text-ink-900">{z.name}</span>
                 <span className="font-bold text-ink-900 tabular">{formatMoney(z.fee)}</span>
                 <button type="button" aria-label={`حذف ${z.name}`} disabled={pending}
                         onClick={() => remove(z.id)}
-                        className="rounded p-2 text-[--color-danger] hover:bg-[--color-danger-bg]
+                        className="rounded p-2 text-danger hover:bg-danger-bg
                                    disabled:opacity-50">
                   <Trash2 size={15} />
                 </button>

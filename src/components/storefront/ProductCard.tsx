@@ -51,7 +51,7 @@ export function ProductCard({ product, host, priority = false }: {
   const low = available !== null && available > 0 && available <= 3;
 
   return (
-    <article className="group relative flex flex-col overflow-hidden rounded-[--radius-lg]
+    <article className="group relative flex flex-col overflow-hidden rounded-lg
                         border border-ink-200 bg-white transition-colors hover:border-ink-300">
       <Link href={`/products/${product.slug}`} className="flex flex-1 flex-col">
         <div className="relative aspect-[4/5] overflow-hidden bg-ink-100">
@@ -74,14 +74,14 @@ export function ProductCard({ product, host, priority = false }: {
           )}
 
           {hasDiscount && !soldOut && (
-            <span className="absolute start-2 top-2 rounded-[--radius-xs] bg-gold-500
+            <span className="absolute start-2 top-2 rounded-xs bg-gold-500
                              px-1.5 py-0.5 text-[11px] font-bold tabular text-ink-900">
               −{off}٪
             </span>
           )}
           {soldOut && (
             <span className="absolute inset-0 grid place-items-center bg-white/75">
-              <span className="rounded-[--radius-xs] bg-ink-800 px-2.5 py-1
+              <span className="rounded-xs bg-ink-800 px-2.5 py-1
                                text-[12px] font-semibold text-white">نفد المخزون</span>
             </span>
           )}

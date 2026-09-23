@@ -40,7 +40,7 @@ export function InventoryAdjuster({ storeId, productId, quantity }: {
     router.refresh();
   });
 
-  const btn = 'flex size-9 items-center justify-center rounded-[--radius-md] ' +
+  const btn = 'flex size-9 items-center justify-center rounded-md ' +
               'border border-ink-300 text-ink-700 hover:border-teal-600 ' +
               'hover:text-teal-700 disabled:opacity-50';
 
@@ -55,7 +55,7 @@ export function InventoryAdjuster({ storeId, productId, quantity }: {
         <input value={amount} onChange={(e) => setAmount(e.target.value)}
                type="number" min={1} step={1} inputMode="numeric" dir="ltr"
                aria-label="مقدار التعديل"
-               className="h-9 w-16 rounded-[--radius-md] border border-[--color-ink-400] bg-white
+               className="h-9 w-16 rounded-md border border-ink-400 bg-white
                           px-2 text-center text-sm tabular text-ink-900
                           focus:border-teal-600" />
 
@@ -66,13 +66,13 @@ export function InventoryAdjuster({ storeId, productId, quantity }: {
 
         <span className="ms-2 min-w-14 text-end font-bold tabular text-ink-900">
           {current}
-          {saved && <Check size={13} className="ms-1 inline text-[--color-success]" />}
+          {saved && <Check size={13} className="ms-1 inline text-success" />}
         </span>
       </div>
 
       {error && (
         <p role="alert" className="flex items-center gap-1 text-xs font-bold
-                        text-[--color-danger]">
+                        text-danger">
           <AlertTriangle size={12} />{error}
         </p>
       )}

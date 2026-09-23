@@ -6,9 +6,9 @@ type Tone = 'info' | 'success' | 'warning' | 'danger';
 
 const TONES: Record<Tone, { box: string; icon: string; Icon: typeof Info }> = {
   info:    { box: 'border-teal-200 bg-teal-50',                      icon: 'text-teal-700',            Icon: Info },
-  success: { box: 'border-[--color-success]/25 bg-[--color-success-bg]', icon: 'text-[--color-success]', Icon: CheckCircle2 },
-  warning: { box: 'border-gold-500/30 bg-[--color-warning-bg]',      icon: 'text-gold-700',            Icon: AlertTriangle },
-  danger:  { box: 'border-[--color-danger]/25 bg-[--color-danger-bg]',  icon: 'text-[--color-danger]',  Icon: XCircle },
+  success: { box: 'border-success/25 bg-success-bg', icon: 'text-success', Icon: CheckCircle2 },
+  warning: { box: 'border-gold-500/30 bg-warning-bg',      icon: 'text-gold-700',            Icon: AlertTriangle },
+  danger:  { box: 'border-danger/25 bg-danger-bg',  icon: 'text-danger',  Icon: XCircle },
 };
 
 /**
@@ -23,7 +23,7 @@ export function Alert({ tone = 'info', title, children, className }: {
   return (
     <div
       role={tone === 'danger' ? 'alert' : 'status'}
-      className={cn('flex gap-3 rounded-[--radius-md] border p-3.5', box, className)}
+      className={cn('flex gap-3 rounded-md border p-3.5', box, className)}
     >
       <Icon size={18} className={cn('mt-0.5 shrink-0', icon)} aria-hidden />
       <div className="min-w-0 text-sm leading-relaxed">

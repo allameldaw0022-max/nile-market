@@ -230,13 +230,13 @@ export default async function OrderDetailPage(
 
               <div className="flex flex-wrap gap-2">
                 <a href={`tel:${order.contact_phone}`}
-                   className="inline-flex items-center gap-1.5 rounded-[--radius-md] border
+                   className="inline-flex items-center gap-1.5 rounded-md border
                               border-ink-300 px-3 py-2 text-[13px] font-bold text-ink-700
                               hover:border-teal-600">
                   <Phone size={14} /> اتصال
                 </a>
                 <a href={`https://wa.me/${waNumber}`} target="_blank" rel="noopener noreferrer"
-                   className="inline-flex items-center gap-1.5 rounded-[--radius-md] border
+                   className="inline-flex items-center gap-1.5 rounded-md border
                               border-ink-300 px-3 py-2 text-[13px] font-bold text-ink-700
                               hover:border-teal-600">
                   <MessageCircle size={14} /> واتساب
@@ -300,7 +300,7 @@ function Row({ label, value, danger = false }: {
   return (
     <div className="flex items-center justify-between gap-3">
       <dt className="text-ink-500">{label}</dt>
-      <dd className={`font-bold tabular ${danger ? 'text-[--color-danger]' : 'text-ink-900'}`}>
+      <dd className={`font-bold tabular ${danger ? 'text-danger' : 'text-ink-900'}`}>
         {value}
       </dd>
     </div>

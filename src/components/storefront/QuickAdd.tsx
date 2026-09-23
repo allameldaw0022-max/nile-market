@@ -39,12 +39,12 @@ export function QuickAdd({ host, productId, label }: {
           setTimeout(() => setState('idle'), 2200);
         });
       }}
-      className={`grid size-9 shrink-0 place-items-center rounded-[--radius-sm] border
+      className={`grid size-9 shrink-0 place-items-center rounded-sm border
                   transition-colors disabled:opacity-60
                   ${state === 'done'
-                    ? 'border-[--color-success] bg-[--color-success-bg] text-[--color-success]'
+                    ? 'border-success bg-success-bg text-success'
                     : state === 'error'
-                      ? 'border-[--color-danger] bg-[--color-danger-bg] text-[--color-danger]'
+                      ? 'border-danger bg-danger-bg text-danger'
                       : 'border-ink-200 bg-white text-ink-700 hover:border-teal-600 hover:text-teal-700'}`}
     >
       {pending ? <Loader2 size={16} className="animate-spin" aria-hidden />

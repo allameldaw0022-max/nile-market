@@ -32,7 +32,7 @@ function Frame({ title, children, className = '' }: {
   title: string; children: React.ReactNode; className?: string;
 }) {
   return (
-    <div className={`overflow-hidden rounded-[--radius-xl] border border-ink-200 bg-white ${className}`}>
+    <div className={`overflow-hidden rounded-xl border border-ink-200 bg-white ${className}`}>
       <div className="flex items-center gap-2 border-b border-ink-200 bg-ink-50 px-4 py-2.5">
         <span className="flex gap-1.5" aria-hidden>
           <i className="size-2.5 rounded-full bg-ink-300" />
@@ -58,17 +58,17 @@ export function DashboardPreview({ className = '' }: { className?: string }) {
             { l: 'العملاء',          v: formatNumber(DEMO_TOTALS.customers) },
             { l: 'متوسط الطلب',      v: formatMoney(DEMO_TOTALS.averageOrder) },
           ].map((s) => (
-            <div key={s.l} className="rounded-[--radius-md] border border-ink-200 p-3">
+            <div key={s.l} className="rounded-md border border-ink-200 p-3">
               <p className="text-[11px] font-medium text-ink-500">{s.l}</p>
               <p className="mt-1 text-[15px] font-bold tabular text-ink-900 sm:text-base">{s.v}</p>
             </div>
           ))}
         </div>
 
-        <div className="mt-4 rounded-[--radius-md] border border-ink-200 p-4">
+        <div className="mt-4 rounded-md border border-ink-200 p-4">
           <div className="flex items-center justify-between">
             <p className="text-[13px] font-semibold text-ink-900">المبيعات — آخر ١٤ يومًا</p>
-            <span className="inline-flex items-center gap-1 text-[12px] font-medium text-[--color-success]">
+            <span className="inline-flex items-center gap-1 text-[12px] font-medium text-success">
               <TrendingUp size={13} />١٨٪
             </span>
           </div>
@@ -76,7 +76,7 @@ export function DashboardPreview({ className = '' }: { className?: string }) {
                     data={DEMO_SALES} format={formatMoney} />
         </div>
 
-        <div className="mt-4 hidden rounded-[--radius-md] border border-ink-200 sm:block">
+        <div className="mt-4 hidden rounded-md border border-ink-200 sm:block">
           <p className="border-b border-ink-200 px-4 py-2.5 text-[13px] font-semibold text-ink-900">
             أحدث الطلبات
           </p>
@@ -107,12 +107,12 @@ export function OrdersPreview({ className = '' }: { className?: string }) {
     <Frame title="الطلبات" className={className}>
       <div aria-hidden>
         <div className="flex items-center gap-2 border-b border-ink-200 px-4 py-3">
-          <span className="inline-flex h-8 flex-1 items-center gap-2 rounded-[--radius-sm]
+          <span className="inline-flex h-8 flex-1 items-center gap-2 rounded-sm
                            border border-ink-200 px-2.5 text-[12px] text-ink-400">
             <Search size={13} />بحث برقم الطلب أو الهاتف
           </span>
           {['الكل', 'جديد', 'مؤكَّد'].map((t, i) => (
-            <span key={t} className={`hidden h-8 items-center rounded-[--radius-sm] px-3
+            <span key={t} className={`hidden h-8 items-center rounded-sm px-3
                         text-[12px] font-medium sm:inline-flex
                         ${i === 1 ? 'bg-teal-600 text-white' : 'border border-ink-200 text-ink-600'}`}>
               {t}
@@ -162,7 +162,7 @@ export function ProductsPreview({ className = '' }: { className?: string }) {
       <ul aria-hidden>
         {DEMO_PRODUCTS.map((p) => (
           <li key={p.name} className="flex items-center gap-3 border-b border-ink-100 px-4 py-3 last:border-0">
-            <span className="grid size-10 shrink-0 place-items-center rounded-[--radius-sm]
+            <span className="grid size-10 shrink-0 place-items-center rounded-sm
                              border border-ink-200 bg-ink-50 text-ink-400">
               <Package size={17} />
             </span>
@@ -202,14 +202,14 @@ export function MobilePreview({ className = '' }: { className?: string }) {
       </div>
       <div className="border-b border-ink-200 px-3 py-2.5">
         <p className="truncate text-[13px] font-bold text-ink-900">{DEMO_STORE}</p>
-        <span className="mt-2 flex h-7 items-center gap-1.5 rounded-[--radius-sm]
+        <span className="mt-2 flex h-7 items-center gap-1.5 rounded-sm
                          border border-ink-200 px-2 text-[11px] text-ink-400">
           <Search size={11} />ابحث عن منتج
         </span>
       </div>
       <div className="grid grid-cols-2 gap-2 p-2.5">
         {DEMO_PRODUCTS.slice(0, 4).map((p) => (
-          <div key={p.name} className="overflow-hidden rounded-[--radius-md] border border-ink-200">
+          <div key={p.name} className="overflow-hidden rounded-md border border-ink-200">
             <div className="grid aspect-square place-items-center bg-ink-50 text-ink-300">
               <Package size={22} strokeWidth={1.5} />
             </div>
@@ -221,7 +221,7 @@ export function MobilePreview({ className = '' }: { className?: string }) {
         ))}
       </div>
       <div className="border-t border-ink-200 p-2.5">
-        <span className="flex h-9 items-center justify-center rounded-[--radius-md]
+        <span className="flex h-9 items-center justify-center rounded-md
                          bg-teal-600 text-[12px] font-semibold text-white">
           إتمام الطلب
         </span>

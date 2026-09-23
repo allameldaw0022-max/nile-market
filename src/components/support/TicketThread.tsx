@@ -57,9 +57,9 @@ export function TicketThread({ ticket }: { ticket: TicketDetail }) {
       </Card>
 
       {error && (
-        <div role="alert" className="flex items-start gap-2 rounded-[--radius-md] border
-                        border-[--color-danger]/30 bg-[--color-danger-bg] p-3
-                        text-sm text-[--color-danger]">
+        <div role="alert" className="flex items-start gap-2 rounded-md border
+                        border-danger/30 bg-danger-bg p-3
+                        text-sm text-danger">
           <AlertTriangle size={16} className="mt-0.5 shrink-0" />{error}
         </div>
       )}
@@ -85,9 +85,9 @@ export function TicketThread({ ticket }: { ticket: TicketDetail }) {
                                   : 'bg-ink-200 text-ink-700'}`}>
                 {isStaff ? <Headset size={15} /> : <User size={15} />}
               </span>
-              <div className={`max-w-[85%] rounded-[--radius-lg] border p-3.5
+              <div className={`max-w-[85%] rounded-lg border p-3.5
                                ${m.isMine
-                                 ? 'border-teal-200 bg-[--color-teal-50]'
+                                 ? 'border-teal-200 bg-teal-50'
                                  : 'border-ink-200 bg-white'}`}>
                 <p className="text-xs font-bold text-ink-500">
                   {isStaff ? 'فريق الدعم' : m.isMine ? 'أنت' : 'صاحب التذكرة'}
@@ -105,7 +105,7 @@ export function TicketThread({ ticket }: { ticket: TicketDetail }) {
 
       {isClosed ? (
         <Card className="p-5 text-center">
-          <CheckCircle2 className="mx-auto text-[--color-success]" size={28} />
+          <CheckCircle2 className="mx-auto text-success" size={28} />
           <p className="mt-2 text-sm text-ink-500">
             هذه التذكرة مغلقة. إن عادت المشكلة، افتح تذكرة جديدة.
           </p>

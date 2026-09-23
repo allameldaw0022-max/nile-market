@@ -51,7 +51,7 @@ export function StoreMenu({ hostname, storeName }: { hostname: string; storeName
     <div ref={box} className="relative">
       <button type="button" onClick={() => setOpen((v) => !v)}
               aria-expanded={open} aria-haspopup="menu"
-              className="inline-flex h-10 items-center gap-1.5 rounded-[--radius-md] border
+              className="inline-flex h-10 items-center gap-1.5 rounded-md border
                          border-ink-200 px-3 text-[13px] font-medium text-ink-700
                          transition-colors hover:border-ink-300">
         <ExternalLink size={15} aria-hidden />
@@ -61,8 +61,8 @@ export function StoreMenu({ hostname, storeName }: { hostname: string; storeName
 
       {open && (
         <div role="menu"
-             className="absolute end-0 top-12 z-50 w-72 overflow-hidden rounded-[--radius-lg]
-                        border border-ink-200 bg-white shadow-[--shadow-popover]">
+             className="absolute end-0 top-12 z-50 w-72 overflow-hidden rounded-lg
+                        border border-ink-200 bg-white shadow-popover">
           <p className="border-b border-ink-100 px-4 py-2.5 text-[12px] text-ink-500">
             <span dir="ltr" className="block truncate font-medium text-ink-900">{hostname}</span>
           </p>
@@ -74,7 +74,7 @@ export function StoreMenu({ hostname, storeName }: { hostname: string; storeName
                   className="flex w-full items-center gap-2.5 px-4 py-3 text-start text-[14px]
                              text-ink-900 hover:bg-ink-50">
             {copied
-              ? <><Check size={15} className="text-[--color-success]" aria-hidden />نُسخ الرابط</>
+              ? <><Check size={15} className="text-success" aria-hidden />نُسخ الرابط</>
               : <><Copy size={15} className="text-ink-400" aria-hidden />نسخ الرابط</>}
           </button>
           <button role="menuitem" type="button" onClick={share}

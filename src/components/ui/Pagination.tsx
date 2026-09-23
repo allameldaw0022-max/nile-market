@@ -15,7 +15,7 @@ export function Pagination({ page, pages, hrefFor, className }: {
   if (pages <= 1) return null;
   const prev = page > 1 ? hrefFor(page - 1) : null;
   const next = page < pages ? hrefFor(page + 1) : null;
-  const base = 'inline-flex h-10 items-center gap-1.5 rounded-[--radius-md] border px-3.5 text-sm font-medium';
+  const base = 'inline-flex h-10 items-center gap-1.5 rounded-md border px-3.5 text-sm font-medium';
 
   return (
     <nav aria-label="ترقيم الصفحات" className={cn('flex items-center justify-between gap-3', className)}>

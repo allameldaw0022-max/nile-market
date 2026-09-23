@@ -46,7 +46,7 @@ export function InvitePartnerForm() {
           انسخه الآن وسلّمه للشريك. لا نحتفظ بنسخة منه، وإن ضاع تُعاد
           الدعوة من جديد. رمز الإحالة: <strong dir="ltr">{invite.code}</strong>
         </p>
-        <p dir="ltr" className="mt-3 overflow-x-auto rounded-[--radius-md] bg-white
+        <p dir="ltr" className="mt-3 overflow-x-auto rounded-md bg-white
                                 p-2.5 text-xs text-ink-900">{url}</p>
         <div className="mt-3 flex gap-2">
           <Button size="sm" icon={<Copy size={14} />}
@@ -88,7 +88,7 @@ export function InvitePartnerForm() {
         </div>
 
         {error && (
-          <p role="alert" className="flex items-start gap-2 text-sm text-[--color-danger]">
+          <p role="alert" className="flex items-start gap-2 text-sm text-danger">
             <AlertTriangle size={15} className="mt-0.5 shrink-0" />{error}
           </p>
         )}

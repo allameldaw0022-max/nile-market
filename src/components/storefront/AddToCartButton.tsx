@@ -38,7 +38,7 @@ export function AddToCartButton({ host, productId, variantId, available, disable
 
   if (disabled) {
     return (
-      <p className="rounded-[--radius-md] border border-ink-300 bg-ink-100 p-3.5
+      <p className="rounded-md border border-ink-300 bg-ink-100 p-3.5
                     text-center text-sm font-bold text-ink-600">
         {disabledNote ?? 'الشراء غير متاح حاليًا'}
       </p>
@@ -47,14 +47,14 @@ export function AddToCartButton({ host, productId, variantId, available, disable
 
   if (soldOut) {
     return (
-      <p className="rounded-[--radius-md] border border-ink-300 bg-ink-100 p-3.5
+      <p className="rounded-md border border-ink-300 bg-ink-100 p-3.5
                     text-center text-sm font-bold text-ink-600">
         نفدت الكمية
       </p>
     );
   }
 
-  const step = 'flex size-11 items-center justify-center rounded-[--radius-md] ' +
+  const step = 'flex size-11 items-center justify-center rounded-md ' +
                'border border-ink-300 text-ink-700 disabled:opacity-40';
 
   return (
@@ -85,9 +85,9 @@ export function AddToCartButton({ host, productId, variantId, available, disable
       </Button>
 
       {error && (
-        <p role="alert" className="flex items-start gap-2 rounded-[--radius-md] border
-                        border-[--color-danger]/30 bg-[--color-danger-bg] p-3
-                        text-sm text-[--color-danger]">
+        <p role="alert" className="flex items-start gap-2 rounded-md border
+                        border-danger/30 bg-danger-bg p-3
+                        text-sm text-danger">
           <AlertTriangle size={15} className="mt-0.5 shrink-0" />{error}
         </p>
       )}

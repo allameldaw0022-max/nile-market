@@ -31,9 +31,9 @@ export function NewTicketForm({ stores }: {
     <Card>
       <form action={submit} className="space-y-4 p-5">
         {error && !error.field && (
-          <div role="alert" className="flex items-start gap-2 rounded-[--radius-md] border
-                          border-[--color-danger]/30 bg-[--color-danger-bg] p-3
-                          text-sm text-[--color-danger]">
+          <div role="alert" className="flex items-start gap-2 rounded-md border
+                          border-danger/30 bg-danger-bg p-3
+                          text-sm text-danger">
             <AlertTriangle size={16} className="mt-0.5 shrink-0" />{error.message}
           </div>
         )}

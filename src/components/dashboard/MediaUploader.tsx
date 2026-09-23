@@ -137,9 +137,9 @@ function Busy({ state }: { state: State }) {
 
 function ErrorLine({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
-    <div role="alert" className="flex flex-wrap items-center gap-2 rounded-[--radius-md]
-                    border border-[--color-danger]/30 bg-[--color-danger-bg] p-3
-                    text-sm text-[--color-danger]">
+    <div role="alert" className="flex flex-wrap items-center gap-2 rounded-md
+                    border border-danger/30 bg-danger-bg p-3
+                    text-sm text-danger">
       <AlertTriangle size={16} className="shrink-0" />
       <span className="flex-1">{message}</span>
       <Button type="button" variant="outline" size="sm" icon={<RefreshCw size={13} />}
@@ -169,7 +169,7 @@ export function StoreLogoUploader({ storeId, currentUrl, onUploaded }: {
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-4">
-        <div className="relative size-24 shrink-0 overflow-hidden rounded-[--radius-lg]
+        <div className="relative size-24 shrink-0 overflow-hidden rounded-lg
                         border border-ink-200 bg-ink-50">
           {currentUrl ? (
             <Image src={currentUrl} alt="شعار المتجر" fill sizes="96px"
@@ -246,7 +246,7 @@ export function ProductImagesUploader({ storeId, value, onChange, max = 8 }: {
         {value.map((media, i) => (
           <figure key={media.mediaId}
                   className={cn('group relative aspect-square overflow-hidden',
-                    'rounded-[--radius-md] border bg-ink-50',
+                    'rounded-md border bg-ink-50',
                     i === 0 ? 'border-teal-600' : 'border-ink-200')}>
             <Image src={media.url} alt={`صورة ${i + 1}`} fill sizes="160px"
                    className="object-cover" />
@@ -266,7 +266,7 @@ export function ProductImagesUploader({ storeId, value, onChange, max = 8 }: {
                                  disabled:opacity-40">‹</button>
               <button type="button" aria-label="حذف الصورة"
                       onClick={() => onChange(value.filter((m) => m.mediaId !== media.mediaId))}
-                      className="rounded bg-white/90 p-1 text-[--color-danger]">
+                      className="rounded bg-white/90 p-1 text-danger">
                 <Trash2 size={12} />
               </button>
               <button type="button" onClick={() => move(i, i + 1)}
@@ -280,7 +280,7 @@ export function ProductImagesUploader({ storeId, value, onChange, max = 8 }: {
         {!full && (
           <button type="button" onClick={() => inputRef.current?.click()} disabled={busy}
                   className="flex aspect-square flex-col items-center justify-center gap-1
-                             rounded-[--radius-md] border border-dashed border-ink-300
+                             rounded-md border border-dashed border-ink-300
                              bg-white text-ink-500 hover:border-teal-400 hover:text-teal-700
                              disabled:opacity-60">
             {busy ? <Loader2 size={20} className="animate-spin" /> : <ImagePlus size={20} />}

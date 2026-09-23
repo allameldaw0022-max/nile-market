@@ -38,7 +38,7 @@ export function SideNav({ groups, onNavigate }: {
                     onClick={onNavigate}
                     aria-current={active ? 'page' : undefined}
                     className={cn(
-                      'flex items-center rounded-[--radius-sm] px-3 py-2 text-[14px] transition-colors',
+                      'flex items-center rounded-sm px-3 py-2 text-[14px] transition-colors',
                       active
                         ? 'border-e-2 border-teal-600 bg-teal-50 font-semibold text-teal-700'
                         : 'font-medium text-ink-600 hover:bg-ink-100 hover:text-ink-900',
@@ -76,7 +76,7 @@ export function NavDrawer({ groups, storeName }: { groups: NavGroup[]; storeName
     <>
       <button ref={trigger} type="button" onClick={() => setOpen(true)}
               aria-expanded={open} aria-controls="dash-drawer" aria-label="فتح أقسام اللوحة"
-              className="grid size-10 place-items-center rounded-[--radius-md] border border-ink-200
+              className="grid size-10 place-items-center rounded-md border border-ink-200
                          text-ink-700 transition-colors hover:border-ink-300 lg:hidden">
         <Menu size={18} aria-hidden />
       </button>
@@ -93,7 +93,7 @@ export function NavDrawer({ groups, storeName }: { groups: NavGroup[]; storeName
               <p className="truncate text-[15px] font-bold text-ink-900">{storeName}</p>
               <button type="button" aria-label="إغلاق"
                       onClick={() => { setOpen(false); trigger.current?.focus(); }}
-                      className="grid size-9 place-items-center rounded-[--radius-sm] text-ink-500
+                      className="grid size-9 place-items-center rounded-sm text-ink-500
                                  hover:bg-ink-100">
                 <X size={18} aria-hidden />
               </button>

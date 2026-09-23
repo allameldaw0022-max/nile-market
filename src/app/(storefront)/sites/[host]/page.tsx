@@ -93,7 +93,7 @@ export default async function StoreHome({ params }: PageProps<'/sites/[host]'>) 
                 </p>
               )}
               <Link href="/products"
-                    className="mt-6 inline-flex h-11 items-center gap-2 rounded-[--radius-md]
+                    className="mt-6 inline-flex h-11 items-center gap-2 rounded-md
                                bg-white px-5 text-[14px] font-semibold text-ink-900
                                transition-colors hover:bg-ink-100">
                 تصفّح المنتجات
@@ -112,7 +112,7 @@ export default async function StoreHome({ params }: PageProps<'/sites/[host]'>) 
               {categories.map((c) => (
                 <li key={c.id}>
                   <Link href={`/categories/${c.slug}`}
-                        className="inline-flex h-10 shrink-0 items-center rounded-[--radius-md]
+                        className="inline-flex h-10 shrink-0 items-center rounded-md
                                    border border-ink-200 bg-white px-4 text-[14px] font-medium
                                    text-ink-700 transition-colors hover:border-teal-600 hover:text-teal-700">
                     {c.name}

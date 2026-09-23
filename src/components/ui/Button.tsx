@@ -15,15 +15,15 @@ const VARIANTS: Record<Variant, string> = {
   secondary: 'bg-ink-800 text-white hover:bg-ink-700 disabled:bg-ink-300',
   outline:   'border border-ink-200 bg-white text-ink-900 hover:border-teal-600 hover:text-teal-700',
   ghost:     'text-ink-600 hover:bg-ink-100 hover:text-ink-900',
-  danger:    'bg-[--color-danger] text-white hover:brightness-95',
+  danger:    'bg-danger text-white hover:brightness-95',
   // الذهبي لمسة Premium محدودة — نصّه شاركول (7.34:1) لا أبيض (2.40:1)
   gold:      'bg-gold-500 text-ink-900 hover:brightness-95',
 };
 
 const SIZES: Record<Size, string> = {
-  sm: 'h-9  px-3.5 text-[13px] gap-1.5 rounded-[--radius-sm]',
-  md: 'h-11 px-4.5 text-[15px] gap-2   rounded-[--radius-md]',
-  lg: 'h-12 px-6   text-[15px] gap-2   rounded-[--radius-md]',
+  sm: 'h-9  px-3.5 text-[13px] gap-1.5 rounded-sm',
+  md: 'h-11 px-4.5 text-[15px] gap-2   rounded-md',
+  lg: 'h-12 px-6   text-[15px] gap-2   rounded-md',
 };
 
 export function Button({

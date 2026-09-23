@@ -107,7 +107,7 @@ export default async function AdminSubscriptionsPage() {
                   <span className="text-xs text-ink-500">
                     {r.plans?.name ?? '—'} · {formatDateTime(r.created_at)}
                     {r.rejection_reason && (
-                      <span className="block text-[--color-danger]">
+                      <span className="block text-danger">
                         {r.rejection_reason}
                       </span>
                     )}
