@@ -99,7 +99,7 @@ export default async function StorefrontLayout({
   const needsMerge = actor.kind === 'user' && Boolean(guestToken);
 
   return (
-    <div className="flex min-h-screen flex-col bg-ink-50">
+    <div className="flex min-h-screen flex-col bg-white">
       <SkipLink />
       {/* ═══════════ الترويسة ═══════════
           ★ صفّان على الهاتف وصفّان على الحاسوب، لسببين مختلفين:
@@ -266,7 +266,7 @@ export default async function StorefrontLayout({
           «كيف أُرجع؟» لا يجده وسط روابط المنتجات.
           ★ «مدعوم بواسطة سوق النيل» صغير وفي سطر الحقوق: المتجر
           للتاجر، والمنصّة توقيع لا لافتة. */}
-      <footer className="mt-16 border-t border-ink-200 bg-white">
+      <footer className="border-t border-ink-200 bg-white">
         <div className="mx-auto max-w-6xl px-4 py-12">
           <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
             <div className="lg:pe-6">
