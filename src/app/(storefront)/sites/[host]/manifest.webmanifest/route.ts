@@ -12,7 +12,7 @@ import { publicUrl } from '@/lib/media/url';
  */
 export const dynamic = 'force-dynamic';
 
-const THEME_FALLBACK = '#0B1F3A';
+const THEME_FALLBACK = '#17191C';
 
 export async function GET(
   _request: Request,
@@ -60,7 +60,7 @@ export async function GET(
     orientation: 'portrait',
     lang: 'ar',
     dir: 'rtl',
-    background_color: '#F5F7FA',
+    background_color: '#F7F8F9',
     theme_color: themeColor,
     icons,
   }, {

@@ -68,7 +68,7 @@ export function GlobalSearch({ allowed }: { allowed: string[] }) {
           placeholder={current.hint}
           maxLength={80}
           className="h-full min-w-0 flex-1 bg-transparent text-[14px] text-ink-900
-                     outline-none placeholder:text-ink-400"
+                     outline-none placeholder:text-ink-500"
         />
         {scopes.length > 1 && (
           <>

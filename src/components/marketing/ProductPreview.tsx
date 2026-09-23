@@ -108,7 +108,7 @@ export function OrdersPreview({ className = '' }: { className?: string }) {
       <div aria-hidden>
         <div className="flex items-center gap-2 border-b border-ink-200 px-4 py-3">
           <span className="inline-flex h-8 flex-1 items-center gap-2 rounded-sm
-                           border border-ink-200 px-2.5 text-[12px] text-ink-400">
+                           border border-ink-200 px-2.5 text-[12px] text-ink-500">
             <Search size={13} />بحث برقم الطلب أو الهاتف
           </span>
           {['الكل', 'جديد', 'مؤكَّد'].map((t, i) => (
@@ -161,9 +161,9 @@ export function ProductsPreview({ className = '' }: { className?: string }) {
     <Frame title="المنتجات والمخزون" className={className}>
       <ul aria-hidden>
         {DEMO_PRODUCTS.map((p) => (
-          <li key={p.name} className="flex items-center gap-3 border-b border-ink-100 px-4 py-3 last:border-0">
-            <span className="grid size-10 shrink-0 place-items-center rounded-sm
-                             border border-ink-200 bg-ink-50 text-ink-400">
+          <li key={p.name} className="flex min-w-0 items-center gap-2.5 border-b border-ink-100 px-3 py-3 last:border-0 sm:gap-3 sm:px-4">
+            <span className="hidden size-10 shrink-0 place-items-center rounded-sm border
+                             border-ink-200 bg-ink-50 text-ink-400 min-[360px]:grid">
               <Package size={17} />
             </span>
             <span className="min-w-0 flex-1">
@@ -175,7 +175,8 @@ export function ProductsPreview({ className = '' }: { className?: string }) {
             <span className="shrink-0 text-[13px] font-semibold tabular text-ink-900">
               {formatMoney(p.price)}
             </span>
-            <span className="w-20 shrink-0 text-end">
+            {/* عمود المخزون يُخفى دون 360px: لا قيمة له إن زاحم السعر */}
+            <span className="hidden w-20 shrink-0 text-end min-[360px]:block">
               {p.stock === 0
                 ? <Badge tone="danger">نفد</Badge>
                 : p.stock <= 5
@@ -203,7 +204,7 @@ export function MobilePreview({ className = '' }: { className?: string }) {
       <div className="border-b border-ink-200 px-3 py-2.5">
         <p className="truncate text-[13px] font-bold text-ink-900">{DEMO_STORE}</p>
         <span className="mt-2 flex h-7 items-center gap-1.5 rounded-sm
-                         border border-ink-200 px-2 text-[11px] text-ink-400">
+                         border border-ink-200 px-2 text-[11px] text-ink-500">
           <Search size={11} />ابحث عن منتج
         </span>
       </div>

@@ -75,11 +75,11 @@ export default async function HomePage() {
       {/* ───────────────── كيف يعمل: خطوات مرقّمة + شاشة المنتجات ──── */}
       <section id="how" className="border-b border-ink-200 bg-ink-50">
         <div className="mx-auto grid max-w-6xl gap-10 px-4 py-16 lg:grid-cols-2 lg:items-center lg:py-20">
-          <div className="order-2 lg:order-1">
+          <div className="order-2 min-w-0 lg:order-1">
             <ProductsPreview />
           </div>
 
-          <div className="order-1 lg:order-2">
+          <div className="order-1 min-w-0 lg:order-2">
             <h2>من المنتج إلى الطلب في ثلاث خطوات</h2>
             <p className="prose-width mt-3 text-ink-500">
               لا إعدادات معقّدة ولا انتظار. تنشئ المتجر وتضيف أول منتج

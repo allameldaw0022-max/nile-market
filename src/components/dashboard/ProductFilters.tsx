@@ -44,7 +44,7 @@ export function ProductFilters({ categories }: {
         <input value={term} onChange={(e) => setTerm(e.target.value)}
                placeholder="ابحث بالاسم أو الرمز" aria-label="بحث في المنتجات"
                className="h-10 w-full rounded-md border border-ink-400 bg-white
-                          ps-9 pe-8 text-[14px] text-ink-900 placeholder:text-ink-400
+                          ps-9 pe-8 text-[14px] text-ink-900 placeholder:text-ink-500
                           focus:border-teal-600" />
         {term && (
           <button type="button" aria-label="مسح البحث" onClick={() => setTerm('')}

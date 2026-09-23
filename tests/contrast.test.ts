@@ -117,3 +117,29 @@ test('حلقة التركيز تجتاز 3:1 على الخلفيات الفات�
 test('الخطّ هو IBM Plex Sans Arabic', () => {
   assert.match(css, /--font-sans:\s*var\(--font-plex-arabic\)/);
 });
+
+/**
+ * ★ قوالب البريد لا تستطيع استعمال متغيّرات CSS — عملاء البريد لا
+ * يدعمونها — فتُكتب الألوان فيها hex حرفيًا. وهذا بالضبط ما يجعلها
+ * تُنسى عند تغيير الهوية: لا يشدّها رمز مشترك. فتُفحص هنا.
+ */
+test('قوالب البريد وملفّات PWA بالهوية الجديدة لا القديمة', () => {
+  const files = [
+    '../src/lib/email/templates.ts',
+    '../src/app/manifest.ts',
+    '../src/app/(storefront)/sites/[host]/manifest.webmanifest/route.ts',
+  ];
+  for (const f of files) {
+    const src = readFileSync(new URL(f, import.meta.url), 'utf8').toUpperCase();
+    for (const banned of ['#0B5ED7', '#0B1F3A', '#F5F7FA']) {
+      assert.ok(!src.includes(banned), `${f} ما زال يحمل ${banned}`);
+    }
+  }
+});
+
+test('ألوان البريد الحرفية تجتاز AA', () => {
+  // الأبيض على زرّ البريد، والرابط على أبيض، والأبيض على الترويسة
+  assert.ok(ratio(WHITE, '#008672') >= 4.5, 'زرّ البريد');
+  assert.ok(ratio('#008672', WHITE) >= 4.5, 'رابط البريد');
+  assert.ok(ratio(WHITE, '#17191C') >= 4.5, 'ترويسة البريد');
+});

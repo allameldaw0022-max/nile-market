@@ -30,7 +30,7 @@ function Wrapper({ label, hint, error, required, htmlFor, children }: {
 
 const base =
   'w-full rounded-md border bg-white px-3 text-[15px] text-ink-900 ' +
-  'placeholder:text-ink-400 transition-colors ' +
+  'placeholder:text-ink-500 transition-colors ' +
   'disabled:bg-ink-100 disabled:text-ink-500';
 
 export function Input({

@@ -83,7 +83,7 @@ export default async function AdminUsersPage(
                placeholder="البريد أو الاسم أو الهاتف" aria-label="بحث في الحسابات"
                className="h-10 min-w-52 flex-1 rounded-md border
                           border-ink-400 bg-white px-3 text-[14px] text-ink-900
-                          placeholder:text-ink-400 focus:border-teal-600" />
+                          placeholder:text-ink-500 focus:border-teal-600" />
         <input type="hidden" name="status" value={status} />
         <Button type="submit" variant="outline" size="sm">بحث</Button>
       </form>

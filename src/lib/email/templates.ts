@@ -34,24 +34,24 @@ function layout(brand: BrandContext, title: string, bodyHtml: string): string {
 <html lang="ar" dir="rtl">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
 <title>${escape(title)}</title></head>
-<body style="margin:0;background:#F5F7FA;font-family:system-ui,'Segoe UI',Tahoma,sans-serif;">
+<body style="margin:0;background:#F7F8F9;font-family:system-ui,'Segoe UI',Tahoma,sans-serif;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
-         style="background:#F5F7FA;padding:24px 12px;">
+         style="background:#F7F8F9;padding:24px 12px;">
     <tr><td align="center">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
              style="max-width:560px;background:#ffffff;border:1px solid #E2E8F0;
                     border-radius:12px;overflow:hidden;">
-        <tr><td style="background:#0B1F3A;padding:16px 20px;color:#ffffff;
+        <tr><td style="background:#17191C;padding:16px 20px;color:#ffffff;
                        font-weight:800;font-size:16px;">
           ${escape(brand.siteName)}
         </td></tr>
-        <tr><td style="padding:20px;color:#0B1F3A;font-size:15px;line-height:1.8;">
+        <tr><td style="padding:20px;color:#17191C;font-size:15px;line-height:1.8;">
           ${bodyHtml}
         </td></tr>
         <tr><td style="padding:14px 20px;border-top:1px solid #E2E8F0;
                        color:#64748B;font-size:12px;">
           وصلتك هذه الرسالة من
-          <a href="${escape(brand.siteUrl)}" style="color:#0B5ED7;">${escape(brand.siteName)}</a>.
+          <a href="${escape(brand.siteUrl)}" style="color:#008672;">${escape(brand.siteName)}</a>.
         </td></tr>
       </table>
     </td></tr>
@@ -62,7 +62,7 @@ function layout(brand: BrandContext, title: string, bodyHtml: string): string {
 const button = (href: string, label: string) =>
   `<p style="margin:20px 0;">
      <a href="${escape(href)}"
-        style="display:inline-block;background:#0B5ED7;color:#ffffff;
+        style="display:inline-block;background:#008672;color:#ffffff;
                text-decoration:none;padding:10px 20px;border-radius:8px;
                font-weight:700;">${escape(label)}</a>
    </p>`;
@@ -179,8 +179,8 @@ const TEMPLATES: Record<string, Template> = {
       html: layout(brand, subject, `
         <p>وصلك رد على تذكرة الدعم
            <strong dir="ltr">${escape(p.ticket_number)}</strong>.</p>
-        <blockquote style="margin:12px 0;padding:10px 14px;border-inline-start:3px solid #0B5ED7;
-                           background:#F5F7FA;color:#0B1F3A;">
+        <blockquote style="margin:12px 0;padding:10px 14px;border-inline-start:3px solid #008672;
+                           background:#F7F8F9;color:#17191C;">
           ${escape(p.excerpt)}
         </blockquote>
         ${button(`${brand.siteUrl}/support`, 'فتح التذكرة')}`),

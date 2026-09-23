@@ -38,7 +38,7 @@ export default async function SearchPage(
           <input name="q" defaultValue={term} maxLength={80}
                  placeholder="اكتب اسم المنتج" aria-label="كلمة البحث"
                  className="h-12 w-full rounded-md border border-ink-400 bg-white
-                            ps-10 pe-3 text-[15px] text-ink-900 placeholder:text-ink-400
+                            ps-10 pe-3 text-[15px] text-ink-900 placeholder:text-ink-500
                             focus:border-teal-600" />
         </div>
         <button type="submit"

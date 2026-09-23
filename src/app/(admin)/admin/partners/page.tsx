@@ -88,7 +88,7 @@ export default async function AdminPartnersPage(
                placeholder="الاسم أو البريد أو رمز الإحالة" aria-label="بحث في الشركاء"
                className="h-10 min-w-52 flex-1 rounded-md border
                           border-ink-400 bg-white px-3 text-[14px] text-ink-900
-                          placeholder:text-ink-400 focus:border-teal-600" />
+                          placeholder:text-ink-500 focus:border-teal-600" />
         <input type="hidden" name="status" value={status} />
         <Button type="submit" variant="outline" size="sm">بحث</Button>
       </form>

@@ -114,7 +114,7 @@ export default async function StorefrontLayout({
             <input id="store-search" name="q" type="search" maxLength={80}
                    placeholder="ابحث عن منتج"
                    className="h-full min-w-0 flex-1 bg-transparent text-[14px] text-ink-900
-                              outline-none placeholder:text-ink-400" />
+                              outline-none placeholder:text-ink-500" />
           </form>
 
           <div className="ms-auto flex shrink-0 items-center gap-1">

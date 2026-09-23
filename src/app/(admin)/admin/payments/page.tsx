@@ -82,7 +82,7 @@ export default async function AdminPaymentsPage(
                placeholder="المرجع أو المتجر أو رقم الطلب" aria-label="بحث في المدفوعات"
                className="h-10 min-w-52 flex-1 rounded-md border
                           border-ink-400 bg-white px-3 text-[14px] text-ink-900
-                          placeholder:text-ink-400 focus:border-teal-600" />
+                          placeholder:text-ink-500 focus:border-teal-600" />
         <input type="hidden" name="status" value={status} />
         <input type="hidden" name="kind" value={kind} />
         <Button type="submit" variant="outline" size="sm">بحث</Button>

@@ -103,7 +103,7 @@ export default async function OrdersPage({ searchParams }: PageProps<'/dashboard
                placeholder="رقم الطلب أو اسم/هاتف الزبون" aria-label="بحث في الطلبات"
                className="h-10 min-w-52 flex-1 rounded-md border border-ink-400
                           bg-white px-3 text-[14px] text-ink-900
-                          placeholder:text-ink-400 focus:border-teal-600" />
+                          placeholder:text-ink-500 focus:border-teal-600" />
         <input type="hidden" name="status" value={status} />
         <Button type="submit" variant="outline" size="sm">بحث</Button>
       </form>
