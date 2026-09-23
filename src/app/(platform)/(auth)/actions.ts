@@ -3,6 +3,7 @@ import 'server-only';
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
+import { getActor } from '@/lib/auth/actor';
 import { config } from '@/lib/config';
 import { recordLoginEvent } from '@/lib/auth/sessions';
 import { safeNext } from '@/lib/safe-next';
@@ -246,7 +247,10 @@ export async function verifyMfaChallenge(
   });
   if (error) return { ok: false, message: 'الرمز غير صحيح' };
 
-  redirect('/admin');
+  // الوجهة تتبع الحساب: موظف المنصّة جاء من اللوحة، وغيره رفع جلسته
+  // من مركز الأمان فيعود إليه. `/admin` لغير الموظف يردّه إلى الجذر.
+  const actor = await getActor();
+  redirect(actor.kind === 'user' && actor.admin ? '/admin' : '/account/security');
 }
 
 /**

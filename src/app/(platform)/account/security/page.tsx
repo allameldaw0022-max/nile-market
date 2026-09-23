@@ -75,6 +75,7 @@ export default async function SecurityPage() {
         enabled={mfaEnabled}
         factorId={totp.find((f) => f.status === 'verified')?.id ?? null}
         adminLocked={isAdmin}
+        currentAal={actor.aal}
       />
 
       <Card>

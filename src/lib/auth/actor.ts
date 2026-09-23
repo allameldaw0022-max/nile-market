@@ -42,7 +42,7 @@ export const getActor = cache(async (): Promise<Actor> => {
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) return { kind: 'anonymous' };
 
-  const [profileRes, membersRes, adminRes, partnerRes] = await Promise.all([
+  const [profileRes, membersRes, adminRes, partnerRes, aalRes] = await Promise.all([
     supabase.from('profiles')
       .select('full_name, account_status, email_verified_at')
       .eq('id', user.id).maybeSingle(),
@@ -54,6 +54,9 @@ export const getActor = cache(async (): Promise<Actor> => {
       .eq('profile_id', user.id).eq('status', 'active').maybeSingle(),
     supabase.from('partners')
       .select('id').eq('profile_id', user.id).eq('status', 'active').maybeSingle(),
+    // ★ مستوى التوثيق يُقرأ من مطالبة `aal` داخل التوكن، وتفكيكه محلّي
+    // بلا نداء شبكة — فإضافته هنا لا تكلّف طلبًا إضافيًا.
+    supabase.auth.mfa.getAuthenticatorAssuranceLevel(),
   ]);
 
   // خطأ في قراءة البروفايل ≠ غياب البروفايل. الأول عطل، والثاني حالة
@@ -91,7 +94,18 @@ export const getActor = cache(async (): Promise<Actor> => {
     }
   }
 
-  const aal = (user as { aal?: string }).aal === 'aal2' ? 'aal2' : 'aal1';
+  // ★★ كان: `(user as { aal?: string }).aal`. وكائن المستخدم العائد من
+  // `/auth/v1/user` **لا يحمل** حقل `aal` إطلاقًا — ليس في نوعه ولا في
+  // ردّ الخادم. فكانت القيمة `undefined` دائمًا ⇒ `aal1` دائمًا.
+  //
+  // وأثر ذلك قفل تامّ لا تعطّل جزئي: `mfa_required` افتراضها `true` في
+  // القاعدة، والحارس يرفض لوحة الإدارة بلا `aal2`، و`disableMfa` يرفض
+  // إلغاء التحقق عن حساب إدارة. فأي مالك منصّة يفعّل التحقق بخطوتين
+  // كما يأمره النظام يُحبس خارج اللوحة بلا مخرج داخل المنتج.
+  //
+  // المصدر الصحيح هو `getAuthenticatorAssuranceLevel()` ويفكّك المطالبة
+  // من التوكن محلّيًا. ويفشل **مغلقًا**: أي خطأ يُعامَل كـ`aal1`.
+  const aal = aalRes.data?.currentLevel === 'aal2' ? 'aal2' : 'aal1';
 
   return {
     kind: 'user',

@@ -3,7 +3,7 @@ import { useActionState, useState, useTransition } from 'react';
 import Image from 'next/image';
 import { AlertTriangle, CheckCircle2, KeyRound, Lock } from 'lucide-react';
 import {
-  disableMfa, startMfaEnrollment, verifyMfaEnrollment,
+  disableMfa, startMfaEnrollment, verifyMfaChallenge, verifyMfaEnrollment,
   type AuthResult, type MfaEnrollState,
 } from '../../(auth)/actions';
 import { Button } from '@/components/ui/Button';
@@ -11,8 +11,18 @@ import { Card, CardHeader } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Field';
 import { Badge } from '@/components/ui/Badge';
 
-export function MfaSection({ enabled, factorId, adminLocked }: {
+/**
+ * ★★ «رفع الجلسة» ليس زينة — بدونه القسم مقفل.
+ *
+ * تفعيل التحقق يرفع الجلسة التي فعّلته إلى aal2. لكن أول تسجيل خروج
+ * يُنزل الجلسة التالية إلى aal1، ولم يكن في المنتج أي مكان يُدخل فيه
+ * الرمز لرفعها ثانيةً: `verifyMfaChallenge` كانت مكتوبة وغير مستعملة
+ * في أي ملف. وحارس اللوحة يشترط aal2، و`disableMfa` يرفض الإلغاء عن
+ * حساب إدارة — فالمالك يُحبس خارج لوحته بلا مخرج داخل المنتج.
+ */
+export function MfaSection({ enabled, factorId, adminLocked, currentAal }: {
   enabled: boolean; factorId: string | null; adminLocked: boolean;
+  currentAal: 'aal1' | 'aal2';
 }) {
   const [enroll, setEnroll] = useState<MfaEnrollState | null>(null);
   const [starting, startEnroll] = useTransition();
@@ -20,6 +30,8 @@ export function MfaSection({ enabled, factorId, adminLocked }: {
     useActionState<AuthResult | null, FormData>(verifyMfaEnrollment, null);
   const [disableState, disableAction, disabling] =
     useActionState<AuthResult | null, FormData>(disableMfa, null);
+  const [stepUpState, stepUpAction, steppingUp] =
+    useActionState<AuthResult | null, FormData>(verifyMfaChallenge, null);
 
   const active = enabled && !verifyState?.ok ? true : enabled || Boolean(verifyState?.ok);
 
@@ -47,6 +59,27 @@ export function MfaSection({ enabled, factorId, adminLocked }: {
               حسابك محمي بالتحقق بخطوتين. ستحتاج رمز التطبيق عند الدخول
               إلى الأقسام الحساسة.
             </p>
+
+            {enabled && currentAal !== 'aal2' && (
+              <form action={stepUpAction}
+                    className="space-y-3 rounded-md border border-teal-200
+                               bg-teal-50 p-4">
+                <p className="text-sm font-bold text-ink-900">
+                  ارفع هذه الجلسة إلى تحقّق بخطوتين
+                </p>
+                <p className="text-sm text-ink-700">
+                  دخلت بكلمة المرور وحدها. أدخل رمز التطبيق لتفتح الأقسام
+                  الحسّاسة — ومنها لوحة الإدارة.
+                </p>
+                {stepUpState && !stepUpState.ok && (
+                  <p role="alert" className="text-sm text-danger">{stepUpState.message}</p>
+                )}
+                <Input name="code" label="رمز التحقق" required inputMode="numeric"
+                       maxLength={6} dir="ltr" placeholder="000000"
+                       autoComplete="one-time-code" />
+                <Button type="submit" size="sm" loading={steppingUp}>تأكيد</Button>
+              </form>
+            )}
             {!adminLocked && factorId && (
               <form action={disableAction}>
                 <input type="hidden" name="factor_id" value={factorId} />
