@@ -3,7 +3,8 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { resolveStoreByHost } from '@/lib/tenant/resolve';
 import { createClient } from '@/lib/supabase/server';
-import { ProductGrid } from '@/components/storefront/ProductGrid';
+import { ProductShowcase } from '@/components/storefront/ProductShowcase';
+import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { listStorefrontProducts, type Sort } from '@/lib/products/storefront';
 
@@ -54,43 +55,70 @@ export default async function AllProductsPage(
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-extrabold text-ink-900">كل المنتجات</h1>
-          <p className="text-sm text-ink-500 tabular">{total} منتج</p>
-        </div>
-
-        <div className="flex flex-wrap gap-1.5">
-          {SORTS.map((s) => (
-            <Link key={s.value} href={`/products?sort=${s.value}`}
-                  aria-current={sort === s.value ? 'page' : undefined}
-                  className={`rounded-full border px-3 py-1.5 text-xs font-bold ${
-                    sort === s.value
-                      ? 'border-teal-600 bg-teal-600 text-white'
-                      : 'border-ink-300 bg-white text-ink-600 hover:border-teal-400'}`}>
-              {s.label}
-            </Link>
-          ))}
-        </div>
+    <div className="mx-auto max-w-6xl px-4 py-8 sm:py-10">
+      {/* ═══ ترويسة الصفحة ═══ */}
+      <div>
+        <h1 className="text-[24px] font-bold leading-tight text-ink-900 sm:text-[28px]">
+          كل المنتجات
+        </h1>
+        <p className="mt-1.5 text-[13px] text-ink-500 tabular">
+          {total} منتج
+        </p>
       </div>
 
+      {/* ═══ التصنيفات: تنقّل ═══
+          ★ كانت أقراصًا مستديرة مطابقة لأقراص الترتيب تمامًا، فبدا
+          «الأحدث» و«ملابس» من صنف واحد. التصنيف يقودك إلى مكان آخر،
+          والترتيب يعيد ترتيب ما أنت فيه — فلا يصحّ أن يتشابها.
+          التصنيفات تأخذ شكل البطاقات نفسه المستعمل في الرئيسية. */}
       {categories && categories.length > 0 && (
-        <nav className="mt-5 flex gap-2 overflow-x-auto no-scrollbar pb-1"
-             aria-label="التصنيفات">
-          {categories.map((c) => (
-            <Link key={c.id} href={`/categories/${c.slug}`}
-                  className="shrink-0 rounded-full border border-ink-300 bg-white px-4 py-2
-                             text-sm font-bold text-ink-700 hover:border-teal-600">
-              {c.name}
-            </Link>
-          ))}
+        <nav aria-label="التصنيفات" className="mt-7">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-400">
+            التصنيفات
+          </p>
+          <ul className="mt-2.5 grid grid-cols-2 gap-2.5 [&>*]:min-w-0
+                         sm:grid-cols-3 lg:grid-cols-4">
+            {categories.map((c) => (
+              <li key={c.id}>
+                <Link href={`/categories/${c.slug}`}
+                      className="group flex h-14 items-center justify-between gap-2
+                                 rounded-lg border border-ink-200 bg-white px-4 py-3
+                                 transition-colors hover:border-teal-600">
+                  <span className="truncate text-[14px] font-semibold text-ink-900">
+                    {c.name}
+                  </span>
+                  <ArrowLeft size={15} aria-hidden
+                             className="flip-rtl shrink-0 text-ink-300
+                                        transition-colors group-hover:text-teal-700" />
+                </Link>
+              </li>
+            ))}
+          </ul>
         </nav>
       )}
 
-      <div className="mt-6">
-        <ProductGrid products={products} host={host} emptyTitle="لا توجد منتجات بعد"
-                     emptyDescription="سيضيف المتجر منتجاته قريبًا." />
+      {/* ═══ الترتيب: تحكّم لا تنقّل ═══
+          شريط خفيف بعنوان صريح وخيارات نصّية متجاورة — لا أقراص
+          ملوّنة تنافس التصنيفات على الانتباه. */}
+      <div className="mt-7 flex flex-wrap items-center gap-x-1 gap-y-2
+                      border-b border-ink-200 pb-3">
+        <span className="me-2 text-[12px] font-semibold text-ink-500">ترتيب حسب</span>
+        {SORTS.map((s) => (
+          <Link key={s.value} href={`/products?sort=${s.value}`}
+                aria-current={sort === s.value ? 'page' : undefined}
+                className={`rounded-md px-2.5 py-1.5 text-[13px] transition-colors ${
+                  sort === s.value
+                    ? 'font-bold text-teal-700 underline underline-offset-[6px]'
+                    : 'font-medium text-ink-600 hover:text-ink-900'}`}>
+            {s.label}
+          </Link>
+        ))}
+      </div>
+
+      <div className="mt-7">
+        <ProductShowcase products={products} host={host}
+                         emptyTitle="لا توجد منتجات متاحة حاليًا"
+                         emptyDescription="تابع المتجر — ستُعرض المنتجات هنا فور إضافتها." />
       </div>
 
       {pages > 1 && (

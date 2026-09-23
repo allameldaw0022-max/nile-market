@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { Search } from 'lucide-react';
 import { resolveStoreByHost } from '@/lib/tenant/resolve';
-import { ProductGrid } from '@/components/storefront/ProductGrid';
+import { ProductShowcase } from '@/components/storefront/ProductShowcase';
 import { listStorefrontProducts } from '@/lib/products/storefront';
 import { searchTerm } from '@/lib/search';
 
@@ -59,7 +59,7 @@ export default async function SearchPage(
             اكتب حرفين على الأقل للبحث.
           </p>
         ) : (
-          <ProductGrid products={products} host={host} emptyTitle="لا نتائج"
+          <ProductShowcase products={products} host={host} emptyTitle="لا نتائج"
                        emptyDescription="جرّب كلمة أخرى أو تصفّح كل المنتجات." />
         )}
       </div>

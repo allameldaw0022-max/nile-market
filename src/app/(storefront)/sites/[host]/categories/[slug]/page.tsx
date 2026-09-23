@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 import { ChevronRight } from 'lucide-react';
 import { resolveStoreByHost } from '@/lib/tenant/resolve';
 import { createClient } from '@/lib/supabase/server';
-import { ProductGrid } from '@/components/storefront/ProductGrid';
+import { ProductShowcase } from '@/components/storefront/ProductShowcase';
 import { Button } from '@/components/ui/Button';
 import { listStorefrontProducts } from '@/lib/products/storefront';
 
@@ -65,7 +65,7 @@ export default async function CategoryPage(
       <p className="text-sm text-ink-500 tabular">{total} منتج</p>
 
       <div className="mt-6">
-        <ProductGrid products={products} host={host} emptyTitle="لا منتجات في هذا التصنيف"
+        <ProductShowcase products={products} host={host} emptyTitle="لا منتجات في هذا التصنيف"
                      emptyDescription="تصفّح بقية المنتجات." />
       </div>
 

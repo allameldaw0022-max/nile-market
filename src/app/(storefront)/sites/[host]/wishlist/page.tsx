@@ -5,7 +5,7 @@ import { Heart } from 'lucide-react';
 import { resolveStoreByHost } from '@/lib/tenant/resolve';
 import { getActor } from '@/lib/auth/actor';
 import { loadWishlist } from '@/lib/wishlist/actions';
-import { ProductGrid } from '@/components/storefront/ProductGrid';
+import { ProductShowcase } from '@/components/storefront/ProductShowcase';
 import { EmptyState } from '@/components/ui/States';
 import { ErrorState } from '@/components/ui/States';
 import { buttonClass } from '@/components/ui/Button';
@@ -105,7 +105,7 @@ export default async function WishlistPage(
             }
           />
         ) : (
-          <ProductGrid
+          <ProductShowcase
             host={host}
             emptyTitle=""
             products={items.map((i) => ({
