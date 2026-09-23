@@ -65,7 +65,7 @@ export default async function CategoryPage(
       <p className="text-sm text-ink-500 tabular">{total} منتج</p>
 
       <div className="mt-6">
-        <ProductGrid products={products} emptyTitle="لا منتجات في هذا التصنيف"
+        <ProductGrid products={products} host={host} emptyTitle="لا منتجات في هذا التصنيف"
                      emptyDescription="تصفّح بقية المنتجات." />
       </div>
 

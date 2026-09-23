@@ -59,7 +59,7 @@ export default async function SearchPage(
             اكتب حرفين على الأقل للبحث.
           </p>
         ) : (
-          <ProductGrid products={products} emptyTitle="لا نتائج"
+          <ProductGrid products={products} host={host} emptyTitle="لا نتائج"
                        emptyDescription="جرّب كلمة أخرى أو تصفّح كل المنتجات." />
         )}
       </div>

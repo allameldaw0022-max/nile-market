@@ -203,7 +203,7 @@ export default async function ProductPage(
         <section className="mt-12">
           <h2 className="font-bold text-ink-900">منتجات مشابهة</h2>
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {related.map((p) => <ProductCard key={p.id} product={p} />)}
+            {related.map((p) => <ProductCard key={p.id} product={p} host={host} />)}
           </div>
         </section>
       )}

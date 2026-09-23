@@ -1,32 +1,21 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import {
-  BarChart3, Boxes, CreditCard, ExternalLink, LayoutDashboard, LifeBuoy,
-  Package, Settings, ShoppingCart, Tag, Users,
-} from 'lucide-react';
 import { getActor } from '@/lib/auth/actor';
 import { can } from '@/lib/authz/guards';
 import { createClient } from '@/lib/supabase/server';
 import { SUBSCRIPTION_STATUS } from '@/lib/status';
 import { Badge } from '@/components/ui/Badge';
 import { NotificationBell } from '@/components/dashboard/NotificationBell';
-import type { StorePermission } from '@/lib/authz/permissions';
+import { GlobalSearch } from '@/components/dashboard/GlobalSearch';
+import { NavDrawer, SideNav } from '@/components/dashboard/SideNav';
+import { StoreMenu } from '@/components/dashboard/StoreMenu';
 import { SkipLink } from '@/components/ui/SkipLink';
+import { NAV_GROUPS } from '@/lib/dashboard-nav';
 
-type NavItem = { href: string; label: string; icon: typeof Package; perm?: StorePermission };
-
-const NAV: NavItem[] = [
-  { href: '/dashboard',               label: 'الرئيسية',  icon: LayoutDashboard },
-  { href: '/dashboard/products',      label: 'المنتجات',  icon: Package,      perm: 'products:view' },
-  { href: '/dashboard/inventory',     label: 'المخزون',   icon: Boxes,        perm: 'inventory:view' },
-  { href: '/dashboard/orders',        label: 'الطلبات',   icon: ShoppingCart, perm: 'orders:view' },
-  { href: '/dashboard/customers',     label: 'العملاء',   icon: Users,        perm: 'customers:view' },
-  { href: '/dashboard/coupons',       label: 'الخصومات',  icon: Tag,          perm: 'orders:view' },
-  { href: '/dashboard/analytics',     label: 'الإحصائيات', icon: BarChart3,   perm: 'analytics:view' },
-  { href: '/dashboard/subscription',  label: 'الاشتراك',  icon: CreditCard,   perm: 'subscription:manage' },
-  { href: '/dashboard/settings',      label: 'الإعدادات', icon: Settings,     perm: 'settings:view' },
-  { href: '/support',                 label: 'الدعم',     icon: LifeBuoy },
-];
+const ROLE_LABEL: Record<string, string> = {
+  owner: 'المالك', manager: 'مدير', orders: 'موظّف طلبات',
+  products: 'موظّف منتجات', customer_service: 'خدمة عملاء',
+};
 
 export default async function DashboardLayout({ children }: LayoutProps<'/dashboard'>) {
   const actor = await getActor();
@@ -51,73 +40,80 @@ export default async function DashboardLayout({ children }: LayoutProps<'/dashbo
 
   // التنقّل يُبنى من الصلاحيات — لكن الإخفاء تحسين تجربة فقط،
   // والمنع الحقيقي في الحارس الخادمي داخل كل صفحة وServer Action.
-  const items = NAV.filter((i) => !i.perm || can(membership, i.perm));
+  const groups = NAV_GROUPS
+    .map((g) => ({ ...g, links: g.links.filter((l) => !l.perm || can(membership, l.perm)) }))
+    .filter((g) => g.links.length > 0);
+
+  const searchScopes = [
+    can(membership, 'orders:view') && 'orders',
+    can(membership, 'products:view') && 'products',
+    can(membership, 'customers:view') && 'customers',
+  ].filter(Boolean) as string[];
+
   const subStatus = sub?.status ?? 'expired';
   const needsAttention = ['expiring', 'grace', 'expired', 'suspended'].includes(subStatus);
 
   return (
-    <div className="flex min-h-screen flex-col bg-ink-50">
+    <div className="min-h-screen bg-ink-50">
       <SkipLink />
-      <header className="sticky top-0 z-40 border-b border-ink-200 bg-white">
-        <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4">
-          <Link href="/dashboard" className="truncate font-extrabold text-ink-900">
-            {membership.storeName}
-          </Link>
-          <Badge tone="neutral" className="hidden sm:inline-flex">
-            {{
-              owner: 'المالك', manager: 'مدير', orders: 'موظف طلبات',
-              products: 'موظف منتجات', customer_service: 'خدمة عملاء',
-            }[membership.role]}
-          </Badge>
 
-          <div className="ms-auto flex items-center gap-2">
+      <header className="sticky top-0 z-40 border-b border-ink-200 bg-white">
+        <div className="mx-auto flex h-16 max-w-[90rem] items-center gap-3 px-4">
+          <NavDrawer groups={groups} storeName={membership.storeName} />
+
+          <Link href="/dashboard" className="flex min-w-0 items-center gap-2">
+            <span className="truncate text-[15px] font-bold text-ink-900">
+              {membership.storeName}
+            </span>
+            <Badge tone="neutral" className="hidden shrink-0 sm:inline-flex">
+              {ROLE_LABEL[membership.role] ?? membership.role}
+            </Badge>
+          </Link>
+
+          <div className="mx-2 hidden max-w-md flex-1 md:flex">
+            <GlobalSearch allowed={searchScopes} />
+          </div>
+
+          <div className="ms-auto flex shrink-0 items-center gap-2">
             <NotificationBell initialUnread={unread ?? 0} />
             {domain?.hostname && (
-              <a href={`https://${domain.hostname}`} target="_blank" rel="noopener noreferrer"
-                 className="inline-flex items-center gap-1.5 rounded-[--radius-md] border
-                            border-ink-300 px-3 py-1.5 text-[13px] font-bold text-ink-700
-                            hover:border-teal-600 hover:text-teal-700">
-                <ExternalLink size={14} />
-                <span className="hidden sm:inline">مشاهدة المتجر</span>
-              </a>
+              <StoreMenu hostname={domain.hostname} storeName={membership.storeName} />
             )}
           </div>
         </div>
-
-        <nav className="border-t border-ink-200">
-          <div className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-4 no-scrollbar">
-            {items.map((item) => (
-              <Link key={item.href} href={item.href}
-                    className="flex shrink-0 items-center gap-1.5 px-3 py-3 text-[13px]
-                               font-bold text-ink-500 hover:text-teal-700">
-                <item.icon size={15} />
-                {item.label}
-              </Link>
-            ))}
-          </div>
-        </nav>
       </header>
 
       {needsAttention && (
-        <div className="border-b border-gold-500/30 bg-gold-300/10 px-4 py-2.5">
-          <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-2 text-[13px]">
+        <div className="border-b border-gold-500/30 bg-gold-50">
+          <div className="mx-auto flex max-w-[90rem] flex-wrap items-center gap-2 px-4 py-2.5 text-[13px]">
             <Badge tone={SUBSCRIPTION_STATUS[subStatus]?.tone ?? 'warning'}>
               {SUBSCRIPTION_STATUS[subStatus]?.label ?? subStatus}
             </Badge>
             <span className="text-ink-700">
               {subStatus === 'expired' || subStatus === 'suspended'
-                ? 'الشراء من متجرك متوقف حاليًا. بياناتك ومنتجاتك وطلباتك محفوظة بالكامل.'
+                ? 'الشراء من متجرك متوقّف حاليًا. بياناتك ومنتجاتك وطلباتك محفوظة بالكامل.'
                 : 'اشتراكك يقارب الانتهاء — جدّد لتبقى كل الميزات متاحة.'}
             </span>
             {can(membership, 'subscription:manage') && (
               <Link href="/dashboard/subscription"
-                    className="font-bold text-teal-700 hover:underline">تجديد الاشتراك</Link>
+                    className="font-semibold text-teal-700 underline underline-offset-4">
+                تجديد الاشتراك
+              </Link>
             )}
           </div>
         </div>
       )}
 
-      <main id="main" className="mx-auto w-full max-w-6xl flex-1 px-4 py-6">{children}</main>
+      {/* ★ عمود ثابت على الشاشات الواسعة، ودرج على الضيّقة. الشبكة
+          تُعرّف مرّة هنا فلا تعيد كل صفحة بناء هيكلها. */}
+      <div className="mx-auto flex max-w-[90rem] gap-8 px-4">
+        <aside className="sticky top-16 hidden h-[calc(100vh-4rem)] w-56 shrink-0
+                          overflow-y-auto border-s border-ink-200 py-6 ps-0 pe-4 lg:block">
+          <SideNav groups={groups} />
+        </aside>
+
+        <main id="main" className="min-w-0 flex-1 py-6">{children}</main>
+      </div>
     </div>
   );
 }

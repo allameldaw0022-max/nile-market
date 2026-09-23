@@ -65,10 +65,15 @@ export default async function StorefrontLayout({
   if (store.status !== 'active')    notFound();
 
   const supabase = await createClient();
-  const [{ data: settings }, cartLines, actor, guestToken] = await Promise.all([
+  const [{ data: settings }, { data: branding }, cartLines, actor, guestToken] = await Promise.all([
     supabase.from('store_settings')
       .select('whatsapp_number, theme')
       .eq('store_id', store.storeId)
+      .maybeSingle(),
+    // الهوية البصرية على `stores` لا على الإعدادات التشغيلية
+    supabase.from('stores')
+      .select('logo_url')
+      .eq('id', store.storeId)
       .maybeSingle(),
     loadCart(host),
     getActor(),
@@ -89,12 +94,32 @@ export default async function StorefrontLayout({
       <SkipLink />
       <header className="sticky top-0 z-40 border-b border-ink-200 bg-white">
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4">
-          <Link href="/" className="truncate text-lg font-extrabold text-ink-900">
-            {store.name}
+          <Link href="/" className="flex min-w-0 shrink-0 items-center gap-2.5">
+            {branding?.logo_url && (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img src={branding.logo_url} alt="" width={32} height={32}
+                   className="size-8 shrink-0 rounded-[--radius-sm] object-cover" />
+            )}
+            <span className="truncate text-[17px] font-bold text-ink-900">{store.name}</span>
           </Link>
-          <div className="ms-auto flex items-center gap-1">
+
+          {/* ★ بحث ظاهر لا أيقونة: البحث أكثر ما يُستعمل في متجر، وإخفاؤه
+              خلف نقرة يكلّف كل زائر خطوة في كل مرّة. يبقى أيقونة على
+              الشاشات الضيّقة حيث لا تتّسع الترويسة لحقل. */}
+          <form role="search" action="/search"
+                className="mx-1 hidden h-10 min-w-0 flex-1 items-center gap-2 rounded-[--radius-md]
+                           border border-ink-200 bg-white ps-3 focus-within:border-teal-600 sm:flex">
+            <Search size={16} className="shrink-0 text-ink-400" aria-hidden />
+            <label htmlFor="store-search" className="sr-only">ابحث في منتجات المتجر</label>
+            <input id="store-search" name="q" type="search" maxLength={80}
+                   placeholder="ابحث عن منتج"
+                   className="h-full min-w-0 flex-1 bg-transparent text-[14px] text-ink-900
+                              outline-none placeholder:text-ink-400" />
+          </form>
+
+          <div className="ms-auto flex shrink-0 items-center gap-1">
             <Link href="/search" aria-label="البحث"
-                  className="grid size-10 place-items-center rounded-[--radius-md] text-ink-700 hover:bg-ink-100">
+                  className="grid size-10 place-items-center rounded-[--radius-md] text-ink-700 hover:bg-ink-100 sm:hidden">
               <Search size={20} />
             </Link>
             <Link href="/cart"
@@ -129,19 +154,34 @@ export default async function StorefrontLayout({
       <main id="main" className="flex-1">{children}</main>
 
       <footer className="border-t border-ink-200 bg-white">
-        <div className="mx-auto max-w-6xl px-4 py-8 text-sm text-ink-500">
-          <p className="font-bold text-ink-900">{store.name}</p>
-          <div className="mt-3 flex flex-wrap gap-4">
-            <Link href="/products" className="hover:text-teal-700">كل المنتجات</Link>
-            <Link href="/orders/track" className="hover:text-teal-700">تتبّع طلبك</Link>
-            <Link href="/pages/shipping" className="hover:text-teal-700">سياسة الشحن</Link>
-            <Link href="/pages/returns" className="hover:text-teal-700">سياسة الاسترجاع</Link>
-            <Link href="/pages/privacy" className="hover:text-teal-700">الخصوصية</Link>
-            <Link href="/contact" className="hover:text-teal-700">تواصل معنا</Link>
+        <div className="mx-auto max-w-6xl px-4 py-10">
+          <div className="grid gap-8 text-[14px] sm:grid-cols-3">
+            <div>
+              <p className="text-[15px] font-bold text-ink-900">{store.name}</p>
+              <p className="mt-2 text-[13px] leading-relaxed text-ink-500">
+                تصفّح المنتجات واطلب بسهولة — والتوصيل داخل المدن المتاحة.
+              </p>
+            </div>
+            <div>
+              <p className="text-[13px] font-semibold text-ink-900">التسوّق</p>
+              <ul className="mt-2.5 space-y-2 text-ink-500">
+                <li><Link href="/products" className="hover:text-teal-700">كل المنتجات</Link></li>
+                <li><Link href="/orders/track" className="hover:text-teal-700">تتبّع طلبك</Link></li>
+                <li><Link href="/contact" className="hover:text-teal-700">تواصل معنا</Link></li>
+              </ul>
+            </div>
+            <div>
+              <p className="text-[13px] font-semibold text-ink-900">معلومات</p>
+              <ul className="mt-2.5 space-y-2 text-ink-500">
+                <li><Link href="/pages/shipping" className="hover:text-teal-700">سياسة الشحن</Link></li>
+                <li><Link href="/pages/returns" className="hover:text-teal-700">سياسة الاسترجاع</Link></li>
+                <li><Link href="/pages/privacy" className="hover:text-teal-700">الخصوصية</Link></li>
+              </ul>
+            </div>
           </div>
-          <p className="mt-6 border-t border-ink-200 pt-4 text-xs">
+          <p className="mt-9 border-t border-ink-200 pt-5 text-[12px] text-ink-500">
             مدعوم بواسطة{' '}
-            <a href="https://nilemarket.online" className="font-bold text-teal-700">سوق النيل</a>
+            <a href="https://nilemarket.online" className="font-medium text-teal-700">سوق النيل</a>
           </p>
         </div>
       </footer>
@@ -151,10 +191,11 @@ export default async function StorefrontLayout({
           href={`https://wa.me/${whatsapp.replace(/\D/g, '')}`}
           target="_blank" rel="noopener noreferrer"
           aria-label="تواصل عبر واتساب"
-          className="fixed bottom-5 start-5 z-50 grid size-14 place-items-center
-                     rounded-full bg-[#25D366] text-white shadow-[--shadow-popover]"
+          className="fixed bottom-5 start-5 z-50 grid size-12 place-items-center
+                     rounded-full bg-[#25D366] text-white shadow-[--shadow-popover]
+                     transition-transform hover:scale-105"
         >
-          <MessageCircle size={26} />
+          <MessageCircle size={23} aria-hidden />
         </a>
       )}
     </div>

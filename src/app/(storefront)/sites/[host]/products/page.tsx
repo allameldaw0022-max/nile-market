@@ -89,7 +89,7 @@ export default async function AllProductsPage(
       )}
 
       <div className="mt-6">
-        <ProductGrid products={products} emptyTitle="لا توجد منتجات بعد"
+        <ProductGrid products={products} host={host} emptyTitle="لا توجد منتجات بعد"
                      emptyDescription="سيضيف المتجر منتجاته قريبًا." />
       </div>
 
