@@ -96,7 +96,29 @@ export async function saveStoreProfile(
   }
 }
 
-export type BankAccount = { bank: string; account: string; holder?: string };
+export type BankAccount = {
+  bank: string; account: string; holder?: string;
+  /** رابط شعار البنك في `store-public` — اختياري. */
+  logo?: string;
+};
+
+/**
+ * لا يُقبل إلا رابط ملف في الدلو العام لهذا المشروع.
+ *
+ * ★ القيمة تصل من المتصفح، فلو قُبلت كما هي لأمكن حقن رابط خارجي
+ * يُحمَّل في صفحة تعليمات الدفع — تتبّعٌ للزبون في أحسن الأحوال،
+ * وصورة مضلِّلة عن حساب بنكي في أسوئها.
+ */
+function cleanLogo(value: string | undefined): string | undefined {
+  const url = value?.trim();
+  if (!url) return undefined;
+  const prefix = `${process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''}/storage/v1/object/public/store-public/`;
+  if (!prefix.startsWith('https://') || !url.startsWith(prefix)) {
+    throw errors.validation('رابط الشعار غير صالح');
+  }
+  if (url.length > 500) throw errors.validation('رابط الشعار طويل جدًا');
+  return url;
+}
 
 /**
  * الحسابات البنكية. تُخزَّن في `store_payment_settings` المفصول، ولا
@@ -115,6 +137,7 @@ export async function saveBankAccounts(input: {
         bank: a.bank.trim(),
         account: a.account.trim(),
         holder: a.holder?.trim() || undefined,
+        logo: cleanLogo(a.logo),
       }))
       .filter((a) => a.bank || a.account);
 

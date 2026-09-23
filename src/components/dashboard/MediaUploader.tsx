@@ -151,10 +151,28 @@ function ErrorLine({ message, onRetry }: { message: string; onRetry: () => void 
 }
 
 // ── شعار المتجر ─────────────────────────────────────────────────────
-export function StoreLogoUploader({ storeId, currentUrl, onUploaded }: {
+/**
+ * رافع صورة واحدة.
+ *
+ * ★ يُستعمل لشعار المتجر ولشعار الحساب البنكي معًا بدل نسخة ثانية:
+ * الضغط ومسار الصلاحيات والرفع كلّها واحدة، ونسختان منها تتباعدان
+ * عند أوّل إصلاح يُطبَّق على واحدة دون الأخرى. النصوص والمقاس
+ * وزرّ الحذف معاملات لا فروع.
+ */
+export function StoreLogoUploader({
+  storeId, currentUrl, onUploaded, onRemove,
+  alt = 'شعار المتجر', addLabel = 'اختر صورة', changeLabel = 'تغيير الشعار',
+  compact = false,
+}: {
   storeId: string;
   currentUrl: string | null;
   onUploaded: (url: string, mediaId: string) => void;
+  /** يُمرَّر ⇒ يظهر زرّ حذف الصورة. */
+  onRemove?: () => void;
+  alt?: string;
+  addLabel?: string;
+  changeLabel?: string;
+  compact?: boolean;
 }) {
   const { state, error, run, retry } = useUploader(storeId, 'store_logo');
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -169,24 +187,38 @@ export function StoreLogoUploader({ storeId, currentUrl, onUploaded }: {
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-4">
-        <div className="relative size-24 shrink-0 overflow-hidden rounded-lg
-                        border border-ink-200 bg-ink-50">
+        <div className={`relative shrink-0 overflow-hidden rounded-lg border
+                         border-ink-200 bg-ink-50 ${compact ? 'size-16' : 'size-24'}`}>
           {currentUrl ? (
-            <Image src={currentUrl} alt="شعار المتجر" fill sizes="96px"
-                   className="object-cover" />
+            /* ★ `contain` لا `cover` للشعارات: القصّ يبتر حرفًا من
+               شعار بنك فيصير علامةً أخرى. */
+            <Image src={currentUrl} alt={alt} fill
+                   sizes={compact ? '64px' : '96px'}
+                   className="bg-white object-contain p-1" />
           ) : (
             <span className="flex size-full items-center justify-center text-ink-400">
-              <ImagePlus size={26} strokeWidth={1.5} />
+              <ImagePlus size={compact ? 20 : 26} strokeWidth={1.5} />
             </span>
           )}
         </div>
 
         <div className="space-y-2">
-          <Button type="button" variant="outline" size="sm" loading={busy}
-                  icon={<UploadCloud size={15} />}
-                  onClick={() => inputRef.current?.click()}>
-            {currentUrl ? 'تغيير الشعار' : 'اختر صورة'}
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button type="button" variant="outline" size="sm" loading={busy}
+                    icon={<UploadCloud size={15} />}
+                    onClick={() => inputRef.current?.click()}>
+              {currentUrl ? changeLabel : addLabel}
+            </Button>
+            {currentUrl && onRemove && !busy && (
+              <button type="button" onClick={onRemove}
+                      className="inline-flex h-9 items-center gap-1.5 rounded-md px-2.5
+                                 text-[13px] font-semibold text-danger
+                                 transition-colors hover:bg-danger-bg">
+                <Trash2 size={14} aria-hidden />
+                حذف
+              </button>
+            )}
+          </div>
           <Busy state={state} />
           {!busy && <p className="text-xs text-ink-500">JPG · PNG · WebP — حتى 5 ميجابايت</p>}
         </div>

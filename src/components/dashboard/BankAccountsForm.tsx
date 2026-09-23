@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Field';
 import { saveBankAccounts, type BankAccount } from '@/lib/settings/actions';
+import { StoreLogoUploader } from '@/components/dashboard/MediaUploader';
 
 /**
  * الحسابات البنكية.
@@ -59,29 +60,58 @@ export function BankAccountsForm({ storeId, initialAccounts, initialBankak, canE
 
         <ul className="space-y-3">
           {accounts.map((account, i) => (
-            <li key={i} className="grid gap-3 rounded-md border
-                                   border-ink-200 p-3 sm:grid-cols-[1fr_1fr_1fr_auto]
-                                   sm:items-end">
-              <Input label="البنك" value={account.bank} disabled={!canEdit}
-                     placeholder="بنك الخرطوم"
-                     onChange={(e) => update(i, { bank: e.target.value })} />
-              <Input label="رقم الحساب" value={account.account} dir="ltr"
-                     disabled={!canEdit} maxLength={40}
-                     onChange={(e) => update(i, { account: e.target.value })} />
-              <Input label="اسم صاحب الحساب" value={account.holder ?? ''}
-                     disabled={!canEdit}
-                     onChange={(e) => update(i, { holder: e.target.value })} />
-              {canEdit && (
-                <button type="button" aria-label="حذف الحساب"
-                        onClick={() => {
-                          setAccounts(accounts.filter((_, j) => j !== i));
-                          setSaved(false);
-                        }}
-                        className="mb-1.5 rounded p-2 text-danger
-                                   hover:bg-danger-bg">
-                  <Trash2 size={15} />
-                </button>
-              )}
+            <li key={i} className="space-y-3 rounded-md border border-ink-200 p-3">
+              <div className="grid gap-3 sm:grid-cols-[1fr_1fr_1fr_auto] sm:items-end">
+                <Input label="البنك" value={account.bank} disabled={!canEdit}
+                       placeholder="بنك الخرطوم"
+                       onChange={(e) => update(i, { bank: e.target.value })} />
+                <Input label="رقم الحساب" value={account.account} dir="ltr"
+                       disabled={!canEdit} maxLength={40}
+                       onChange={(e) => update(i, { account: e.target.value })} />
+                <Input label="اسم صاحب الحساب" value={account.holder ?? ''}
+                       disabled={!canEdit}
+                       onChange={(e) => update(i, { holder: e.target.value })} />
+                {canEdit && (
+                  <button type="button" aria-label="حذف الحساب"
+                          onClick={() => {
+                            setAccounts(accounts.filter((_, j) => j !== i));
+                            setSaved(false);
+                          }}
+                          className="mb-1.5 rounded p-2 text-danger
+                                     hover:bg-danger-bg">
+                    <Trash2 size={15} />
+                  </button>
+                )}
+              </div>
+
+              {/* ★ شعار البنك: يساعد الزبون على التعرّف على الحساب
+                  الصحيح بين عدّة حسابات قبل التحويل. اختياري — حساب
+                  بلا شعار يبقى صالحًا تمامًا. */}
+              <div className="border-t border-ink-100 pt-3">
+                <p className="mb-2 text-[13px] font-bold text-ink-700">
+                  شعار البنك <span className="font-medium text-ink-500">(اختياري)</span>
+                </p>
+                {canEdit ? (
+                  <StoreLogoUploader
+                    storeId={storeId}
+                    currentUrl={account.logo ?? null}
+                    compact
+                    alt={account.bank ? `شعار ${account.bank}` : 'شعار البنك'}
+                    addLabel="ارفع الشعار"
+                    changeLabel="تغيير الشعار"
+                    onUploaded={(url) => update(i, { logo: url })}
+                    onRemove={() => update(i, { logo: undefined })}
+                  />
+                ) : account.logo ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img src={account.logo} alt={`شعار ${account.bank}`}
+                       width={64} height={64}
+                       className="size-16 rounded-lg border border-ink-200
+                                  bg-white object-contain p-1" />
+                ) : (
+                  <p className="text-[13px] text-ink-500">لا يوجد شعار.</p>
+                )}
+              </div>
             </li>
           ))}
         </ul>
