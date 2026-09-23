@@ -94,7 +94,8 @@ export async function requestPasswordReset(
   if (email.includes('@')) {
     const supabase = await createClient();
     await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${config.siteUrl}/reset-password`,
+      // يمرّ بـ/auth/confirm ليُبدَّل الرمز بجلسة قبل صفحة التعيين
+      redirectTo: `${config.siteUrl}/auth/confirm`,
     });
   }
 

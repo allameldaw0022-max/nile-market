@@ -150,8 +150,13 @@ export async function storefrontResetRequest(
 
   const supabase = await createClient();
   // النتيجة واحدة سواء وُجد البريد أو لا ⇒ لا تعداد حسابات
+  //
+  // ★ الوجهة `/auth/confirm` لا صفحة الاستعادة مباشرةً: هذا المعالج
+  // هو الذي يبدّل رمز الاستعادة بجلسة **على مضيف المتجر** ثم يوجّه
+  // إلى `/reset-password`. الذهاب إلى الصفحة رأسًا يعني صفحة بلا
+  // جلسة، فترفض التعيين وتبدو كأن الرابط منتهٍ.
   await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `https://${store.primaryHost}/auth/reset`,
+    redirectTo: `https://${store.primaryHost}/auth/confirm`,
   });
 
   return { ok: true, message: 'إن كان البريد مسجّلًا فستصلك رسالة لإعادة التعيين.' };
