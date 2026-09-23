@@ -5,6 +5,7 @@ import { requireStoreAccess } from '@/lib/authz/guards';
 import { createClient } from '@/lib/supabase/server';
 import { errors, fromPostgres } from '@/lib/authz/errors';
 import { actionError, ok, type ActionResult } from '@/lib/action-result';
+import { normalizePhone } from '@/lib/phone';
 import { storeTag, tenantTag } from '@/lib/tenant/resolve';
 
 /**
@@ -67,8 +68,8 @@ export async function saveStoreProfile(
     const { error: settingsError } = await supabase
       .from('store_settings')
       .update({
-        whatsapp_number: whatsapp || null,
-        contact_phone: input.contactPhone?.trim() || null,
+        whatsapp_number: normalizePhone(whatsapp),
+        contact_phone: normalizePhone(input.contactPhone),
         contact_email: input.contactEmail?.trim() || null,
         address: {
           city: input.city?.trim() || null,

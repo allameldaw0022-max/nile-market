@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 import { resolveStoreByHost } from '@/lib/tenant/resolve';
 import { errors, fromPostgres } from '@/lib/authz/errors';
 import { actionError, ok, type ActionResult } from '@/lib/action-result';
+import { normalizePhone } from '@/lib/phone';
 import { firstRow, rpc } from '@/lib/supabase/rpc';
 import { getActor } from '@/lib/auth/actor';
 import { ensureCartToken, readCartToken, setLastOrder } from './token';
@@ -196,7 +197,9 @@ export async function placeOrder(input: {
     const store = await storeFor(input.host);
 
     const name = input.contact.name.trim();
-    const phone = input.contact.phone.trim();
+    // ★ يُوحَّد قبل الفحص لا بعده: `0912345678` و`+249912345678`
+    // رقمٌ واحد، وتخزينهما مختلفَين يعني عميلين في جدول العملاء.
+    const phone = normalizePhone(input.contact.phone) ?? '';
     if (name.length < 2) throw errors.validation('الاسم مطلوب', 'name');
     if (phone.replace(/\D/g, '').length < 9)
       throw errors.validation('رقم هاتف صحيح مطلوب', 'phone');

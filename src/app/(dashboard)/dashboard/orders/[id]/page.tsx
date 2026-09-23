@@ -12,6 +12,7 @@ import { OrderStatusActions } from '@/components/dashboard/OrderStatusActions';
 import { RecordPaymentForm } from '@/components/dashboard/RecordPaymentForm';
 import { ORDER_STATUS, PAYMENT_METHOD, PAYMENT_STATUS } from '@/lib/status';
 import { formatDateTime, formatMoney } from '@/lib/money/format';
+import { waNumber as toWa } from '@/lib/phone';
 
 export const metadata: Metadata = { title: 'تفاصيل الطلب' };
 
@@ -91,7 +92,7 @@ export default async function OrderDetailPage(
 
   const remaining = Math.max(Number(order.total) - Number(order.paid_total), 0);
   const address = order.delivery_address ?? {};
-  const waNumber = order.contact_phone.replace(/\D/g, '');
+  const waNumber = toWa(order.contact_phone);
 
   return (
     <div className="space-y-5">

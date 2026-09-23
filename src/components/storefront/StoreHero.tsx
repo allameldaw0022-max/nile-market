@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowLeft, MessageCircle, Store } from 'lucide-react';
+import { waNumber } from '@/lib/phone';
 
 /**
  * هوية المتجر — القالب المشترك لكل المتاجر.
@@ -100,7 +101,7 @@ export function StoreHero({
             <ArrowLeft size={17} className="flip-rtl" aria-hidden />
           </Link>
           {whatsapp && (
-            <a href={`https://wa.me/${whatsapp.replace(/\D/g, '')}`}
+            <a href={`https://wa.me/${waNumber(whatsapp)}`}
                target="_blank" rel="noopener noreferrer"
                className="inline-flex h-11 items-center gap-2 rounded-md border
                           border-white/25 px-4 text-[14px] font-semibold text-white

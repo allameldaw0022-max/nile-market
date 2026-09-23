@@ -14,6 +14,7 @@ import { ServiceWorkerRegister } from '@/components/pwa/ServiceWorkerRegister';
 import { InstallPrompt } from '@/components/pwa/InstallPrompt';
 import { trackVisit } from '@/lib/analytics/track';
 import { SkipLink } from '@/components/ui/SkipLink';
+import { waNumber } from '@/lib/phone';
 
 /**
  * بيانات رأس الصفحة المشتركة لكل صفحات المتجر.
@@ -286,7 +287,7 @@ export default async function StorefrontLayout({
                 </p>
               )}
               {whatsapp && (
-                <a href={`https://wa.me/${whatsapp.replace(/\D/g, '')}`}
+                <a href={`https://wa.me/${waNumber(whatsapp)}`}
                    target="_blank" rel="noopener noreferrer"
                    className="mt-4 inline-flex h-10 items-center gap-2 rounded-md
                               border border-ink-200 px-3.5 text-[13px] font-semibold
@@ -337,7 +338,7 @@ export default async function StorefrontLayout({
           خلف شريط المتصفّح على iPhone. */}
       {whatsapp && (
         <a
-          href={`https://wa.me/${whatsapp.replace(/\D/g, '')}`}
+          href={`https://wa.me/${waNumber(whatsapp)}`}
           target="_blank" rel="noopener noreferrer"
           aria-label="تواصل عبر واتساب"
           style={{ bottom: 'calc(1rem + env(safe-area-inset-bottom))' }}

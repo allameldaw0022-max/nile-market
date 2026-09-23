@@ -10,6 +10,7 @@ import { tenantTag, storeTag } from '@/lib/tenant/resolve';
 import { REFERRAL_COOKIE } from '@/lib/referral';
 import { firstRow, rpc } from '@/lib/supabase/rpc';
 import { mediaUrl } from '@/lib/media/url';
+import { normalizePhone } from '@/lib/phone';
 
 const slugify = (s: string) =>
   s.trim().toLowerCase()
@@ -92,8 +93,18 @@ export async function saveStoreStep(
       if (e1) throw fromPostgres(e1);
     }
     if (Object.keys(settings).length > 0) {
+      // ★ التوحيد هنا أيضًا لا في نموذج الإعدادات وحده: الـWizard
+      // يكتب في نفس الجدول بمسار آخر، وترك أحدهما بلا توحيد يعني
+      // أن الرقم يُخزَّن بصيغتين حسب المكان الذي كُتب فيه.
+      const patch = {
+        ...settings,
+        ...('whatsapp_number' in settings
+          ? { whatsapp_number: normalizePhone(settings.whatsapp_number) } : {}),
+        ...('contact_phone' in settings
+          ? { contact_phone: normalizePhone(settings.contact_phone) } : {}),
+      };
       const { error: e2 } = await supabase
-        .from('store_settings').update(settings).eq('store_id', membership.storeId);
+        .from('store_settings').update(patch).eq('store_id', membership.storeId);
       if (e2) throw fromPostgres(e2);
     }
 

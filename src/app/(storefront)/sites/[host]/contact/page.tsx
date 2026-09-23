@@ -4,6 +4,7 @@ import { Mail, MessageCircle, Phone } from 'lucide-react';
 import { resolveStoreByHost } from '@/lib/tenant/resolve';
 import { createClient } from '@/lib/supabase/server';
 import { Card } from '@/components/ui/Card';
+import { waNumber } from '@/lib/phone';
 
 export const revalidate = 300;
 
@@ -42,7 +43,7 @@ export default async function ContactPage({ params }: PageProps<'/sites/[host]/c
 
       <Card className="mt-6 divide-y divide-ink-200">
         {whatsapp && (
-          <a href={`https://wa.me/${whatsapp.replace(/\D/g, '')}`}
+          <a href={`https://wa.me/${waNumber(whatsapp)}`}
              target="_blank" rel="noopener noreferrer"
              className="flex items-center gap-3 p-4 hover:bg-ink-50">
             <MessageCircle size={20} className="text-[#25D366]" />

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { MessageCircle, Phone, LifeBuoy } from 'lucide-react';
+import { waNumber } from '@/lib/phone';
 
 /**
  * شريط التواصل — آخر ما قبل التذييل.
@@ -29,7 +30,7 @@ export function StoreContact({ storeName, whatsapp, phone }: {
 
         <div className="flex flex-wrap items-center gap-2.5">
           {whatsapp && (
-            <a href={`https://wa.me/${whatsapp.replace(/\D/g, '')}`}
+            <a href={`https://wa.me/${waNumber(whatsapp)}`}
                target="_blank" rel="noopener noreferrer"
                className="inline-flex h-11 items-center gap-2 rounded-md bg-[#25D366]
                           px-4 text-[14px] font-semibold text-white

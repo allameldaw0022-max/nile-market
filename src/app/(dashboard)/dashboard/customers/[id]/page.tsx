@@ -10,6 +10,7 @@ import { StatusChip } from '@/components/ui/Badge';
 import { CustomerNote } from '@/components/dashboard/CustomerNote';
 import { ORDER_STATUS, PAYMENT_STATUS } from '@/lib/status';
 import { formatDate, formatDateTime, formatMoney } from '@/lib/money/format';
+import { waNumber as toWa } from '@/lib/phone';
 
 export const metadata: Metadata = { title: 'ملف العميل' };
 
@@ -42,7 +43,7 @@ export default async function CustomerPage(
 
   const anonymized = customer.anonymized_at !== null;
   const phone = customer.phone ?? '';
-  const waNumber = phone.replace(/\D/g, '');
+  const waNumber = toWa(phone);
 
   return (
     <div className="space-y-5">

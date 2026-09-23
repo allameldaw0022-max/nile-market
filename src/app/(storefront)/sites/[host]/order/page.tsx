@@ -10,6 +10,7 @@ import { formatMoney } from '@/lib/money/format';
 import { OrderSummary } from '@/components/storefront/OrderSummary';
 import { readLastOrder } from '@/lib/cart/token';
 import { readOrder, readPaymentInstructions } from '@/lib/cart/order-read';
+import { waNumber as toWa } from '@/lib/phone';
 
 export const metadata: Metadata = {
   title: 'تم استلام طلبك',
@@ -112,7 +113,7 @@ export default async function OrderConfirmationPage(
       <div className="mt-6 flex flex-wrap justify-center gap-2">
         <Link href="/products"><Button variant="outline">مواصلة التسوّق</Button></Link>
         {settings?.whatsapp_number && (
-          <a href={`https://wa.me/${settings.whatsapp_number.replace(/\D/g, '')}`}
+          <a href={`https://wa.me/${toWa(settings.whatsapp_number)}`}
              target="_blank" rel="noopener noreferrer">
             <Button icon={<MessageCircle size={16} />}>تواصل مع المتجر</Button>
           </a>

@@ -7,6 +7,7 @@ import { errors, fromPostgres } from '@/lib/authz/errors';
 import { actionError, ok, type ActionResult } from '@/lib/action-result';
 import { firstRow, rpc } from '@/lib/supabase/rpc';
 import { ADMIN_SECTIONS, type AdminSection } from '@/lib/authz/permissions';
+import { normalizePhone } from '@/lib/phone';
 
 /**
  * أفعال الأشخاص في لوحة الإدارة: الموظفون · المستخدمون · الشركاء.
@@ -127,7 +128,7 @@ export async function invitePartner(input: {
     const { data, error } = await rpc(supabase, 'invite_partner', {
       p_name: input.name.trim(),
       p_email: input.email.trim(),
-      p_phone: input.phone?.trim() || null,
+      p_phone: normalizePhone(input.phone),
     });
     if (error) throw fromPostgres(error);
     const row = firstRow(data);
