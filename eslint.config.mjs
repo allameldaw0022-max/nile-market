@@ -31,6 +31,7 @@ export default defineConfig([
       'src/app/api/v1/webhooks/**/*.ts',
       'src/lib/jobs/**/*.ts',
       'src/app/(platform)/(auth)/actions.ts',
+      'src/lib/auth/rate-limit.ts',
       'src/lib/supabase/service.ts',
     ],
     rules: { 'no-restricted-imports': 'off' },

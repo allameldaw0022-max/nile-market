@@ -17,9 +17,9 @@ import { toggleWishlist } from '@/lib/wishlist/actions';
  * بطيئة، ويعود إلى حاله إن رفض الخادم. ما يُعرض للمستخدم هو نتيجة
  * الخادم لا تفاؤل الواجهة.
  *
- * ★ الزائر يُوجَّه إلى دخول المنصّة بعنوان **مطلق**: على نطاق متجر
- * يُعاد كتابة `/login` إلى `/sites/<host>/login` وهو مسار غير موجود،
- * فرابط نسبيّ هنا يعطي 404. والدخول يعيش على نطاق المنصّة وحده.
+ * ★ الزائر يُوجَّه إلى دخول **هذا المتجر** بمسار نسبيّ: صفحة
+ * `/sites/[host]/login` صارت موجودة، والجلسة تُكتب على مضيف المتجر
+ * فيعود الزبون إلى الصفحة نفسها مسجَّلًا.
  */
 export function WishlistButton({
   host, productId, label, initial, signedIn, variant = 'icon',
@@ -38,8 +38,9 @@ export function WishlistButton({
     e.stopPropagation();
 
     if (!signedIn) {
-      const root = process.env.NEXT_PUBLIC_ROOT_DOMAIN;
-      window.location.href = root ? `https://${root}/login` : '/login';
+      // مسار العودة يُنقّى خادميًا بـ`safeNext` قبل التحويل
+      const next = encodeURIComponent(window.location.pathname);
+      router.push(`/login?next=${next}`);
       return;
     }
 

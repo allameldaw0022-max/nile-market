@@ -3,10 +3,10 @@ import 'server-only';
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
-import { createServiceClient } from '@/lib/supabase/service';
 import { config } from '@/lib/config';
 import { recordLoginEvent } from '@/lib/auth/sessions';
 import { safeNext } from '@/lib/safe-next';
+import { rateLimit } from '@/lib/auth/rate-limit';
 
 export type AuthResult = { ok: false; message: string } | { ok: true; message?: string };
 
@@ -16,20 +16,6 @@ export type AuthResult = { ok: false; message: string } | { ok: true; message?: 
  * (المواصفات §6 + SECURITY.md §16.1).
  */
 const GENERIC_LOGIN_ERROR = 'بيانات الدخول غير صحيحة';
-
-/** تحديد المعدل خادميًا. الدالة في القاعدة ممنوعة على العميل (0013). */
-async function rateLimit(bucket: string, max: number, windowSeconds: number) {
-  try {
-    const svc = createServiceClient();
-    const { data } = await svc.rpc('check_rate_limit', {
-      p_bucket: bucket, p_max: max, p_window_seconds: windowSeconds,
-    });
-    return data !== false;
-  } catch {
-    // فشل الفاحص لا يفتح الباب: نمنع احتياطًا
-    return false;
-  }
-}
 
 async function clientKey() {
   const h = await headers();

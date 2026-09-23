@@ -57,12 +57,9 @@ export default async function WishlistPage(
             المفضّلة تبقى معك على كل أجهزتك ما دمت مسجّلًا، ولا تضيع بمسح
             بيانات المتصفّح.
           </p>
-          {/* عنوان مطلق: الدخول على نطاق المنصّة، ورابط نسبيّ هنا
-              يُعاد كتابته إلى مسار متجر غير موجود فيعطي 404. */}
-          <a href={`https://${process.env.NEXT_PUBLIC_ROOT_DOMAIN}/login`}
-             className={buttonClass('primary', 'md', 'mt-6')}>
+          <Link href="/login?next=/wishlist" className={buttonClass('primary', 'md', 'mt-6')}>
             تسجيل الدخول
-          </a>
+          </Link>
         </div>
       </div>
     );

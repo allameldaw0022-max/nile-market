@@ -1,7 +1,7 @@
 import { notFound, permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Heart, MessageCircle, Search, ShoppingBag } from 'lucide-react';
+import { Heart, MessageCircle, Search, ShoppingBag, User } from 'lucide-react';
 import { resolveStoreByHost } from '@/lib/tenant/resolve';
 import { createClient } from '@/lib/supabase/server';
 import { getActor } from '@/lib/auth/actor';
@@ -122,11 +122,24 @@ export default async function StorefrontLayout({
                   className="grid size-10 place-items-center rounded-md text-ink-700 hover:bg-ink-100 sm:hidden">
               <Search size={20} />
             </Link>
-            {actor.kind === 'user' && (
-              <Link href="/wishlist" aria-label="المفضّلة"
+            {actor.kind === 'user' ? (
+              <>
+                <Link href="/wishlist" aria-label="المفضّلة"
+                      className="grid size-10 place-items-center rounded-md
+                                 text-ink-700 hover:bg-ink-100">
+                  <Heart size={20} aria-hidden />
+                </Link>
+                <Link href="/account" aria-label="حسابي"
+                      className="grid size-10 place-items-center rounded-md
+                                 text-ink-700 hover:bg-ink-100">
+                  <User size={20} aria-hidden />
+                </Link>
+              </>
+            ) : (
+              <Link href="/login" aria-label="تسجيل الدخول"
                     className="grid size-10 place-items-center rounded-md
                                text-ink-700 hover:bg-ink-100">
-                <Heart size={20} aria-hidden />
+                <User size={20} aria-hidden />
               </Link>
             )}
             <Link href="/cart"
@@ -175,6 +188,7 @@ export default async function StorefrontLayout({
                 <li><Link href="/products" className="hover:text-teal-700">كل المنتجات</Link></li>
                 <li><Link href="/orders/track" className="hover:text-teal-700">تتبّع طلبك</Link></li>
                 <li><Link href="/wishlist" className="hover:text-teal-700">المفضّلة</Link></li>
+                <li><Link href="/account" className="hover:text-teal-700">حسابي</Link></li>
                 <li><Link href="/contact" className="hover:text-teal-700">تواصل معنا</Link></li>
               </ul>
             </div>

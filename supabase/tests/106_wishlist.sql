@@ -159,3 +159,57 @@ rollback;
 
 select t.reset();
 \echo '✓ اختبارات المفضّلة مرّت'
+
+-- =====================================================================
+-- بعد بناء دخول العميل في المتجر (المرحلة ٥)
+--
+-- ★ الجلسة في التطبيق مقصورة على مضيف المتجر بحكم الكوكي، وهو ما
+-- لا يُختبر في القاعدة. ما يُختبر هنا هو الطبقة التي **لا تعرف
+-- المضيف أصلًا**: حتى لو تسرّبت جلسة عميل متجر إلى متجر آخر، لا
+-- تستطيع تلك الجلسة قراءة ولا كتابة مفضّلة ذلك المتجر.
+-- =====================================================================
+
+\echo '── ★★★ جلسة عميل لا تَنفُذ إلى متجر آخر مهما كان المضيف ──'
+begin;
+select t.reset();
+insert into public.wishlists (store_id, profile_id, product_id)
+values (:'A', :'customerA', :'prodA');
+
+select t.login(:'customerA');
+-- العميل نفسه، لكن يطلب مفضّلة متجر ب: لا شيء — ولو زوّر المضيف
+select t.ok((select count(*) from public.my_wishlist(:'B')) = 0,
+            '★★★ تمرير معرّف متجر آخر لا يكشف شيئًا');
+-- ولا يستطيع إنشاء صفّ في متجر ب لمنتج متجر أ
+select t.throws('insert into public.wishlists (store_id, profile_id, product_id) values ('
+                || quote_literal(:'B') || ', ' || quote_literal(:'customerA') || ', '
+                || quote_literal(:'prodA') || ')',
+                '★★★ ولا يكتب في متجر ب بمنتج متجر أ');
+rollback;
+
+\echo '── ★★ دورة العميل الكاملة بعد الدخول ──'
+begin;
+select t.login(:'customerA');
+select t.ok((select in_wishlist from public.toggle_wishlist(:'prodA')) = true,
+            'يضيف منتجًا');
+select t.ok((select count(*) from public.my_wishlist(:'A')) = 1,
+            'ويراه في مفضّلته');
+select t.ok((select in_wishlist from public.toggle_wishlist(:'prodA')) = false,
+            'ويزيله');
+select t.ok((select count(*) from public.my_wishlist(:'A')) = 0,
+            'فتفرغ مفضّلته');
+rollback;
+
+\echo '── ★★★ الخروج: الجلسة تنتهي فلا قراءة ──'
+begin;
+select t.reset();
+insert into public.wishlists (store_id, profile_id, product_id)
+values (:'A', :'customerA', :'prodA');
+select t.logout();
+select t.throws('select count(*) from public.wishlists',
+                '★★★ بعد الخروج لا يُقرأ الجدول');
+select t.throws('select * from public.my_wishlist(' || quote_literal(:'A') || ')',
+                '★★★ ولا دالّة العرض');
+rollback;
+
+select t.reset();
+\echo '✓ اختبارات المفضّلة بعد الدخول مرّت'
