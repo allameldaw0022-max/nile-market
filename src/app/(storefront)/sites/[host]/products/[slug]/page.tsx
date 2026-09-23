@@ -6,6 +6,9 @@ import { ChevronRight, ImageOff, ShieldCheck, Truck } from 'lucide-react';
 import { resolveStoreByHost } from '@/lib/tenant/resolve';
 import { createClient } from '@/lib/supabase/server';
 import { AddToCartButton } from '@/components/storefront/AddToCartButton';
+import { WishlistButton } from '@/components/storefront/WishlistButton';
+import { wishlistStateFor } from '@/lib/wishlist/actions';
+import { getActor } from '@/lib/auth/actor';
 import { ProductCard, type StorefrontProduct } from '@/components/storefront/ProductCard';
 import { formatMoney } from '@/lib/money/format';
 import { publicUrl } from '@/lib/media/url';
@@ -98,6 +101,13 @@ export default async function ProductPage(
 
   const related = await loadRelated(store.storeId, product.category_id, product.id);
 
+  // حالة المفضّلة لهذا المنتج وللمنتجات المشابهة في نداء واحد
+  const [actor, saved] = await Promise.all([
+    getActor(),
+    wishlistStateFor([product.id, ...related.map((p) => p.id)]),
+  ]);
+  const signedIn = actor.kind === 'user';
+
   // بيانات منظَّمة: تظهر النتيجة في جوجل بسعرها وتوفّرها (§22).
   // التوفّر من المخزون الحقيقي، ومتجر منتهي الاشتراك يُعلَن «طلب
   // مسبق» لا «متوفّر»: إعلان توفّر لا يمكن شراؤه يُعاقَب عليه (D14).
@@ -188,6 +198,14 @@ export default async function ProductPage(
                              disabledNote="هذا المتجر غير متاح للشراء حاليًا — يمكنك التواصل معه." />
           </div>
 
+          {/* الحفظ متاح حتى حين يتوقّف الشراء: المتجر مرئي والاشتراك
+              منتهٍ (D14) لا يمنع الزبون من تعليم ما يريده لاحقًا. */}
+          <div className="mt-3">
+            <WishlistButton host={host} productId={product.id} label={product.name}
+                            initial={saved.has(product.id)} signedIn={signedIn}
+                            variant="full" />
+          </div>
+
           <ul className="mt-6 space-y-2 text-sm text-ink-500">
             <li className="flex items-center gap-2">
               <Truck size={15} /> التوصيل داخل المدن المحددة من المتجر
@@ -203,7 +221,10 @@ export default async function ProductPage(
         <section className="mt-12">
           <h2 className="font-bold text-ink-900">منتجات مشابهة</h2>
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {related.map((p) => <ProductCard key={p.id} product={p} host={host} />)}
+            {related.map((p) => (
+              <ProductCard key={p.id} product={p} host={host}
+                           saved={saved.has(p.id)} signedIn={signedIn} />
+            ))}
           </div>
         </section>
       )}

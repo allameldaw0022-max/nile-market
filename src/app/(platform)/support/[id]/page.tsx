@@ -5,6 +5,7 @@ import { ChevronRight } from 'lucide-react';
 import { getActor } from '@/lib/auth/actor';
 import { TicketThread } from '@/components/support/TicketThread';
 import { loadTicket } from '@/lib/support/actions';
+import { listTicketAttachments } from '@/lib/support/attachments';
 
 export const metadata: Metadata = {
   title: 'تذكرة دعم',
@@ -21,6 +22,9 @@ export default async function TicketPage({ params }: PageProps<'/support/[id]'>)
   const ticket = await loadTicket(id);
   if (!ticket.ok) notFound();
 
+  // الصلاحية من RLS على `support_attachments` — لا فحص مكرّر هنا
+  const attachments = await listTicketAttachments(id);
+
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
       <Link href="/support"
@@ -30,7 +34,8 @@ export default async function TicketPage({ params }: PageProps<'/support/[id]'>)
       </Link>
 
       <div className="mt-6">
-        <TicketThread ticket={ticket.data} />
+        <TicketThread ticket={ticket.data}
+                      attachments={attachments.ok ? attachments.data : []} />
       </div>
     </div>
   );

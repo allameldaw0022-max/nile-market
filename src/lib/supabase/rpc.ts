@@ -264,6 +264,40 @@ export type RpcMap = {
       amount_due: number;
     }[];
   };
+  toggle_wishlist: {
+    args: { p_product_id: string };
+    returns: { in_wishlist: boolean; store_id: string }[];
+  };
+  wishlist_state: {
+    args: { p_product_ids: string[] };
+    returns: { product_id: string }[];
+  };
+  my_wishlist: {
+    args: { p_store_id: string };
+    returns: {
+      product_id: string; name: string; slug: string;
+      price: number; compare_at_price: number | null;
+      has_variants: boolean; track_inventory: boolean;
+      available: number;
+      image_bucket: string | null; image_path: string | null;
+      image_blur: string | null;
+    }[];
+  };
+  prepare_support_upload: {
+    args: { p_ticket_id: string; p_mime: string; p_size: number };
+    returns: { media_id: string; bucket: string; path: string }[];
+  };
+  attach_to_ticket: {
+    args: { p_ticket_id: string; p_media_id: string; p_message_id?: string | null };
+    returns: string;
+  };
+  ticket_attachments: {
+    args: { p_ticket_id: string };
+    returns: {
+      id: string; message_id: string | null; media_id: string;
+      mime_type: string; size_bytes: number; path: string; created_at: string;
+    }[];
+  };
   my_orders: {
     args: { p_store_id: string };
     returns: {

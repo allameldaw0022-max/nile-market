@@ -15,6 +15,7 @@ import type { AdminTicket } from '@/lib/supabase/rpc';
 import {
   addInternalNote, assignTicket, changeTicketStatus, replyAsStaff,
 } from '@/lib/admin/support';
+import { AttachmentList, AttachmentUploader } from '@/components/support/AttachmentUploader';
 
 const PRIORITIES = [
   { value: 'low', label: 'منخفض' }, { value: 'normal', label: 'عادي' },
@@ -29,9 +30,10 @@ const PRIORITIES = [
  *
  * ★ الرسائل تُعرض نصًّا خامًا (`whitespace-pre-line`) بلا تفسير HTML.
  */
-export function AdminTicketView({ ticket, canEdit, assignees }: {
+export function AdminTicketView({ ticket, canEdit, assignees, attachments = [] }: {
   ticket: AdminTicket; canEdit: boolean;
   assignees: { member_id: string; display_name: string }[];
+  attachments?: { id: string; mime: string; size: number }[];
 }) {
   const router = useRouter();
   const [reply, setReply] = useState('');
@@ -138,11 +140,18 @@ export function AdminTicketView({ ticket, canEdit, assignees }: {
           ))}
         </ul>
 
+        {attachments.length > 0 && (
+          <div className="border-t border-ink-200 px-4 pb-4">
+            <AttachmentList ticketId={ticket.id} items={attachments} />
+          </div>
+        )}
+
         {canEdit && !isClosed && (
           <div className="space-y-2 border-t border-ink-200 p-4">
             <Textarea value={reply} onChange={(e) => setReply(e.target.value)}
                       aria-label="ردّ يصل صاحب التذكرة"
                       placeholder="ردّ يصل صاحب التذكرة…" />
+            <AttachmentUploader ticketId={ticket.id} />
             <Button size="sm" icon={<Send size={14} />} loading={pending}
                     disabled={reply.trim().length === 0}
                     onClick={() => run(

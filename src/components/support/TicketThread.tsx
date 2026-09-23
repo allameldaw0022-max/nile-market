@@ -10,6 +10,7 @@ import { TICKET_STATUS } from '@/lib/status';
 import { formatDateTime } from '@/lib/money/format';
 import { closeTicket, replyToTicket, type TicketDetail } from '@/lib/support/actions';
 import { TICKET_CATEGORY_LABEL } from '@/lib/support/categories';
+import { AttachmentList, AttachmentUploader } from './AttachmentUploader';
 
 /**
  * خيط التذكرة.
@@ -17,7 +18,10 @@ import { TICKET_CATEGORY_LABEL } from '@/lib/support/categories';
  * الرسائل تُعرض كما وردت نصًا خامًا (`whitespace-pre-line`) بلا أي
  * تفسير HTML: نص يكتبه طرف آخر لا يُصيَّر كترميز.
  */
-export function TicketThread({ ticket }: { ticket: TicketDetail }) {
+export function TicketThread({ ticket, attachments = [] }: {
+  ticket: TicketDetail;
+  attachments?: { id: string; mime: string; size: number }[];
+}) {
   const router = useRouter();
   const [body, setBody] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -103,6 +107,8 @@ export function TicketThread({ ticket }: { ticket: TicketDetail }) {
         })}
       </ol>
 
+      <AttachmentList ticketId={ticket.id} items={attachments} />
+
       {isClosed ? (
         <Card className="p-5 text-center">
           <CheckCircle2 className="mx-auto text-success" size={28} />
@@ -115,6 +121,13 @@ export function TicketThread({ ticket }: { ticket: TicketDetail }) {
           <Textarea value={body} onChange={(e) => setBody(e.target.value)}
                     aria-label="ردك" className="min-h-28"
                     placeholder="اكتب ردك هنا…" />
+          {/* المرفق يُرفع ويُربط بالتذكرة مستقلًّا عن نصّ الردّ:
+              الرفع على مرحلتين لا يمرّ بالـServer Action، وربطه بالرسالة
+              كان سيتطلّب انتظار إنشائها فيضيع الملف إن فشل الإرسال. */}
+          <div className="mt-3 border-t border-ink-100 pt-3">
+            <AttachmentUploader ticketId={ticket.id} />
+          </div>
+
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <Button loading={pending} disabled={body.trim().length === 0}
                     icon={<Send size={15} />} onClick={send}>

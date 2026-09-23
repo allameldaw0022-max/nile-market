@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { ImageOff } from 'lucide-react';
 import { formatMoney } from '@/lib/money/format';
 import { QuickAdd } from './QuickAdd';
+import { WishlistButton } from './WishlistButton';
 
 type ImageRow = {
   media_file_id: string; is_primary: boolean;
@@ -30,11 +31,13 @@ const publicUrl = (bucket: string, path: string) =>
  * ★ حالة المخزون تُعرض حين تعني شيئًا فقط: «نفد» يمنع الشراء،
  * و«بقي ٣» يستعجل، وأي رقم فوق ذلك ضوضاء تزاحم السعر.
  *
- * ★ لا أيقونات بلا وظيفة: لا زرّ مفضّلة هنا لأن لا مسار خادمي له بعد،
- * وزرّ لا يحفظ شيئًا أسوأ من غيابه.
+ * ★ الإجراءات تظهر لما لها وظيفة فعلية: القلب يحفظ في مفضّلة
+ * المستخدم عبر مسار خادمي حقيقي، والإضافة السريعة لا تظهر لمنتج
+ * بخيارات. لا أيقونة زخرفية هنا.
  */
-export function ProductCard({ product, host, priority = false }: {
+export function ProductCard({ product, host, priority = false, saved = false, signedIn = false }: {
   product: StorefrontProduct; host: string; priority?: boolean;
+  saved?: boolean; signedIn?: boolean;
 }) {
   const img = product.product_images?.find((i) => i.is_primary) ?? product.product_images?.[0];
   const media = img?.media_files ?? null;
@@ -107,12 +110,14 @@ export function ProductCard({ product, host, priority = false }: {
         </div>
       </Link>
 
-      {/* الإضافة السريعة لمنتج بلا خيارات ومتوفّر فقط */}
-      {!soldOut && !product.has_variants && (
-        <div className="absolute bottom-3 end-3">
+      {/* الإجراءات: الحفظ دائمًا، والإضافة السريعة لمنتج بلا خيارات ومتوفّر */}
+      <div className="absolute bottom-3 end-3 flex gap-1.5">
+        {!soldOut && !product.has_variants && (
           <QuickAdd host={host} productId={product.id} label={product.name} />
-        </div>
-      )}
+        )}
+        <WishlistButton host={host} productId={product.id} label={product.name}
+                        initial={saved} signedIn={signedIn} />
+      </div>
     </article>
   );
 }

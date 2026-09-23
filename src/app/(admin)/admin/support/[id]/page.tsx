@@ -7,6 +7,7 @@ import { adminHasLevel, getActor } from '@/lib/auth/actor';
 import { createClient } from '@/lib/supabase/server';
 import { loadAdminTicket } from '@/lib/admin/support';
 import { AdminTicketView } from '@/components/admin/AdminTicketView';
+import { listTicketAttachments } from '@/lib/support/attachments';
 import { rpc } from '@/lib/supabase/rpc';
 
 export const metadata: Metadata = {
@@ -22,6 +23,9 @@ export default async function AdminTicketPage({ params }: PageProps<'/admin/supp
 
   const res = await loadAdminTicket(id);
   if (!res.ok) notFound();
+
+  // الصلاحية من RLS على `support_attachments` — لا فحص مكرّر هنا
+  const attachments = await listTicketAttachments(id);
 
   const actor = await getActor();
   const canEdit = actor.kind === 'user' && adminHasLevel(actor, 'support', 'edit');
@@ -43,7 +47,8 @@ export default async function AdminTicketPage({ params }: PageProps<'/admin/supp
         العودة إلى الطابور
       </Link>
 
-      <AdminTicketView ticket={res.data} canEdit={canEdit} assignees={assignees} />
+      <AdminTicketView ticket={res.data} canEdit={canEdit} assignees={assignees}
+                       attachments={attachments.ok ? attachments.data : []} />
     </div>
   );
 }
