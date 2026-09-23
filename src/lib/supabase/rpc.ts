@@ -610,10 +610,19 @@ export async function rpc<K extends keyof RpcMap>(
 ): Promise<{ data: RpcMap[K]['returns'] | null; error: PostgrestError | null }> {
   // التحويل محصور هنا: الأنواع المولَّدة لا تعرف هذه الدوال بعد،
   // والتوقيعات أعلاه هي العقد المُراجَع.
-  const call = client.rpc as unknown as (
-    n: string, a: unknown,
-  ) => Promise<{ data: unknown; error: PostgrestError | null }>;
-  const { data, error } = await call(name as string, args);
+  //
+  // ★★ التحويل على **العميل** لا على التابع. كان السطر:
+  //       const call = client.rpc as unknown as (…);
+  //       await call(name, args);
+  // وهذا ينزع التابع عن كائنه. وجسم `rpc` في supabase-js هو
+  // `return this.rest.rpc(...)`، ومع وحدات ES الصارمة يصير `this`
+  // غير معرَّف ⇒ TypeError قبل أن يخرج أي طلب إلى الشبكة. كل نداء
+  // مرّ بهذا المساعد كان يفشل بصمت ويظهر للمستخدم «حدث خطأ غير
+  // متوقع» — ولهذا لم يُنشأ متجر واحد قط.
+  const { data, error } = await (client as unknown as {
+    rpc: (n: string, a: unknown) =>
+      Promise<{ data: unknown; error: PostgrestError | null }>;
+  }).rpc(name as string, args);
   return { data: (data ?? null) as RpcMap[K]['returns'] | null, error };
 }
 

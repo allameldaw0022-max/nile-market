@@ -11,7 +11,7 @@
     "db:types": "echo 'استخدم Supabase MCP أو: supabase gen types typescript --project-id $SUPABASE_PROJECT_ID'",
     "test:db": "./scripts/test-db.sh",
     "test:smoke": "./scripts/smoke.sh",
-    "test:unit": "node --test --experimental-strip-types tests/*.test.ts",
+    "test:unit": "node --test --conditions=react-server --experimental-strip-types tests/*.test.ts",
     "test": "npm run test:unit && npm run test:db"
   },
   "dependencies": {
