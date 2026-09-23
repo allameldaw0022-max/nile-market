@@ -117,8 +117,11 @@ function FeaturedOne({ product, host, saved, signedIn }: {
     <article className="overflow-hidden rounded-xl border border-ink-200 bg-white">
       <div className="grid md:grid-cols-2">
         <Link href={`/products/${product.slug}`}
-              className="relative block aspect-[4/5] overflow-hidden bg-ink-50
-                         md:aspect-auto md:min-h-[26rem]">
+              /* ★ 4:3 على الهاتف لا 4:5: النسبة الرأسية بعرض الشاشة
+                 كاملًا كانت تبتلع الشاشة فتختفي التفاصيل والسعر تحت
+                 الطيّة. ومن md يعود التقسيم نصفين فترجع الصورة رأسية. */
+              className="relative block aspect-[4/3] overflow-hidden bg-ink-50
+                         sm:aspect-[16/10] md:aspect-auto md:min-h-[26rem]">
           {media ? (
             <Image src={publicUrl(media.bucket, media.path)} alt={product.name}
                    fill priority sizes="(max-width: 768px) 100vw, 50vw"
