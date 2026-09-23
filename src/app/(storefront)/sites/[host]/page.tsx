@@ -77,82 +77,94 @@ export default async function StoreHome({ params }: PageProps<'/sites/[host]'>) 
 
   return (
     <>
-      {/* ───── اللافتة: صورة التاجر أو شريط باسمه ───── */}
-      <section className="border-b border-ink-200 bg-white">
-        {banner ? (
-          <div className="relative aspect-[16/6] w-full overflow-hidden bg-ink-100 sm:aspect-[16/5]">
-            <Image src={banner} alt="" fill priority sizes="100vw" className="object-cover" />
-          </div>
-        ) : (
-          <div className="bg-ink-800">
-            <div className="mx-auto max-w-6xl px-4 py-12 sm:py-16">
-              <h1 className="text-[26px] font-bold text-white sm:text-[34px]">{store.name}</h1>
-              {settings?.description && (
-                <p className="prose-width mt-3 text-[15px] leading-relaxed text-white/70">
-                  {settings.description}
-                </p>
-              )}
-              <Link href="/products"
-                    className="mt-6 inline-flex h-11 items-center gap-2 rounded-md
-                               bg-white px-5 text-[14px] font-semibold text-ink-900
-                               transition-colors hover:bg-ink-100">
-                تصفّح المنتجات
-                <ArrowLeft size={17} className="flip-rtl" aria-hidden />
-              </Link>
-            </div>
-          </div>
+      {/* ═══════════ الواجهة ═══════════
+          ★ حالتان لا واحدة. إن رفع التاجر لافتة: صورته مع طبقة تدرّج
+          **رأسية سوداء شفّافة** (لا لون مضاف) تحمل اسمه ووصفه ونداءه —
+          صورة عارية بلا نداء لا تبيع. وإن لم يرفع: واجهة طباعية
+          تعتمد على الاسم والوصف، ولا نخترع له صورة.
+          ★ النداء واحد: تعدّد الأزرار يشتّت القرار. */}
+      <section className="relative isolate overflow-hidden bg-ink-900">
+        {banner && (
+          <Image src={banner} alt="" fill priority sizes="100vw"
+                 className="object-cover opacity-55" />
         )}
+        <div className={banner
+          ? 'absolute inset-0 bg-gradient-to-t from-ink-900 via-ink-900/55 to-ink-900/10'
+          : 'absolute inset-0'} aria-hidden />
+
+        <div className="relative mx-auto max-w-6xl px-4 py-14 sm:py-20 lg:py-24">
+          <div className="max-w-xl">
+            <p className="text-[12px] font-semibold uppercase tracking-[0.18em] text-gold-500">
+              متجر إلكتروني
+            </p>
+            <h1 className="mt-3 text-[28px] font-bold leading-[1.2] text-white
+                           sm:text-[38px] lg:text-[44px]">
+              {store.name}
+            </h1>
+            {settings?.description && (
+              <p className="mt-4 text-[15px] leading-relaxed text-white/75 sm:text-[16px]">
+                {settings.description}
+              </p>
+            )}
+            <Link href="/products"
+                  className="mt-7 inline-flex h-12 items-center gap-2 rounded-md
+                             bg-teal-500 px-6 text-[15px] font-semibold text-ink-900
+                             transition-colors hover:bg-teal-600 hover:text-white
+                             focus-visible:bg-teal-600 focus-visible:text-white">
+              تصفّح المنتجات
+              <ArrowLeft size={18} className="flip-rtl" aria-hidden />
+            </Link>
+          </div>
+        </div>
       </section>
 
       <div className="mx-auto max-w-6xl px-4">
-        {/* ───── التصنيفات ───── */}
+        {/* ───── التصنيفات: تنقّل المتجر لا أزرار ترتيب ───── */}
         {categories && categories.length > 0 && (
-          <nav aria-label="تصنيفات المتجر" className="border-b border-ink-200 py-5">
-            <ul className="no-scrollbar flex gap-2 overflow-x-auto">
+          <section className="py-10">
+            <SectionHead title="تسوّق حسب التصنيف" />
+            <ul className="mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
               {categories.map((c) => (
                 <li key={c.id}>
                   <Link href={`/categories/${c.slug}`}
-                        className="inline-flex h-10 shrink-0 items-center rounded-md
-                                   border border-ink-200 bg-white px-4 text-[14px] font-medium
-                                   text-ink-700 transition-colors hover:border-teal-600 hover:text-teal-700">
-                    {c.name}
+                        className="group flex h-14 items-center justify-between gap-2
+                                   rounded-lg border border-ink-200 bg-white px-4
+                                   transition-colors hover:border-teal-600">
+                    <span className="truncate text-[14px] font-semibold text-ink-900">
+                      {c.name}
+                    </span>
+                    <ArrowLeft size={16} aria-hidden
+                               className="flip-rtl shrink-0 text-ink-300
+                                          transition-colors group-hover:text-teal-700" />
                   </Link>
                 </li>
               ))}
             </ul>
-          </nav>
+          </section>
         )}
 
         {/* ───── العروض: لا تظهر إن لم توجد ───── */}
         {onSale.length > 0 && (
-          <section className="py-8">
-            <div className="flex items-end justify-between gap-3">
-              <div>
-                <h2 className="text-[19px] font-bold text-ink-900">عروض حالية</h2>
-                <p className="mt-1 text-[13px] text-ink-500">بأسعار أقلّ من سعرها المعتاد.</p>
-              </div>
-            </div>
-            <div className="mt-4">
+          <section className="border-t border-ink-200 py-10">
+            <SectionHead title="عروض حالية"
+                         subtitle="بأسعار أقلّ من سعرها المعتاد."
+                         href="/products" hrefLabel="كل المنتجات" />
+            <div className="mt-5">
               <ProductGrid products={onSale} host={host} emptyTitle="" />
             </div>
           </section>
         )}
 
         {/* ───── أحدث المنتجات ───── */}
-        <section className="border-t border-ink-200 py-8 first:border-0">
-          <div className="flex items-end justify-between gap-3">
-            <h2 className="text-[19px] font-bold text-ink-900">أحدث المنتجات</h2>
-            <Link href="/products"
-                  className="text-[13px] font-medium text-teal-700 underline underline-offset-4">
-              عرض الكل
-            </Link>
-          </div>
-
-          <div className="mt-4">
+        <section className="border-t border-ink-200 py-10">
+          <SectionHead title="أحدث المنتجات"
+                       href={latest && latest.length > 0 ? '/products' : undefined}
+                       hrefLabel="عرض الكل" />
+          <div className="mt-5">
             {!latest || latest.length === 0 ? (
               <EmptyState icon={<Package size={36} strokeWidth={1.5} />}
-                          title="لا توجد منتجات بعد"
-                          description="سيضيف المتجر منتجاته قريبًا." />
+                          title="لا توجد منتجات متاحة حاليًا"
+                          description="تابع المتجر — ستُعرض المنتجات هنا فور إضافتها." />
             ) : (
               <ProductGrid products={latest} host={host} emptyTitle="" />
             )}
@@ -160,22 +172,48 @@ export default async function StoreHome({ params }: PageProps<'/sites/[host]'>) 
         </section>
 
         {/* ───── شريط الخدمات: معلومات لا زخرفة ───── */}
-        <section className="grid gap-5 border-t border-ink-200 py-8 sm:grid-cols-3">
+        <section className="grid gap-6 border-t border-ink-200 py-10 sm:grid-cols-3">
           {[
             { Icon: Truck,       t: 'توصيل داخل المدن', b: 'رسوم التوصيل تظهر قبل تأكيد الطلب.' },
             { Icon: Wallet,      t: 'دفع يناسبك',       b: 'عند الاستلام أو تحويل بنكي أو بنكك.' },
             { Icon: ShieldCheck, t: 'تتبّع طلبك',       b: 'برقم الطلب وهاتفك، بلا حساب.' },
           ].map(({ Icon, t, b }) => (
             <div key={t} className="flex gap-3">
-              <Icon size={19} className="mt-0.5 shrink-0 text-ink-400" aria-hidden />
+              <span className="grid size-10 shrink-0 place-items-center rounded-md
+                               bg-ink-100 text-ink-700">
+                <Icon size={18} aria-hidden />
+              </span>
               <div>
                 <p className="text-[14px] font-semibold text-ink-900">{t}</p>
-                <p className="mt-0.5 text-[13px] leading-relaxed text-ink-500">{b}</p>
+                <p className="mt-1 text-[13px] leading-relaxed text-ink-500">{b}</p>
               </div>
             </div>
           ))}
         </section>
       </div>
     </>
+  );
+}
+
+/** ترويسة قسم — عنوان، ووصف اختياري، ورابط «عرض الكل» اختياري. */
+function SectionHead({ title, subtitle, href, hrefLabel }: {
+  title: string; subtitle?: string; href?: string; hrefLabel?: string;
+}) {
+  return (
+    <div className="flex items-end justify-between gap-4">
+      <div className="min-w-0">
+        <h2 className="text-[20px] font-bold leading-tight text-ink-900 sm:text-[22px]">
+          {title}
+        </h2>
+        {subtitle && <p className="mt-1.5 text-[13px] text-ink-500">{subtitle}</p>}
+      </div>
+      {href && (
+        <Link href={href}
+              className="shrink-0 text-[13px] font-semibold text-teal-700
+                         underline underline-offset-4 hover:text-teal-600">
+          {hrefLabel ?? 'عرض الكل'}
+        </Link>
+      )}
+    </div>
   );
 }

@@ -29,7 +29,10 @@ export async function ProductGrid({ products, host, emptyTitle, emptyDescription
   const signedIn = actor.kind === 'user';
 
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
+    /* ★ `min-w-0` على الأبناء إلزامي: الافتراض `min-width:auto` يجعل
+       البطاقة ترفض النزول تحت عرض محتواها، فتفيض الشبكة أفقيًا على
+       الشاشات الضيّقة. ثبت ذلك بلقطة عند 375px. */
+    <div className="grid grid-cols-2 gap-3 [&>*]:min-w-0 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
       {products.map((p, i) => (
         <ProductCard key={p.id} product={p} host={host} priority={i < 2}
                      saved={saved.has(p.id)} signedIn={signedIn} />

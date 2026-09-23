@@ -16,8 +16,10 @@ import { addToCart } from '@/lib/cart/actions';
  * ★ `stopPropagation` لأن البطاقة كلها رابط: بدونه تُضاف القطعة
  * ويُنتقل إلى الصفحة في آن واحد.
  */
-export function QuickAdd({ host, productId, label }: {
+export function QuickAdd({ host, productId, label, variant = 'icon' }: {
   host: string; productId: string; label: string;
+  /** `wide` زرّ ممتدّ بنصّ داخل البطاقة؛ `icon` مربّع صغير. */
+  variant?: 'icon' | 'wide';
 }) {
   const router = useRouter();
   const [state, setState] = useState<'idle' | 'done' | 'error'>('idle');
@@ -39,7 +41,9 @@ export function QuickAdd({ host, productId, label }: {
           setTimeout(() => setState('idle'), 2200);
         });
       }}
-      className={`grid size-9 shrink-0 place-items-center rounded-sm border
+      className={`${variant === 'wide'
+                    ? 'flex h-10 w-full items-center justify-center gap-1.5 rounded-md text-[13px] font-semibold'
+                    : 'grid size-9 shrink-0 place-items-center rounded-sm'} border
                   transition-colors disabled:opacity-60
                   ${state === 'done'
                     ? 'border-success bg-success-bg text-success'
@@ -50,6 +54,9 @@ export function QuickAdd({ host, productId, label }: {
       {pending ? <Loader2 size={16} className="animate-spin" aria-hidden />
         : state === 'done' ? <Check size={16} aria-hidden />
         : <Plus size={16} aria-hidden />}
+      {variant === 'wide' && (
+        <span>{state === 'done' ? 'أُضيف' : state === 'error' ? 'تعذّر' : 'أضف للسلة'}</span>
+      )}
     </button>
   );
 }
