@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { IBM_Plex_Sans_Arabic } from 'next/font/google';
 import './globals.css';
+import { config } from '@/lib/config';
 
 /**
  * ★ أربعة أوزان لا وزنان: الهرمية الطباعية تحتاج تمييزًا بين النصّ
@@ -16,9 +17,29 @@ const plexArabic = IBM_Plex_Sans_Arabic({
   display: 'swap',
 });
 
+const DESCRIPTION =
+  'أنشئ متجرك الإلكتروني وأدِر منتجاتك وطلباتك ومخزونك من مكان واحد.';
+
 export const metadata: Metadata = {
+  // ★ بدونه تخرج روابط الصور في وسوم OG نسبيةً، وواتساب وفيسبوك لا
+  // يحلّانها فتصل الرسالة بلا صورة — وهي أكثر قناة مشاركة هنا.
+  metadataBase: new URL(config.siteUrl),
   title: { default: 'سوق النيل', template: '%s | سوق النيل' },
-  description: 'أنشئ متجرك الإلكتروني وأدِر منتجاتك وطلباتك ومخزونك من مكان واحد.',
+  description: DESCRIPTION,
+  applicationName: 'سوق النيل',
+  // ★ لا حقل `icons` هنا عمدًا: إعلانه يُلغي التقاط Next التلقائي
+  // لملفات `src/app` فيختفي رابط الأيقونة كلّه — تحقّقت من ذلك في
+  // الـHTML المُصدَر. الملفات `icon.png` و`apple-icon.png`
+  // و`opengraph-image.png` تكفي وحدها، ونسخة `public/icons/` تبقى
+  // لأن تخطيط المتجر يشير إليها بمسار ثابت.
+  openGraph: {
+    type: 'website',
+    siteName: 'سوق النيل',
+    locale: 'ar_SD',
+    title: 'سوق النيل',
+    description: DESCRIPTION,
+  },
+  twitter: { card: 'summary_large_image' },
 };
 
 export const viewport: Viewport = {

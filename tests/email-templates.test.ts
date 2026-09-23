@@ -30,9 +30,17 @@ test('★ البريد: اسم فيه ترميز يُهرَّب ولا يصير 
   // المعيار: لا وسم مفتوح من مدخل المستخدم. النص `onerror=` نفسه
   // غير ضار ما دام `<img` قد صار `&lt;img` فلا يُفسَّر كوسم.
   assert.ok(!out.html.includes('<script>'), 'سكربت غير مهرَّب في HTML');
-  assert.ok(!out.html.includes('<img'), 'وسم صورة غير مهرَّب');
   assert.ok(out.html.includes('&lt;script&gt;'), 'لم يُهرَّب الترميز');
   assert.ok(out.html.includes('&lt;img'), 'لم يُهرَّب وسم الصورة');
+
+  // ★ صورة واحدة مسموحة: شعار الترويسة. العدّ أدقّ من «لا <img
+  // إطلاقًا»: يسمح بالشعار ويظلّ يسقط على أي صورة تتسرّب من مدخل.
+  const imgs = out.html.match(/<img\b/g) ?? [];
+  assert.equal(imgs.length, 1, 'صورة زائدة في البريد — احتمال حقن');
+  assert.ok(
+    out.html.includes(`src="${BRAND.siteUrl}/brand/email-logo.png"`),
+    'الصورة الوحيدة يجب أن تكون شعار المنصّة برابط مطلق',
+  );
 });
 
 test('البريد: المبلغ يُنسَّق بالعملة السودانية', () => {

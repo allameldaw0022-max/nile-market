@@ -4,6 +4,12 @@
  * عربية وRTL، ونصّية بجانب HTML: بعض عملاء البريد في السودان يفتحون
  * النص فقط، ورسالة بلا نسخة نصية تصل فارغة.
  *
+ * ★ الشعار صورة برابط مطلق: عميل البريد لا يحلّ المسارات النسبية.
+ * و`alt` يحمل اسم المنصّة لأن جيميل وأوتلوك يحجبان الصور افتراضيًا —
+ * فالترويسة تبقى مقروءة حين لا تُحمَّل الصورة أصلًا. والأبعاد مصرّح
+ * بها كي لا يقفز المتن عند التحميل. والملف بضعف الدقة المعروضة
+ * لشاشات الهاتف، إذ لا يدعم البريد `srcset`.
+ *
  * ★ كل قيمة قادمة من القاعدة تمر بـ`escape` قبل إدراجها في HTML —
  * اسم زبون فيه `<script>` لا يصير سكربتًا في صندوق بريد التاجر.
  */
@@ -41,9 +47,11 @@ function layout(brand: BrandContext, title: string, bodyHtml: string): string {
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
              style="max-width:560px;background:#ffffff;border:1px solid #E2E8F0;
                     border-radius:12px;overflow:hidden;">
-        <tr><td style="background:#17191C;padding:16px 20px;color:#ffffff;
-                       font-weight:800;font-size:16px;">
-          ${escape(brand.siteName)}
+        <tr><td align="right" style="padding:18px 20px;border-bottom:1px solid #E2E8F0;">
+          <img src="${escape(brand.siteUrl.replace(/\/+$/, ''))}/brand/email-logo.png"
+               alt="${escape(brand.siteName)}" width="200" height="57"
+               style="display:block;border:0;outline:none;text-decoration:none;
+                      height:auto;max-width:200px;" />
         </td></tr>
         <tr><td style="padding:20px;color:#17191C;font-size:15px;line-height:1.8;">
           ${bodyHtml}
