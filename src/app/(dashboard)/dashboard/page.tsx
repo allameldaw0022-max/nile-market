@@ -11,6 +11,7 @@ import { EmptyState } from '@/components/ui/States';
 import { StatusChip } from '@/components/ui/Badge';
 import { buttonClass } from '@/components/ui/Button';
 import { ORDER_STATUS } from '@/lib/status';
+import { PublishBanner } from '@/components/dashboard/PublishBanner';
 import { formatDate, formatMoney, formatNumber } from '@/lib/money/format';
 
 export const metadata: Metadata = { title: 'لوحة التحكم' };
@@ -34,6 +35,18 @@ export default async function DashboardHome() {
   if (!membership) redirect('/onboarding');
 
   const supabase = await createClient();
+
+  // ★★ حالة المتجر أول ما يُقرأ: متجر غير منشور لا يراه أحد، وهذه
+  // أهمّ معلومة لصاحبه — أهمّ من أرقام مبيعات لم تبدأ بعد.
+  const [{ data: storeRow }, { data: primaryDomain }] = await Promise.all([
+    supabase.from('stores').select('status')
+      .eq('id', membership.storeId).maybeSingle(),
+    supabase.from('store_domains').select('hostname')
+      .eq('store_id', membership.storeId).eq('is_primary', true).maybeSingle(),
+  ]);
+  const needsPublish = storeRow?.status === 'draft'
+    || storeRow?.status === 'pending_review';
+
   const monthStart = new Date();
   monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0);
 
@@ -90,6 +103,13 @@ export default async function DashboardHome() {
 
   return (
     <div className="space-y-6">
+      {/* ★ قبل كل شيء: متجر غير منشور لا يراه زبون، ولا معنى
+          لأرقام مبيعات فوقه. */}
+      {needsPublish && can(membership, 'settings:update') && (
+        <PublishBanner storeId={membership.storeId}
+                       host={primaryDomain?.hostname ?? null} />
+      )}
+
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-[22px] font-bold text-ink-900">

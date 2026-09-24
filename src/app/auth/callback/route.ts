@@ -43,5 +43,22 @@ export async function GET(request: NextRequest) {
   }
 
   await recordLoginEvent(request, 'oauth');
+
+  // ★ Google لا يمرّر رقم هاتف. من دخل به ولا رقم له يمرّ بخطوة
+  // قصيرة قبل وجهته — فلا يصل حساب إلى المنصّة بلا وسيلة تواصل.
+  // (على نطاق متجر لا تُعرض: الزبون ليس صاحب متجر، ورقمه يُؤخذ
+  // في الطلب نفسه.)
+  if (!onStore) {
+    const { data: user } = await supabase.auth.getUser();
+    if (user.user) {
+      const { data: profile } = await supabase
+        .from('profiles').select('phone').eq('id', user.user.id).maybeSingle();
+      if (!profile?.phone) {
+        return NextResponse.redirect(
+          `${origin}/complete-profile?next=${encodeURIComponent(next)}`);
+      }
+    }
+  }
+
   return NextResponse.redirect(`${origin}${next}`);
 }

@@ -111,7 +111,13 @@ export default async function AdminStoresPage(
                 <li key={s.id} className="flex flex-wrap items-center gap-x-4 gap-y-3
                                           px-4 py-3.5">
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-bold text-ink-900">{s.name}</p>
+                    {/* ★ اسم المتجر مدخل إلى ملفه: صاحبه ورقمه
+                        وباقته ونشاطه، ومنه زرّ فتح واجهته. */}
+                    <Link href={`/admin/stores/${s.id}`}
+                          className="block truncate font-bold text-ink-900
+                                     hover:text-teal-700">
+                      {s.name}
+                    </Link>
                     <p className="text-xs text-ink-500" dir="ltr">
                       {s.slug} · {formatDate(s.created_at)}
                     </p>

@@ -555,6 +555,37 @@ export type RpcMap = {
       paid_at: string | null; created_at: string; total_count: number;
     }[];
   };
+  admin_store_detail: {
+    args: { p_store_id: string };
+    returns: {
+      store: {
+        id: string; name: string; slug: string; status: string;
+        created_at: string; published_at: string | null;
+        suspended_reason: string | null; host: string | null;
+        can_checkout: boolean;
+      };
+      owner: {
+        profile_id: string | null; name: string | null; email: string | null;
+        phone: string | null; phone_source: string | null;
+        account_status: string | null; email_verified_at: string | null;
+      };
+      subscription: {
+        plan: string | null; status: string; started_at: string | null;
+        current_period_end: string | null; grace_ends_at: string | null;
+      } | null;
+      partner: {
+        partner_id: string; name: string; serial_no: number | null;
+        attributed_at: string;
+      } | null;
+      counts: {
+        products: number; products_active: number; orders: number;
+        orders_open: number; customers: number; team: number;
+      };
+      sales: { paid_total: number; last_order_at: string | null };
+      domains: { hostname: string; status: string; is_primary: boolean }[];
+      root_domain: string;
+    };
+  };
   platform_users: {
     args: { p_search?: string | null; p_status?: string | null;
             p_limit?: number; p_offset?: number; p_incomplete?: boolean };

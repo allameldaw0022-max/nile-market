@@ -144,4 +144,70 @@ select t.ok((select count(*) = 1 from platform_users('955555')
             '★ البحث برقم الهاتف يجد صاحبه');
 rollback;
 
-\echo '✓ اختبارات هاتف التسجيل مرّت'
+
+\echo '── الرقم بعد Google: الملف يقبل تعديل صاحبه وحده ──'
+begin;
+select t.reset();
+update profiles set phone = null where id = :'custA';
+select t.login(:'custA');
+update profiles set phone = '249966666666' where id = :'custA';
+select t.reset();
+select t.ok((select phone = '249966666666' from profiles where id = :'custA'),
+            '★ صاحب الحساب يضيف رقمه بنفسه (خطوة ما بعد Google)');
+rollback;
+
+begin;
+select t.reset();
+update profiles set phone = null where id = :'ownerB';
+select t.login(:'custA');
+select t.no_effect('update profiles set phone = ''249900000000'' where id = '
+                   || quote_literal(:'ownerB'),
+                   '★★★ ولا يضيف رقمًا لحساب غيره');
+rollback;
+
+begin;
+select t.reset();
+select t.login(:'custA');
+-- الحارس في 0002/0035 يردّ الأعمدة الحسّاسة في نفس التحديث
+update profiles set phone = '249977777777', is_platform_staff = true
+ where id = :'custA';
+select t.reset();
+select t.ok((select phone = '249977777777' and not is_platform_staff
+             from profiles where id = :'custA'),
+            '★★★ والرقم يُحفظ بينما تُردّ محاولة رفع الصلاحية في نفس التحديث');
+rollback;
+
+\echo '── ملف المتجر في لوحة الإدارة ──'
+begin;
+select t.reset();
+select t.login(:'adminOwner');
+select t.ok((select (admin_store_detail(:'A') -> 'store' ->> 'slug') = 'store-a'),
+            '★ موظف stores:view يفتح ملف أي متجر');
+select t.ok((select (admin_store_detail(:'A') -> 'owner' ->> 'email')
+             = 'ownerA@test.local'),
+            'ومعه صاحب المتجر للتواصل');
+select t.ok((select (admin_store_detail(:'A') -> 'counts' ->> 'products')::int = 2),
+            'وأعداد نشاطه');
+select t.ok((select (admin_store_detail(:'A') -> 'partner' ->> 'name')
+             = 'الشريك الأول'),
+            '★ ومَن أحاله إن كان جاء عبر مسوّق');
+select t.ok((select jsonb_array_length(admin_store_detail(:'A') -> 'domains') >= 1),
+            'ونطاقه لفتحه');
+
+select t.login(:'ownerB');
+select t.throws('select admin_store_detail(' || quote_literal(:'A') || ')',
+                '★★★ ولا يفتحه تاجر آخر');
+select t.login(:'custA');
+select t.throws('select admin_store_detail(' || quote_literal(:'A') || ')',
+                '★★★ ولا مستخدم عادي');
+select t.logout();
+select t.throws('select admin_store_detail(' || quote_literal(:'A') || ')',
+                '★★★ ولا زائر');
+
+select t.login(:'adminOwner');
+select t.throws('select admin_store_detail('
+                || quote_literal('00000000-0000-0000-0000-0000000000ff') || ')',
+                '★ ومتجر غير موجود يُرفض صراحةً');
+rollback;
+
+\echo '✓ اختبارات هاتف التسجيل وملف المتجر مرّت'

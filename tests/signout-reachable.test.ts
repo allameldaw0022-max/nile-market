@@ -110,3 +110,38 @@ test('الخروج من جهاز واحد ≠ الخروج من كل الأجه�
   assert.match(actions, /signOut\(\{ scope: 'global' \}\)/,
     'والعالمي يبقى منفصلًا في مركز الأمان');
 });
+
+/**
+ * ★★★ إجراء بلا زرّ لا وجود له — نفس الصنف، حالة أخرى.
+ *
+ * `publishStore()` كانت تعيش في معالج الإنشاء وحده. من غادره قبل
+ * خطوته الأخيرة يبقى متجره `draft` إلى الأبد: لا زرّ نشر في اللوحة،
+ * ورابط متجره يعطي «الصفحة غير موجودة» بلا سبب. خمسة من سبعة
+ * متاجر على الإنتاج كانت كذلك.
+ */
+test('★★★ النشر موصول باللوحة لا بمعالج الإنشاء وحده', () => {
+  const dashboard = code(join(root, 'app/(dashboard)/dashboard/page.tsx'));
+  assert.match(dashboard, /PublishBanner/,
+    'لوحة التاجر تعرض دعوة النشر حين يكون المتجر مسوّدة');
+
+  const banner = code(join(root, 'components/dashboard/PublishBanner.tsx'));
+  assert.match(banner, /publishStore\(/, 'والزرّ يستدعي الإجراء فعلًا');
+});
+
+/**
+ * ★★ متجر قائم غير منشور ليس صفحة غير موجودة.
+ *
+ * `notFound()` على حالة `draft` كان يُظهر 404 عامًّا لصاحب المتجر
+ * نفسه، فلا يعرف أن السبب أنّه لم ينشره.
+ */
+test('★★ ومتجر غير منشور يُفسَّر لصاحبه لا يُرمى في 404', () => {
+  const layout = code(join(root, 'app/(storefront)/sites/[host]/layout.tsx'));
+
+  // الحالات الثلاث غير النشطة تُعالَج بإشعار، ولا يبقى `notFound`
+  // إلا لمضيف لا متجر له أصلًا.
+  assert.match(layout, /status === 'suspended'[\s\S]{0,120}StoreNotice/);
+  assert.match(layout, /status !== 'active'[\s\S]{0,200}StoreNotice/,
+    'غير النشط يُعرض بإشعار لا بـ404');
+  assert.doesNotMatch(layout, /status !== 'active'\)\s*notFound\(\)/,
+    '★ لا عودة إلى 404 الصامت على متجر قائم');
+});

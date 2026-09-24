@@ -63,9 +63,23 @@ export default async function StorefrontLayout({
     permanentRedirect(`https://${store.primaryHost}`);
   }
 
+  // ★★ متجر قائم لكنه غير منشور ليس صفحة غير موجودة.
+  //
+  // كان `draft` و`pending_review` يسقطان في 404 عامّ: صاحب المتجر
+  // يفتح رابطه بعد إنشائه فيرى «الصفحة غير موجودة» ولا يعرف أن
+  // السبب أنّه لم ينشره بعد — وهو أشيع حالة في المنصة (معظم
+  // المتاجر تبقى مسوّدة حتى يُنشرها صاحبها).
+  //
+  // العنوان يبقى واحدًا للزائر: لا نكشف له أكثر من «غير متاح».
+  // والتفصيل يظهر لصاحب المتجر وحده أسفله.
   if (store.status === 'suspended') return <StoreNotice title="المتجر موقوف حاليًا" />;
   if (store.status === 'closed')    return <StoreNotice title="المتجر مغلق مؤقتًا" />;
-  if (store.status !== 'active')    notFound();
+  if (store.status !== 'active') {
+    return (
+      <StoreNotice title="هذا المتجر لم يُنشر بعد"
+                   storeId={store.storeId} draft />
+    );
+  }
 
   const supabase = await createClient();
   const [{ data: settings }, { data: branding }, { data: navCategories },
@@ -353,14 +367,44 @@ export default async function StorefrontLayout({
   );
 }
 
-function StoreNotice({ title }: { title: string }) {
+/**
+ * إشعار حالة المتجر للزائر.
+ *
+ * ★ الرسالة للزائر واحدة مهما كان السبب — لا نكشف له حالة متجر
+ * ليس له. والسطر الإضافي يظهر لصاحب المتجر وحده، لأنه هو من يقدر
+ * على الفعل، وهو من كان يحتار أمام 404 بلا سبب.
+ */
+async function StoreNotice({ title, storeId, draft = false }: {
+  title: string; storeId?: string; draft?: boolean;
+}) {
+  const actor = await getActor();
+  const isOwner = Boolean(
+    storeId && actor.kind === 'user'
+    && actor.stores.some((s) => s.storeId === storeId),
+  );
+
   return (
     <div className="grid min-h-screen place-items-center bg-ink-50 px-4">
       <div className="max-w-sm text-center">
         <h1 className="text-xl font-extrabold text-ink-900">{title}</h1>
-        <p className="mt-2 text-sm text-ink-500">
-          إن كنت صاحب المتجر، سجّل الدخول إلى لوحة التحكم لمعرفة التفاصيل.
-        </p>
+
+        {isOwner && draft ? (
+          <>
+            <p className="mt-2 text-sm leading-relaxed text-ink-600">
+              متجرك جاهز على هذا الرابط، ولا يراه الزبائن حتى تنشره.
+              افتح لوحة التحكم واضغط «نشر المتجر».
+            </p>
+            <Link href="/dashboard"
+                  className="mt-4 inline-flex h-11 items-center justify-center
+                             rounded-md bg-teal-600 px-5 font-bold text-white">
+              انشر متجرك الآن
+            </Link>
+          </>
+        ) : (
+          <p className="mt-2 text-sm text-ink-500">
+            إن كنت صاحب المتجر، سجّل الدخول إلى لوحة التحكم لمعرفة التفاصيل.
+          </p>
+        )}
       </div>
     </div>
   );
