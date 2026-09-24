@@ -255,8 +255,9 @@ select t.ok(:'due'::numeric > 0, 'ويصير للشريك رصيد مستحق');
 
 -- الشريك يطلب الصرف
 select t.login('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb');
-select payout_id as pid from request_partner_payout(
-  :'due'::numeric, 'طلب تجربة', 'e2e-payout-1')
+select save_partner_payout_account('bankak', 'الشريك الأول', null, null, '0911111111');
+-- المبلغ لا يُكتب: القاعدة تجمعه من العمولات المتاحة وتحجزها
+select payout_id as pid from request_partner_payout('طلب تجربة', 'e2e-payout-1')
 \gset
 select t.reset();
 select t.ok((select status = 'submitted' and initiated_by is not null

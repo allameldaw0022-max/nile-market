@@ -114,17 +114,20 @@ insert into commission_ledger
 values (:'P1', :'A', 'commission', 10000, 'payable', 20000, 50);
 
 select t.login(:'partner1');
-select t.ok((select amount = 4000 from request_partner_payout(4000)),
-            'الشريك يطلب صرفًا ضمن رصيده');
+select t.throws('select 1 from request_partner_payout()',
+                '★★ لا صرف قبل استكمال بيانات الاستلام');
+select save_partner_payout_account('bank_transfer', 'الشريك الأول',
+                                   'بنك الخرطوم', '1234567890');
+select t.ok((select amount = 10000 from request_partner_payout()),
+            '★★ المبلغ يُحسب في القاعدة من العمولات المتاحة — لا يكتبه الشريك');
 select t.ok((select status = 'submitted' and initiated_by = :'partner1'
              from partner_payouts where partner_id = :'P1'),
             'الطلب يُسجَّل باسمه كمُبادِر (D30)');
-select t.throws('select request_partner_payout(50000)',
-                '★ طلب يتجاوز الرصيد مرفوض');
-select t.throws('select request_partner_payout(0)',
-                'مبلغ صفر مرفوض');
-select t.throws('select request_partner_payout(-100)',
-                'مبلغ سالب مرفوض');
+select t.ok((select count(*) = 1 from commission_ledger
+             where partner_id = :'P1' and status = 'reserved'),
+            '★★ والعمولة تُحجز فور الطلب');
+select t.ok((select payable = 0 from partner_balances where partner_id = :'P1'),
+            'فلا يبقى رصيد متاح');
 rollback;
 
 -- الطلبات المعلّقة محجوزة: لا يُصرف نفس الرصيد مرتين
@@ -135,13 +138,16 @@ insert into commission_ledger
 values (:'P1', :'A', 'commission', 10000, 'payable', 20000, 50);
 
 select t.login(:'partner1');
+select save_partner_payout_account('bankak', 'الشريك الأول', null, null, '0911111111');
 \o /dev/null
-select request_partner_payout(8000, null, 'k1');
+select request_partner_payout(null, 'k1');
 \o
-select t.throws('select request_partner_payout(8000, null, ''k2'')',
-                '★ الرصيد المحجوز في طلب معلّق لا يُطلب مرة أخرى');
-select t.ok((select amount = 8000 from request_partner_payout(8000, null, 'k1')),
-            'ونفس المفتاح يعيد الطلب نفسه');
+select t.throws('select 1 from request_partner_payout(null, ''k2'')',
+                '★★★ الرصيد المحجوز في طلب معلّق لا يُطلب مرة أخرى');
+select t.ok((select amount = 10000 from request_partner_payout(null, 'k1')),
+            'ونفس المفتاح يعيد الطلب نفسه لا طلبًا ثانيًا');
+select t.ok((select count(*) = 1 from partner_payouts where partner_id = :'P1'),
+            'وصفّ صرف واحد في الجدول');
 rollback;
 
 begin;

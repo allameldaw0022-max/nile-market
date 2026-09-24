@@ -11,6 +11,7 @@ const NAV = [
   { href: '/#how',     label: 'كيف يعمل' },
   { href: '/pricing',  label: 'الباقات' },
   { href: '/#faq',     label: 'الأسئلة الشائعة' },
+  { href: '/partners', label: 'كن شريكاً' },
   { href: '/support',  label: 'الدعم' },
 ];
 
@@ -71,6 +72,7 @@ export default async function PlatformLayout({ children }: LayoutProps<'/'>) {
             <FooterCol title="المنتج" links={[
               ['/#how', 'كيف يعمل'],
               ['/pricing', 'الباقات'],
+              ['/partners', 'كن شريكاً'],
               ['/#faq', 'الأسئلة الشائعة'],
             ]} />
             <FooterCol title="الدعم" links={[

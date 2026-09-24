@@ -1,11 +1,14 @@
 import 'server-only';
+import { rootDomain, siteUrl } from '@/lib/partners/links';
 
 /** إعدادات المنصة. كل قيمة سرية تُقرأ هنا فقط، خادميًا. */
 export const config = {
   siteName: 'سوق النيل',
   siteNameEn: 'Nile Market',
-  rootDomain: process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? 'nilemarket.online',
-  siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000',
+  // ★ المصدر في `lib/partners/links` لا هنا: ذلك الملف غير خادمي
+  // ويحتاجه الـproxy وتحليل الرابط القصير، فالقيمة واحدة للجميع.
+  rootDomain: rootDomain(),
+  siteUrl: siteUrl(),
   currency: 'SDG' as const,
   timezone: 'Africa/Khartoum' as const,
   locale: 'ar' as const,

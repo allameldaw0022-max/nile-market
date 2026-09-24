@@ -18,7 +18,8 @@ import { isPlatformHost } from '@/lib/config';
  * ★ القائمة البيضاء تختلف بين المضيفين: مسارات المنصّة لا معنى لها
  * على متجر (يحجبها الـproxy)، ومسارات المتجر لا معنى لها على المنصّة.
  */
-const PLATFORM_NEXT = new Set(['/dashboard', '/onboarding', '/account', '/partner', '/admin']);
+const PLATFORM_NEXT = new Set(['/dashboard', '/onboarding', '/account', '/partner',
+                               '/partners/join', '/admin']);
 const STORE_NEXT    = new Set(['/', '/account', '/wishlist', '/cart', '/products']);
 
 export async function GET(request: NextRequest) {

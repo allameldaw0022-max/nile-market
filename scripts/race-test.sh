@@ -101,4 +101,49 @@ check "وبقيّة الطلبات تمرّ بلا خصم لا أن تُلغى" 
       "$($Q -c "select count(*) from orders where idempotency_key like '$RUN-cp-%'")" "4"
 
 setstock 50
+
+# =====================================================================
+# سباق طلب الصرف — الاختبار الذي لا يمكن إجراؤه داخل معاملة واحدة.
+#
+# ضغطتان متزامنتان على «طلب صرف» يجب أن تُنتجا طلبًا واحدًا لنفس
+# العمولات لا طلبين بنفس المبلغ. الحاجز قفل صفّ الشريك في
+# `request_partner_payout` — لا React ولا زرّ معطَّل.
+# =====================================================================
+echo "── سباق طلب الصرف: خمس جلسات على نفس الرصيد ──"
+PARTNER='9a000000-0000-0000-0000-00000000000a'
+PUSER='bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'
+
+$Q -c "insert into commission_ledger
+         (partner_id, store_id, entry_kind, amount, status, base_amount, rate_applied)
+       values ('$PARTNER','$SID','commission', 12000, 'payable', 40000, 30)" >/dev/null
+$Q -c "update partners set payout_method='bankak', payout_beneficiary='الشريك الأول',
+              payout_phone='0911111111' where id='$PARTNER'" >/dev/null
+
+payout_sql() {   # $1 = مفتاح التكرار
+  # ★ الإعداد على مستوى الجلسة لا المعاملة: خارج معاملة صريحة لا
+  # يعبر `set_config(..., true)` من عبارة إلى التي تليها.
+  cat <<EOF
+select set_config('request.jwt.claims',
+  json_build_object('sub','$PUSER','role','authenticated')::text, false);
+set role authenticated;
+select payout_id from request_partner_payout(null, '$1');
+EOF
+}
+
+for i in 1 2 3 4 5; do
+  payout_sql "$RUN-po-$i" > "$TMP/p$i.sql"
+  ( $Q -f "$TMP/p$i.sql" >"$TMP/p$i.out" 2>&1 ) &
+done
+wait
+
+check "★★★ خمس ضغطات متزامنة ⇒ طلب صرف واحد" \
+      "$($Q -c "select count(*) from partner_payouts
+                 where partner_id='$PARTNER' and idempotency_key like '$RUN-po-%'")" "1"
+check "★★★ ولا عمولة محجوزة لأكثر من طلب" \
+      "$($Q -c "select count(*) from (select payout_id from commission_ledger
+                 where partner_id='$PARTNER' and payout_id is not null
+                 group by payout_id) q")" "1"
+check "★★ والأربع الأخريات تتلقّين «طلب قيد المعالجة»" \
+      "$(cat "$TMP"/p*.out | grep -c 'PAYOUT_PENDING')" "4"
+
 [ $fail -eq 0 ] && echo "✓ اختبارات التزامن مرّت" || { echo "✗ فشل اختبار تزامن"; exit 1; }

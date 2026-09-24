@@ -286,23 +286,30 @@ select record_payment('subscription',
   (select id from subscription_requests where idempotency_key='req-po'),
   'bank_transfer', 15000, 'TRX-PO', null, 'pay-po');
 select t.reset();
-insert into partner_payouts (partner_id, amount, initiated_by, initiated_by_kind,
-                             requested_by, approved_by, approved_at, status, idempotency_key)
-values (:'PARTNER', 4500, :'partnerUser', 'partner', :'adminFin', :'adminOwner',
-        now(), 'approved', 'po-1');
+-- الطلب يمرّ بالمسار الحقيقي: بيانات استلام ⇒ حجز ⇒ تسجيل ⇒ اعتماد
+select t.login(:'partnerUser');
+select save_partner_payout_account('bankak', 'الشريك الأول', null, null, '0911111111');
+select payout_id as pid from request_partner_payout(null, 'po-1')
+\gset
+select t.login(:'adminOwner');
+\o /dev/null
+select review_payout(:'pid', 'record');
+\o
 select t.login(:'adminFin');
-select mark_payout_paid((select id from partner_payouts where idempotency_key='po-1'), 'TRF-1');
+\o /dev/null
+select review_payout(:'pid', 'approve');
+select mark_payout_paid(:'pid', 'TRF-1');
+\o
 select t.reset();
-select t.ok((select status = 'paid' from commission_ledger where entry_kind='commission'),
+select t.ok((select status = 'paid' and payout_id = :'pid' from commission_ledger
+             where entry_kind='commission'),
             'صف العمولة صار مصروفًا ومرتبطًا بالصرف');
 select t.login(:'adminFin');
-select t.throws('select mark_payout_paid((select id from partner_payouts where idempotency_key=''po-1''), ''TRF-2'')',
+select t.throws('select mark_payout_paid(' || quote_literal(:'pid') || ', ''TRF-2'')',
                 'صرف نفس الطلب مرتين مرفوض');
--- صرف جديد لا يلتقط عمولة مصروفة
-insert into partner_payouts (partner_id, amount, requested_by, approved_by, approved_at, status, idempotency_key)
-values (:'PARTNER', 4500, :'adminFin', :'adminOwner', now(), 'approved', 'po-2');
-select t.ok((select mark_payout_paid((select id from partner_payouts where idempotency_key='po-2')) = 0),
-            'صرف ثانٍ لا يلتقط أي عمولة مصروفة سلفًا');
+select t.login(:'partnerUser');
+select t.throws('select 1 from request_partner_payout()',
+                '★★ ولا رصيد يبقى بعد الصرف ⇒ لا طلب ثانٍ');
 rollback;
 
 \echo '── الصرف لا يتم قبل الاعتماد ──'
@@ -311,6 +318,7 @@ select t.reset();
 insert into partner_payouts (partner_id, amount, initiated_by, initiated_by_kind, status, idempotency_key)
 values (:'PARTNER', 500, :'partnerUser', 'partner', 'submitted', 'po-3');
 select t.login(:'adminFin');
-select t.throws('select mark_payout_paid((select id from partner_payouts where idempotency_key=''po-3''))',
+select t.throws('select mark_payout_paid('
+                || '(select id from partner_payouts where idempotency_key=''po-3''), ''X'')',
                 'طلب الشريك وحده لا يُصرف — يحتاج تسجيلًا واعتمادًا');
 rollback;

@@ -227,7 +227,9 @@ export type RpcMap = {
     returns: void;
   };
   mark_payout_paid: {
-    args: { p_payout_id: string; p_reference?: string | null };
+    args: { p_payout_id: string; p_reference: string;
+            p_transferred_at?: string | null; p_note?: string | null;
+            p_proof_media_id?: string | null };
     returns: number;
   };
   run_daily_maintenance: {
@@ -397,9 +399,70 @@ export type RpcMap = {
     returns: void;
   };
   request_partner_payout: {
-    args: { p_amount: number; p_note?: string | null;
-            p_idempotency_key?: string | null };
-    returns: { payout_id: string; amount: number }[];
+    args: { p_note?: string | null; p_idempotency_key?: string | null };
+    returns: { payout_id: string; amount: number; commission_count: number }[];
+  };
+  cancel_partner_payout: {
+    args: { p_payout_id: string };
+    returns: void;
+  };
+  partner_self: {
+    args: Record<string, never>;
+    returns: {
+      partner_id: string; name: string; referral_code: string;
+      serial_no: number | null; commission_rate: number; status: string;
+      payable: number; reserved: number; paid: number; total: number;
+      account_ready: boolean;
+    }[];
+  };
+  become_partner: {
+    args: Record<string, never>;
+    returns: { partner_id: string; referral_code: string; serial_no: number;
+               was_created: boolean }[];
+  };
+  platform_default_partner_rate: {
+    args: Record<string, never>;
+    returns: number;
+  };
+  partner_code_by_serial: {
+    args: { p_serial: number };
+    returns: string | null;
+  };
+  save_partner_payout_account: {
+    args: { p_method: 'bank_transfer' | 'bankak'; p_beneficiary: string;
+            p_bank?: string | null; p_account?: string | null;
+            p_phone?: string | null };
+    returns: void;
+  };
+  partner_payout_account: {
+    args: Record<string, never>;
+    returns: {
+      method: string | null; beneficiary: string | null; bank: string | null;
+      account: string | null; phone: string | null; is_complete: boolean;
+    }[];
+  };
+  payout_admin_queue: {
+    args: { p_limit?: number };
+    returns: {
+      payout_id: string; partner_id: string; partner_name: string;
+      partner_email: string; amount: number; status: string;
+      note: string | null; rejected_reason: string | null;
+      reference: string | null; transferred_at: string | null;
+      paid_at: string | null; created_at: string; commission_count: number;
+      account_snapshot: Record<string, string | null> | null;
+      requested_by: string | null; approved_by: string | null;
+    }[];
+  };
+  partner_payout_rows: {
+    args: { p_partner_id?: string | null; p_limit?: number };
+    returns: {
+      payout_id: string; amount: number; status: string; note: string | null;
+      rejected_reason: string | null; reference: string | null;
+      transferred_at: string | null; paid_at: string | null; created_at: string;
+      commission_count: number;
+      account_snapshot: Record<string, string | null> | null;
+      partner_name: string;
+    }[];
   };
   approve_payout: {
     args: { p_payout_id: string };

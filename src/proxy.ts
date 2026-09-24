@@ -1,7 +1,8 @@
 import { randomBytes } from 'node:crypto';
 import { NextResponse, type NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
-import { isPlatformHost } from '@/lib/config';
+import { config as platform, isPlatformHost } from '@/lib/config';
+import { serialFromHost } from '@/lib/partners/links';
 import {
   REFERRAL_COOKIE, REFERRAL_MAX_AGE, VISITOR_COOKIE, VISITOR_MAX_AGE,
 } from '@/lib/referral';
@@ -76,6 +77,50 @@ export async function proxy(request: NextRequest) {
     } catch (error) {
       console.error('[referral] تعذّر تسجيل الزيارة', error);
     }
+  }
+
+  // ★ الرابط القصير للشريك: `1nilemarket.online` وأخواته.
+  //
+  // مدخل ثانٍ لنظام الإحالة القائم لا نظام ثانٍ: الرقم يُترجَم في
+  // القاعدة إلى رمز الإحالة، وتُسجَّل الزيارة بنفس الدالة، ثم
+  // يُحوَّل الزائر إلى الموقع الرئيسي. Last-touch ونافذة الثلاثين
+  // يومًا ومنع الإسناد الذاتي تسري كما هي.
+  //
+  // ★ يُفحص قبل توجيه المستأجر: هذه المضيفات ليست متاجر، وبدون هذا
+  // الفحص كانت ستُعاد كتابتها إلى `/sites/1nilemarket.online` ⇒ 404.
+  const serial = serialFromHost(host);
+  if (serial !== null) {
+    const target = new URL(pathname === '/' ? '/' : pathname,
+                           `https://${platform.rootDomain}`);
+    target.search = search;
+    const hop = NextResponse.redirect(target, 302);
+
+    try {
+      const { data: code } = await supabase.rpc('partner_code_by_serial', {
+        p_serial: serial,
+      });
+      if (typeof code === 'string' && code) {
+        let token = request.cookies.get(REFERRAL_COOKIE)?.value;
+        if (!token || token.length < 24) {
+          token = randomBytes(32).toString('hex');
+        }
+        // الكوكي يُكتب على الدومين الجذر لا على الرابط القصير، وإلا
+        // ضاع فور التحويل. (Domain= يسمح بذلك لأنهما دومينان مستقلان
+        // فعليًا — ولهذا يُسجَّل الأثر في القاعدة أيضًا.)
+        hop.cookies.set(REFERRAL_COOKIE, token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          path: '/',
+          maxAge: REFERRAL_MAX_AGE,
+        });
+        target.searchParams.set('ref', code);
+        return NextResponse.redirect(target, 302);
+      }
+    } catch (error) {
+      console.error('[referral] تعذّر ترجمة الرابط القصير', error);
+    }
+    return hop;
   }
 
   if (isPlatformHost(host)) {

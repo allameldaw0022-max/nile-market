@@ -94,7 +94,8 @@ insert into commission_ledger
 values (:'P1', :'A', 'commission', 10000, 'payable', 20000, 50);
 
 select t.login(:'partner1');
-select payout_id as pid from request_partner_payout(5000)
+select save_partner_payout_account('bankak', 'الشريك الأول', null, null, '0911111111');
+select payout_id as pid from request_partner_payout()
 \gset
 
 -- لا اعتماد قبل التسجيل الإداري
@@ -129,7 +130,7 @@ select t.ok((select exists (select 1 from notifications
 -- الصرف
 select t.login(:'adminFin');
 select t.ok((select mark_payout_paid(:'pid', 'REF-1') = 10000),
-            'الصرف يربط العمولات المستحقة');
+            'الصرف يصرف العمولات المحجوزة لهذا الطلب');
 select t.reset();
 select t.ok((select status = 'paid' from partner_payouts where id = :'pid'),
             'والطلب يصبح مصروفًا');
@@ -150,7 +151,8 @@ insert into admin_permissions (admin_member_id, section, level)
 select id, 'payouts', 'approve' from admin_members where profile_id = :'partner1';
 
 select t.login(:'partner1');
-select payout_id as pid2 from request_partner_payout(1000)
+select save_partner_payout_account('bankak', 'الشريك الأول', null, null, '0911111111');
+select payout_id as pid2 from request_partner_payout()
 \gset
 select t.login(:'adminOwner');
 \o /dev/null
@@ -168,7 +170,8 @@ insert into commission_ledger
   (partner_id, store_id, entry_kind, amount, status, base_amount, rate_applied)
 values (:'P1', :'A', 'commission', 10000, 'payable', 20000, 50);
 select t.login(:'partner1');
-select payout_id as pid3 from request_partner_payout(2000)
+select save_partner_payout_account('bankak', 'الشريك الأول', null, null, '0911111111');
+select payout_id as pid3 from request_partner_payout()
 \gset
 select t.login(:'adminOwner');
 \o /dev/null

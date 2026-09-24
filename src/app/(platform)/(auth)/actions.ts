@@ -5,6 +5,7 @@ import { headers } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
 import { getActor } from '@/lib/auth/actor';
 import { config } from '@/lib/config';
+import { setPartnerIntent } from '@/lib/partners/intent';
 import { recordLoginEvent } from '@/lib/auth/sessions';
 import { safeNext } from '@/lib/safe-next';
 import { rateLimit } from '@/lib/auth/rate-limit';
@@ -105,6 +106,20 @@ export async function requestPasswordReset(
 }
 
 
+/**
+ * تسجيل شريك — نفس `signUp` بوجهة مختلفة.
+ *
+ * ★ لا مسار مصادقة ثانٍ. الفرق الوحيد كوكي نيّة يقرؤه معالج تأكيد
+ * البريد ليعيد صاحبه إلى بوابة الشراكة بدل لوحة التاجر. الكوكي لا
+ * يمنح شيئًا: `become_partner` تفحص الحساب في القاعدة على أي حال.
+ */
+export async function signUpAsPartner(
+  prev: AuthResult | null, formData: FormData,
+): Promise<AuthResult> {
+  await setPartnerIntent();
+  return signUp(prev, formData);
+}
+
 /** Google OAuth — PKCE. الوجهة تُحصر في مسارات داخلية في الـcallback. */
 export async function signInWithGoogle() {
   const supabase = await createClient();
@@ -116,6 +131,21 @@ export async function signInWithGoogle() {
     },
   });
   if (error || !data.url) redirect('/login?error=oauth_failed');
+  redirect(data.url);
+}
+
+/** Google للشريك — نفس التدفّق، ووجهته بوابة الشراكة. */
+export async function signInWithGoogleAsPartner() {
+  await setPartnerIntent();
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: `${config.siteUrl}/auth/callback?next=/partners/join`,
+      queryParams: { access_type: 'offline', prompt: 'consent' },
+    },
+  });
+  if (error || !data.url) redirect('/partners/join?error=oauth_failed');
   redirect(data.url);
 }
 

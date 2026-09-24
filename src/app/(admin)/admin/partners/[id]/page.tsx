@@ -19,10 +19,20 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 /** حالة العمولة كما تسمّيها القاعدة. */
-const COMMISSION_STATUS: Record<string, { label: string; tone: 'warning' | 'success' | 'neutral' }> = {
-  payable:  { label: 'مستحقة', tone: 'warning' },
-  paid:     { label: 'مدفوعة', tone: 'success' },
-  reversed: { label: 'ملغاة',  tone: 'neutral' },
+const COMMISSION_STATUS: Record<string, { label: string; tone: 'warning' | 'info' | 'success' | 'neutral' }> = {
+  payable:  { label: 'مستحقة',   tone: 'warning' },
+  reserved: { label: 'قيد الصرف', tone: 'info' },
+  paid:     { label: 'مدفوعة',   tone: 'success' },
+  reversed: { label: 'ملغاة',    tone: 'neutral' },
+};
+
+const PAYOUT_STATUS: Record<string, { label: string; tone: 'warning' | 'info' | 'success' | 'danger' | 'neutral' }> = {
+  submitted:      { label: 'بانتظار التسجيل', tone: 'warning' },
+  pending_review: { label: 'بانتظار الاعتماد', tone: 'warning' },
+  approved:       { label: 'معتمد',            tone: 'info' },
+  paid:           { label: 'مصروف',            tone: 'success' },
+  rejected:       { label: 'مرفوض',            tone: 'danger' },
+  cancelled:      { label: 'مسحوب',            tone: 'neutral' },
 };
 
 const PARTNER_STATUS: Record<string, { label: string; tone: 'success' | 'warning' | 'danger' }> = {
@@ -46,12 +56,13 @@ export default async function AdminPartnerDetailPage(
   const { id } = await params;
 
   const supabase = await createClient();
-  const [{ data: partnerRows }, storesRes, commissionsRes] = await Promise.all([
+  const [{ data: partnerRows }, storesRes, commissionsRes, payoutsRes] = await Promise.all([
     rpc(supabase, 'partner_admin_list', {
       p_search: null, p_status: null, p_limit: 100, p_offset: 0,
     }),
     rpc(supabase, 'partner_referred_stores', { p_partner_id: id }),
     rpc(supabase, 'partner_commission_rows', { p_partner_id: id, p_limit: 100 }),
+    rpc(supabase, 'partner_payout_rows', { p_partner_id: id, p_limit: 50 }),
   ]);
 
   const partner = (partnerRows ?? []).find((p) => p.partner_id === id);
@@ -62,7 +73,11 @@ export default async function AdminPartnerDetailPage(
 
   const stores = storesRes.data ?? [];
   const commissions = commissionsRes.data ?? [];
+  const payouts = payoutsRes.error ? [] : (payoutsRes.data ?? []);
   const renewals = stores.reduce((n, s) => n + Number(s.paid_subscriptions), 0);
+  const reserved = payouts
+    .filter((p) => ['submitted', 'pending_review', 'approved'].includes(p.status))
+    .reduce((sum, p) => sum + Number(p.amount), 0);
   const s = PARTNER_STATUS[partner.status]
     ?? { label: partner.status, tone: 'warning' as const };
 
@@ -89,10 +104,11 @@ export default async function AdminPartnerDetailPage(
         </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-5">
         <Stat label="تجار تابعون" value={formatNumber(stores.length)} />
         <Stat label="اشتراكات وتجديدات مدفوعة" value={formatNumber(renewals)} />
         <Stat label="مستحق" value={formatMoney(partner.payable)} />
+        <Stat label="قيد الصرف" value={formatMoney(reserved)} />
         <Stat label="مدفوع" value={formatMoney(partner.paid)} />
       </div>
 
@@ -134,6 +150,38 @@ export default async function AdminPartnerDetailPage(
                 </span>
               </li>
             ))}
+          </ul>
+        )}
+      </Card>
+
+      <Card className="overflow-hidden">
+        <CardHeader title="طلبات الصرف"
+                    description="الاعتماد قبول للطلب؛ التحويل يدوي ثم يُؤكَّد." />
+        {payouts.length === 0 ? (
+          <div className="p-5"><EmptyState title="لا طلبات صرف" /></div>
+        ) : (
+          <ul className="divide-y divide-ink-200">
+            {payouts.map((p) => {
+              const ps = PAYOUT_STATUS[p.status]
+                ?? { label: p.status, tone: 'neutral' as const };
+              return (
+                <li key={p.payout_id}
+                    className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3">
+                  <span className="font-bold tabular text-ink-900">
+                    {formatMoney(p.amount)}
+                  </span>
+                  <span className="min-w-0 flex-1 text-xs text-ink-500">
+                    {formatDateTime(p.paid_at ?? p.created_at)}
+                    {' · '}{formatNumber(Number(p.commission_count))} قيد
+                    {p.reference && <span dir="ltr"> · {p.reference}</span>}
+                    {p.rejected_reason && (
+                      <span className="block text-danger">{p.rejected_reason}</span>
+                    )}
+                  </span>
+                  <Badge tone={ps.tone}>{ps.label}</Badge>
+                </li>
+              );
+            })}
           </ul>
         )}
       </Card>

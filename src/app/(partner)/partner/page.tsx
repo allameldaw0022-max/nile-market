@@ -1,4 +1,3 @@
-import { randomUUID } from 'node:crypto';
 import type { Metadata } from 'next';
 import { ErrorState } from '@/components/ui/States';
 import { PartnerDashboard } from '@/components/partner/PartnerDashboard';
@@ -12,6 +11,8 @@ export const metadata: Metadata = {
 // بيانات الشريك خاصة به ⇒ لا تصيير مسبق ولا تخزين
 export const dynamic = 'force-dynamic';
 
+const OPEN = ['submitted', 'pending_review', 'approved'];
+
 export default async function PartnerPage() {
   const data = await loadPartnerDashboard();
   if (!data.ok) return <ErrorState description={data.message} />;
@@ -20,12 +21,9 @@ export default async function PartnerPage() {
     <PartnerDashboard
       profile={data.data.profile}
       balance={data.data.balance}
-      pendingPayouts={data.data.pendingPayouts}
       referrals={data.data.referrals}
-      commissions={data.data.commissions}
-      payouts={data.data.payouts}
-      // مفتاح التكرار يُولَّد مع الصفحة: ضغطتان لا تُنشئان طلبين
-      idempotencyKey={randomUUID()}
+      accountReady={data.data.accountReady}
+      openPayout={data.data.payouts.some((p) => OPEN.includes(p.status))}
     />
   );
 }

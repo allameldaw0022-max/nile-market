@@ -28,7 +28,11 @@ export function PayoutReviewRow({ payoutId, status, canRecord, canApprove }: {
     });
   }
   if (status === 'approved' && canApprove) {
-    actions.push({ key: 'paid', label: 'تأكيد الصرف' });
+    actions.push({
+      key: 'paid', label: 'تأكيد الصرف',
+      // ★ المرجع إلزامي: لا يُقيَّد صرف بلا أثر يُراجَع
+      needsReason: true, reasonLabel: 'مرجع التحويل (رقم العملية)',
+    });
   }
 
   if (actions.length === 0) return null;
@@ -39,7 +43,7 @@ export function PayoutReviewRow({ payoutId, status, canRecord, canApprove }: {
       hint="فصل المهام: لا يعتمد مَن سجّل الطلب ولا مَن بادر به."
       onRun={async (key, reason) => {
         if (key === 'paid') {
-          const res = await markPayoutPaid({ payoutId });
+          const res = await markPayoutPaid({ payoutId, reference: reason ?? '' });
           return res.ok ? { ok: true } : { ok: false, message: res.message };
         }
         const res = await reviewPayout({

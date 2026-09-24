@@ -3,6 +3,7 @@ import type { EmailOtpType } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/server';
 import { recordLoginEvent } from '@/lib/auth/sessions';
 import { isPlatformHost } from '@/lib/config';
+import { hasPartnerIntent } from '@/lib/partners/intent';
 
 /**
  * تأكيد البريد / رابط الاستعادة (token_hash + type).
@@ -38,6 +39,13 @@ export async function GET(request: NextRequest) {
   // رابط الاستعادة يفتح جلسة مؤقتة ⇒ يُنقل لتعيين كلمة مرور جديدة.
   // المسار نفسه موجود على المنصّة وعلى المتجر، و`origin` يحسم أيّهما.
   if (type === 'recovery') return NextResponse.redirect(`${origin}/reset-password`);
-  return NextResponse.redirect(
-    onStore ? `${origin}/login?notice=confirmed` : `${origin}/onboarding?verified=1`);
+  if (onStore) return NextResponse.redirect(`${origin}/login?notice=confirmed`);
+
+  // ★ مَن بدأ من بوابة الشراكة يعود إليها لا إلى لوحة التاجر.
+  // الكوكي إشارة تنقّل لا صلاحية: `become_partner` تفحص الحساب
+  // في القاعدة على أي حال.
+  if (await hasPartnerIntent()) {
+    return NextResponse.redirect(`${origin}/partners/join`);
+  }
+  return NextResponse.redirect(`${origin}/onboarding?verified=1`);
 }

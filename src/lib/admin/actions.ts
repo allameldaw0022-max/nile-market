@@ -68,15 +68,26 @@ export async function reviewPayout(input: {
   }
 }
 
+/**
+ * تأكيد التحويل اليدوي.
+ *
+ * ★ الاعتماد ليس دفعًا: هذا الفعل هو ما يجعل الطلب مصروفًا ويوسم
+ * العمولات المحجوزة له «مدفوعة». ولذلك يشترط مرجع تحويل — لا يُقيَّد
+ * صرف بلا أثر يُراجَع.
+ */
 export async function markPayoutPaid(input: {
-  payoutId: string; reference?: string;
+  payoutId: string; reference: string; note?: string;
 }): Promise<ActionResult<{ linked: number }>> {
   try {
     await requirePlatformAccess('payouts', 'approve');
+    if (!input.reference?.trim())
+      throw errors.validation('أدخل مرجع التحويل', 'reference');
+
     const supabase = await createClient();
     const { data, error } = await rpc(supabase, 'mark_payout_paid', {
       p_payout_id: input.payoutId,
-      p_reference: input.reference?.trim() || null,
+      p_reference: input.reference.trim(),
+      p_note: input.note?.trim() || null,
     });
     if (error) throw fromPostgres(error);
 
