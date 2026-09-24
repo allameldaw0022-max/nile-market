@@ -28,6 +28,13 @@ export type PartnerBalance = { payable: number; paid: number; total: number };
 export type ReferralRow = {
   id: string; storeName: string | null; attributionSource: string;
   createdAt: string;
+  planName: string | null; subscriptionStatus: string | null;
+  periodEnd: string | null;
+  /** عدد دفعات الاشتراك المؤكَّدة — الاشتراك الأول وكل تجديد بعده. */
+  paidSubscriptions: number;
+  lastPaidAt: string | null;
+  commissionTotal: number;
+  commissionPayable: number;
 };
 
 export type CommissionRow = {
@@ -52,17 +59,16 @@ export async function loadPartnerDashboard(): Promise<ActionResult<{
     const { partnerId } = await requirePartner();
     const supabase = await createClient();
 
-    const [{ data: partner }, { data: balance }, { data: referrals },
+    const [{ data: partner }, { data: balance }, { data: referredStores },
            { data: commissions }, { data: payouts }] = await Promise.all([
       supabase.from('partners')
         .select('id, name, referral_code, commission_rate, status')
         .eq('id', partnerId).maybeSingle(),
       supabase.from('partner_balances')
         .select('payable, paid, total').eq('partner_id', partnerId).maybeSingle(),
-      supabase.from('referrals')
-        .select('id, attribution_source, created_at, stores(name)')
-        .eq('partner_id', partnerId)
-        .order('created_at', { ascending: false }).limit(50),
+      // ★ دالة واحدة تخدم لوحة المسوّق ولوحة الإدارة: بلا وسيط تعيد
+      // تجار المسوّق الحالي وحده (`app.current_partner_id()`).
+      rpc(supabase, 'partner_referred_stores', { p_partner_id: null }),
       supabase.from('commission_ledger')
         .select('id, entry_kind, amount, base_amount, rate_applied, status, created_at')
         .eq('partner_id', partnerId)
@@ -99,11 +105,18 @@ export async function loadPartnerDashboard(): Promise<ActionResult<{
       pendingPayouts: payoutRows
         .filter((p) => p.status === 'submitted' || p.status === 'approved')
         .reduce((sum, p) => sum + p.amount, 0),
-      referrals: (referrals ?? []).map((r) => ({
-        id: r.id,
-        storeName: (r.stores as { name: string } | null)?.name ?? null,
+      referrals: (referredStores ?? []).map((r) => ({
+        id: r.store_id,
+        storeName: r.store_name,
         attributionSource: r.attribution_source,
-        createdAt: r.created_at,
+        createdAt: r.attributed_at,
+        planName: r.plan_name,
+        subscriptionStatus: r.subscription_status,
+        periodEnd: r.current_period_end,
+        paidSubscriptions: Number(r.paid_subscriptions),
+        lastPaidAt: r.last_paid_at,
+        commissionTotal: Number(r.commission_total),
+        commissionPayable: Number(r.commission_payable),
       })),
       commissions: (commissions ?? []).map((c) => ({
         id: c.id, entryKind: c.entry_kind, amount: Number(c.amount),

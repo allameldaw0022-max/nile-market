@@ -9,6 +9,7 @@ import { Card, CardHeader, StatCard } from '@/components/ui/Card';
 import { Input, Textarea } from '@/components/ui/Field';
 import { Badge } from '@/components/ui/Badge';
 import { formatDate, formatMoney, formatNumber } from '@/lib/money/format';
+import { SUBSCRIPTION_STATUS } from '@/lib/status';
 import {
   requestPayout, type CommissionRow, type PartnerBalance, type PartnerProfile,
   type PayoutRow, type ReferralRow,
@@ -224,7 +225,8 @@ export function PartnerDashboard({
       </Card>
 
       <Card className="overflow-hidden">
-        <CardHeader title="المتاجر التي أحلتها" />
+        <CardHeader title="المتاجر التي أحلتها"
+                    description="اشتراك كل متجر وتجديداته، وما نتج عنها من عمولة." />
         {referrals.length === 0 ? (
           <p className="px-5 py-8 text-center text-sm text-ink-500">
             لا إحالات بعد — شارك رابطك للبدء.
@@ -232,12 +234,37 @@ export function PartnerDashboard({
         ) : (
           <ul className="divide-y divide-ink-200">
             {referrals.map((r) => (
-              <li key={r.id} className="flex items-center gap-3 px-4 py-3">
-                <Store size={15} className="text-ink-500" />
-                <span className="min-w-0 flex-1 truncate font-bold text-ink-900">
-                  {r.storeName ?? 'متجر'}
+              <li key={r.id}
+                  className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3.5">
+                <Store size={15} className="shrink-0 text-ink-500" />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-bold text-ink-900">
+                    {r.storeName ?? 'متجر'}
+                  </p>
+                  <p className="truncate text-xs text-ink-500">
+                    {r.planName ?? 'بلا باقة مدفوعة'}
+                    {' · '}
+                    {/* التجديد = دفعة اشتراك مؤكَّدة أخرى */}
+                    {formatNumber(r.paidSubscriptions)} اشتراك مؤكَّد
+                    {r.periodEnd && ` · حتى ${formatDate(r.periodEnd)}`}
+                  </p>
+                </div>
+                {r.subscriptionStatus && (
+                  <Badge tone={SUBSCRIPTION_STATUS[r.subscriptionStatus]?.tone ?? 'neutral'}>
+                    {SUBSCRIPTION_STATUS[r.subscriptionStatus]?.label
+                      ?? r.subscriptionStatus}
+                  </Badge>
+                )}
+                <span className="text-end">
+                  <span className="block font-bold tabular text-ink-900">
+                    {formatMoney(r.commissionTotal)}
+                  </span>
+                  {r.commissionPayable > 0 && (
+                    <span className="block text-xs text-ink-500 tabular">
+                      مستحق {formatMoney(r.commissionPayable)}
+                    </span>
+                  )}
                 </span>
-                <span className="text-xs text-ink-500">{formatDate(r.createdAt)}</span>
               </li>
             ))}
           </ul>

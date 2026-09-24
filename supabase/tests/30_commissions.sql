@@ -12,7 +12,7 @@
 \set adminOps   cccccccc-cccc-cccc-cccc-cccccccccccc
 \set partnerUser bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb
 
-\echo '── المثال المعتمد في المواصفات: 20,000 − 5,000 = 15,000 ⇒ 7,500 ──'
+\echo '── المثال المعتمد: 20,000 − 5,000 = 15,000 ⇒ 4,500 بنسبة 30% ──'
 begin;
 select t.login(:'ownerA');
 insert into subscription_requests (store_id, plan_id, amount, discount_amount, net_amount, idempotency_key)
@@ -24,16 +24,16 @@ select record_payment('subscription',
   'bank_transfer', 15000, 'TRX-1', null, 'pay-1');
 
 select t.reset();
-select t.ok((select amount = 7500 from commission_ledger where entry_kind='commission'),
-            'عمولة الشريك = 7,500 من صافي 15,000 بنسبة 50%');
-select t.ok((select base_amount = 15000 and rate_applied = 50 from commission_ledger),
+select t.ok((select amount = 4500 from commission_ledger where entry_kind='commission'),
+            'عمولة المسوّق = 4,500 من صافي 15,000 بنسبة 30%');
+select t.ok((select base_amount = 15000 and rate_applied = 30 from commission_ledger),
             'الأساس هو المدفوع فعليًا والنسبة ملقَّطة');
-select t.ok((select balance = 7500 from ledger_balances
+select t.ok((select balance = 10500 from ledger_balances
              where account_kind='platform'),
-            'حصة المنصة = 7,500 (15,000 إيراد − 7,500 عمولة)');
-select t.ok((select balance = 7500 from ledger_balances
+            'حصة المنصة = 10,500 (15,000 إيراد − 4,500 عمولة)');
+select t.ok((select balance = 4500 from ledger_balances
              where account_kind='partner' and account_id = :'PARTNER'),
-            'رصيد الشريك = 7,500');
+            'رصيد المسوّق = 4,500');
 select t.ok((select status = 'active' and current_period_end > now() from subscriptions where store_id = :'A'),
             'الاشتراك فُعّل بنفس المعاملة');
 rollback;
@@ -198,9 +198,9 @@ select record_payment('subscription',
 select t.login(:'adminOwner');
 update partners set commission_rate = 40 where id = :'PARTNER';
 select t.reset();
-select t.ok((select rate_applied = 50 from commission_ledger
+select t.ok((select rate_applied = 30 from commission_ledger
              where payment_id = (select id from payments where idempotency_key='pay-rate')),
-            'العمولة السابقة تحتفظ بنسبة 50% بعد تغيير النسبة إلى 40%');
+            'العمولة السابقة تحتفظ بنسبة 30% بعد تغيير النسبة إلى 40%');
 rollback;
 
 \echo '✓ اختبارات العمولات والمال مرّت'
@@ -225,12 +225,12 @@ values ((select id from payments where idempotency_key='pay-rf'), :'A', 15000,
 select app.reverse_commission((select id from refunds where idempotency_key='rf-full'));
 select t.reset();
 
-select t.ok((select amount = 7500 from commission_ledger
+select t.ok((select amount = 4500 from commission_ledger
              where entry_kind='commission'
                and payment_id = (select id from payments where idempotency_key='pay-rf')),
             'صف العمولة الأصلي سليم ولم يُمسّ');
-select t.ok((select amount = -7500 from commission_ledger where entry_kind='reversal'),
-            'قيد عكس بقيمة −7,500');
+select t.ok((select amount = -4500 from commission_ledger where entry_kind='reversal'),
+            'قيد عكس بقيمة −4,500');
 select t.ok((select reverses_id is not null from commission_ledger where entry_kind='reversal'),
             'قيد العكس يشير إلى الأصل');
 select t.ok((select balance = 0 from ledger_balances
@@ -253,11 +253,11 @@ values ((select id from payments where idempotency_key='pay-pr'), :'A', 6000,
         'استرداد جزئي', :'adminFin', :'adminOwner', now(), 'approved', 'rf-part');
 select app.reverse_commission((select id from refunds where idempotency_key='rf-part'));
 select t.reset();
-select t.ok((select amount = -3000 from commission_ledger where entry_kind='reversal'),
-            'استرداد 6,000 من 15,000 (40%) ⇒ عكس 3,000 من 7,500');
-select t.ok((select balance = 4500 from ledger_balances
+select t.ok((select amount = -1800 from commission_ledger where entry_kind='reversal'),
+            'استرداد 6,000 من 15,000 (40%) ⇒ عكس 1,800 من 4,500');
+select t.ok((select balance = 2700 from ledger_balances
              where account_kind='partner' and account_id = :'PARTNER'),
-            'رصيد الشريك = 7,500 − 3,000 = 4,500');
+            'رصيد المسوّق = 4,500 − 1,800 = 2,700');
 rollback;
 
 \echo '── مجموع الاستردادات لا يتجاوز الدفعة ──'
@@ -288,7 +288,7 @@ select record_payment('subscription',
 select t.reset();
 insert into partner_payouts (partner_id, amount, initiated_by, initiated_by_kind,
                              requested_by, approved_by, approved_at, status, idempotency_key)
-values (:'PARTNER', 7500, :'partnerUser', 'partner', :'adminFin', :'adminOwner',
+values (:'PARTNER', 4500, :'partnerUser', 'partner', :'adminFin', :'adminOwner',
         now(), 'approved', 'po-1');
 select t.login(:'adminFin');
 select mark_payout_paid((select id from partner_payouts where idempotency_key='po-1'), 'TRF-1');
@@ -300,7 +300,7 @@ select t.throws('select mark_payout_paid((select id from partner_payouts where i
                 'صرف نفس الطلب مرتين مرفوض');
 -- صرف جديد لا يلتقط عمولة مصروفة
 insert into partner_payouts (partner_id, amount, requested_by, approved_by, approved_at, status, idempotency_key)
-values (:'PARTNER', 7500, :'adminFin', :'adminOwner', now(), 'approved', 'po-2');
+values (:'PARTNER', 4500, :'adminFin', :'adminOwner', now(), 'approved', 'po-2');
 select t.ok((select mark_payout_paid((select id from partner_payouts where idempotency_key='po-2')) = 0),
             'صرف ثانٍ لا يلتقط أي عمولة مصروفة سلفًا');
 rollback;

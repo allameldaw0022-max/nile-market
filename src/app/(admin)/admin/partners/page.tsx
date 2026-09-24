@@ -113,7 +113,10 @@ export default async function AdminPartnersPage(
               <li key={p.partner_id}
                   className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3.5">
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-bold text-ink-900">{p.name}</p>
+                  <Link href={`/admin/partners/${p.partner_id}`}
+                        className="truncate font-bold text-ink-900 hover:text-teal-700">
+                    {p.name}
+                  </Link>
                   <p className="truncate text-xs text-ink-500" dir="ltr">
                     {p.email} · {p.referral_code}
                   </p>

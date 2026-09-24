@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { EmptyState, ErrorState } from '@/components/ui/States';
 import { AccountStatusActions } from '@/components/admin/AccountStatusActions';
+import { MarketingPartnerActions } from '@/components/admin/MarketingPartnerActions';
 import { formatDate, formatNumber } from '@/lib/money/format';
 import { rpc } from '@/lib/supabase/rpc';
 
@@ -39,6 +40,9 @@ export default async function AdminUsersPage(
   await requirePlatformAccess('users', 'view');
   const actor = await getActor();
   const canManage = actor.kind === 'user' && adminHasLevel(actor, 'users', 'manage');
+  // دور المسوّق يخضع لصلاحية الشركاء لا لصلاحية المستخدمين: من يوقف
+  // حسابًا ليس بالضرورة من يمنح عمولة.
+  const canPartner = actor.kind === 'user' && adminHasLevel(actor, 'partners', 'edit');
 
   const sp = await searchParams;
   const page = Math.max(1, Number(sp.page ?? 1) || 1);
@@ -107,12 +111,18 @@ export default async function AdminUsersPage(
                 ?? { label: u.account_status, tone: 'neutral' as const };
               return (
                 <li key={u.profile_id}
-                    className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3.5">
+                    className="flex flex-wrap items-center gap-x-4 gap-y-3 px-4 py-3.5">
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-bold text-ink-900">
                       {u.full_name ?? 'بلا اسم'}
                       {u.is_staff && (
                         <Badge tone="gold" className="ms-2">موظف منصة</Badge>
+                      )}
+                      {u.partner_status === 'active' && (
+                        <Badge tone="info" className="ms-2">مسوّق</Badge>
+                      )}
+                      {u.partner_status === 'suspended' && (
+                        <Badge tone="neutral" className="ms-2">مسوّق موقوف</Badge>
                       )}
                     </p>
                     <p className="truncate text-xs text-ink-500" dir="ltr">
@@ -131,6 +141,12 @@ export default async function AdminUsersPage(
                   {canManage && !u.is_staff && (
                     <AccountStatusActions profileId={u.profile_id}
                                           status={u.account_status} />
+                  )}
+                  {canPartner && !u.is_staff && (
+                    <MarketingPartnerActions
+                      profileId={u.profile_id}
+                      partnerStatus={u.partner_status}
+                      referralCode={u.referral_code} />
                   )}
                 </li>
               );

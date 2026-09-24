@@ -499,6 +499,8 @@ export type RpcMap = {
       profile_id: string; full_name: string | null; email: string | null;
       phone: string | null; account_status: string; is_staff: boolean;
       stores_count: number; created_at: string; last_seen_at: string | null;
+      partner_id: string | null; partner_status: string | null;
+      referral_code: string | null;
       total_count: number;
     }[];
   };
@@ -550,6 +552,35 @@ export type RpcMap = {
   set_partner_rate: {
     args: { p_partner_id: string; p_rate: number };
     returns: void;
+  };
+  assign_marketing_partner: {
+    args: { p_profile_id: string };
+    returns: { partner_id: string; referral_code: string;
+               was_created: boolean }[];
+  };
+  revoke_marketing_partner: {
+    args: { p_profile_id: string };
+    returns: void;
+  };
+  partner_referred_stores: {
+    args: { p_partner_id?: string | null };
+    returns: {
+      store_id: string; store_name: string; store_slug: string;
+      store_status: string; attributed_at: string; attribution_source: string;
+      plan_name: string | null; subscription_status: string | null;
+      current_period_end: string | null; paid_subscriptions: number;
+      last_paid_at: string | null; commission_total: number;
+      commission_payable: number;
+    }[];
+  };
+  partner_commission_rows: {
+    args: { p_partner_id?: string | null; p_limit?: number; p_offset?: number };
+    returns: {
+      commission_id: string; store_name: string; plan_name: string | null;
+      entry_kind: string; base_amount: number; rate_applied: number;
+      amount: number; status: string; paid_at: string | null;
+      created_at: string; total_count: number;
+    }[];
   };
   support_queue: {
     args: { p_status?: string | null; p_mine?: boolean;

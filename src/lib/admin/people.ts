@@ -203,3 +203,64 @@ export async function acceptPartnerInvitation(token: string): Promise<
     return actionError(err);
   }
 }
+
+/**
+ * تعيين مستخدم قائم مسوّقًا (Marketing Partner).
+ *
+ * ★ التخويل خادمي مرتين: الحارس هنا، وفحص `partners:edit` داخل
+ * `assign_marketing_partner` نفسها. إخفاء الزر ليس حاجزًا.
+ *
+ * ★ لا نسبة ولا كود يُرسلان من المتصفح: القاعدة تقرأ النسبة من
+ * إعدادات المنصة (30%) وتولّد الكود وتتحقق من تفرّده.
+ */
+export async function assignMarketingPartner(
+  profileId: string,
+): Promise<ActionResult<{ partnerId: string; referralCode: string;
+                         created: boolean }>> {
+  try {
+    await requirePlatformAccess('partners', 'edit');
+    const supabase = await createClient();
+
+    const { data, error } = await rpc(supabase, 'assign_marketing_partner', {
+      p_profile_id: profileId,
+    });
+    if (error) throw fromPostgres(error);
+    const row = firstRow(data);
+    if (!row) throw errors.internal();
+
+    revalidatePath('/admin/users');
+    revalidatePath('/admin/partners');
+    return ok({
+      partnerId: row.partner_id,
+      referralCode: row.referral_code,
+      created: row.was_created,
+    });
+  } catch (err) {
+    return actionError(err);
+  }
+}
+
+/**
+ * إزالة المستخدم من دور المسوّق.
+ * إيقاف لا حذف: الإحالات والعمولات المقيَّدة عمل ماضٍ مستحَق،
+ * والقاعدة ترفض حذفها أصلًا (`app.protect_referral`).
+ */
+export async function revokeMarketingPartner(
+  profileId: string,
+): Promise<ActionResult> {
+  try {
+    await requirePlatformAccess('partners', 'edit');
+    const supabase = await createClient();
+
+    const { error } = await rpc(supabase, 'revoke_marketing_partner', {
+      p_profile_id: profileId,
+    });
+    if (error) throw fromPostgres(error);
+
+    revalidatePath('/admin/users');
+    revalidatePath('/admin/partners');
+    return ok(undefined);
+  } catch (err) {
+    return actionError(err);
+  }
+}
