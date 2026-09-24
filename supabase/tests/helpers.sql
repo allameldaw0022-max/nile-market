@@ -98,3 +98,32 @@ begin
 end $$;
 
 grant execute on all functions in schema t to anon, authenticated, service_role;
+
+-- ---------------------------------------------------------------------
+-- إيصال اشتراك جاهز لمتجر: تذكرة رفع + كائن تخزين حقيقي + توسيم جاهز.
+-- يُستدعى بهوية عضو المتجر (`prepare_upload` تفرض الصلاحية).
+-- ---------------------------------------------------------------------
+create or replace function t.sub_proof(p_store uuid)
+returns uuid language plpgsql as $$
+declare v_id uuid; v_bucket text; v_path text;
+begin
+  select media_id, bucket, path into v_id, v_bucket, v_path
+    from public.prepare_upload(p_store, 'payment_proof', 'image/jpeg', 120000, 'jpg');
+  insert into storage.objects (bucket_id, name, owner)
+  values (v_bucket, v_path, (select auth.uid()));
+  perform public.finalize_upload(v_id);
+  return v_id;
+end $$;
+
+-- إيصال طلب جاهز لسلة زبون: تذكرة + كائن تخزين (يبقى `pending` حتى
+-- يربطه `create_order_with_proof`).
+create or replace function t.order_proof(p_store uuid, p_token text)
+returns uuid language plpgsql as $$
+declare v_id uuid; v_bucket text; v_path text;
+begin
+  select media_id, bucket, path into v_id, v_bucket, v_path
+    from public.prepare_order_proof_upload(p_store, p_token, 'image/jpeg', 90000, 'jpg');
+  insert into storage.objects (bucket_id, name, owner)
+  values (v_bucket, v_path, (select auth.uid()));
+  return v_id;
+end $$;

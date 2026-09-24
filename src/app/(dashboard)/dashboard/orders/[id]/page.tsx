@@ -10,6 +10,8 @@ import { Card, CardHeader } from '@/components/ui/Card';
 import { Badge, StatusChip } from '@/components/ui/Badge';
 import { OrderStatusActions } from '@/components/dashboard/OrderStatusActions';
 import { RecordPaymentForm } from '@/components/dashboard/RecordPaymentForm';
+import { OrderReceiptPanel } from '@/components/dashboard/OrderReceiptPanel';
+import { orderReceipts } from '@/lib/payments/receipts';
 import { ORDER_STATUS, PAYMENT_METHOD, PAYMENT_STATUS } from '@/lib/status';
 import { formatDateTime, formatMoney } from '@/lib/money/format';
 import { waNumber as toWa } from '@/lib/phone';
@@ -84,6 +86,13 @@ export default async function OrderDetailPage(
       supabase.from('store_team').select('profile_id, full_name')
         .eq('store_id', membership.storeId),
     ]);
+
+  // إيصالات تحويل الزبون — تُقرأ بدالة تفرض orders:payment، فمن لا
+  // يملكها لا يرى الإيصال أصلًا ولا يظهر له القسم.
+  const canPay = can(membership, 'orders:payment');
+  const receipts = canPay
+    ? await orderReceipts({ storeId: membership.storeId, orderId: order.id })
+    : null;
 
   const items = (itemRows ?? []) as unknown as ItemRow[];
   const history = (historyRows ?? []) as unknown as HistoryRow[];
@@ -190,6 +199,11 @@ export default async function OrderDetailPage(
               ))}
             </ol>
           </Card>
+
+          {receipts?.ok && receipts.data.length > 0 && (
+            <OrderReceiptPanel storeId={membership.storeId} orderId={order.id}
+                               receipts={receipts.data} canReview={canPay} />
+          )}
 
           {payments.length > 0 && (
             <Card>

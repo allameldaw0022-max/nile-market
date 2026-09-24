@@ -14,6 +14,8 @@ import {
   cancelSubscriptionRequest, submitSubscriptionRequest,
   type CurrentSubscription, type PlanOption, type SubscriptionRequestRow,
 } from '@/lib/subscriptions/actions';
+import { beginUpload, completeUpload } from '@/lib/media/actions';
+import { ReceiptUploader, type ReceiptValue } from '@/components/shared/ReceiptUploader';
 
 const FEATURE_LABEL: Record<string, string> = {
   'products.max': 'عدد المنتجات',
@@ -30,7 +32,7 @@ const FEATURE_LABEL: Record<string, string> = {
 };
 
 const REQUEST_STATUS: Record<string, { label: string; tone: 'warning' | 'success' | 'danger' | 'neutral' }> = {
-  pending: { label: 'قيد المراجعة', tone: 'warning' },
+  pending: { label: 'بانتظار تحقق الإدارة', tone: 'warning' },
   approved: { label: 'معتمد', tone: 'success' },
   rejected: { label: 'مرفوض', tone: 'danger' },
   cancelled: { label: 'مسحوب', tone: 'neutral' },
@@ -58,6 +60,7 @@ export function SubscriptionPanel({
   const router = useRouter();
   const [selected, setSelected] = useState<PlanOption | null>(null);
   const [reference, setReference] = useState('');
+  const [receipt, setReceipt] = useState<ReceiptValue | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [pending, start] = useTransition();
@@ -67,12 +70,20 @@ export function SubscriptionPanel({
   const submit = () => start(async () => {
     if (!selected) return;
     setError(null);
+    // ★ الإيصال شرط الإرسال، والقاعدة ترفض الطلب بدونه أيضًا —
+    // هذا الفحص لرسالة أوضح لا لحماية أقوى.
+    if (!receipt) {
+      setError('أرفق إيصال التحويل قبل إرسال الطلب');
+      return;
+    }
     const res = await submitSubscriptionRequest({
-      storeId, planId: selected.id, reference, idempotencyKey,
+      storeId, planId: selected.id, reference,
+      proofMediaId: receipt.mediaId, idempotencyKey,
     });
     if (!res.ok) { setError(res.message); return; }
     setSelected(null);
     setReference('');
+    setReceipt(null);
     router.refresh();
   });
 
@@ -250,16 +261,31 @@ export function SubscriptionPanel({
                    onChange={(e) => setReference(e.target.value)}
                    hint="يساعد فريقنا على مطابقة تحويلك بسرعة." />
 
+            <ReceiptUploader
+              label="إرفاق إيصال التحويل"
+              hint="صورة واضحة للإشعار أو ملف PDF. يُحفظ في مساحة خاصة، ولا
+                    يراه إلا فريق سوق النيل."
+              value={receipt} onChange={setReceipt} disabled={pending}
+              begin={({ mime, size }) =>
+                beginUpload({ storeId, purpose: 'payment_proof', mime, size })}
+              complete={({ mediaId, width, height }) =>
+                completeUpload({ storeId, mediaId, width, height })}
+            />
+
             <div className="flex flex-wrap gap-2">
-              <Button loading={pending} icon={<Send size={15} />} onClick={submit}>
+              <Button loading={pending} icon={<Send size={15} />} onClick={submit}
+                      disabled={!receipt}>
                 إرسال الطلب
               </Button>
-              <Button variant="ghost" onClick={() => setSelected(null)}>إلغاء</Button>
+              <Button variant="ghost"
+                      onClick={() => { setSelected(null); setReceipt(null); }}>
+                إلغاء
+              </Button>
             </div>
 
             <p className="text-xs text-ink-500">
-              يراجع فريقنا التحويل يدويًا ثم يُفعَّل اشتراكك. لا يوجد تجديد آلي
-              ولا خصم تلقائي من أي بطاقة.
+              رفع الإيصال لا يُفعّل الباقة. يراجع فريقنا التحويل يدويًا ثم
+              يُفعَّل اشتراكك. لا يوجد تجديد آلي ولا خصم تلقائي من أي بطاقة.
             </p>
           </div>
         </Card>

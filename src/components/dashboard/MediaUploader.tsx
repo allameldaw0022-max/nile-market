@@ -7,48 +7,14 @@ import { beginUpload, completeUpload } from '@/lib/media/actions';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/cn';
 import type { MediaPurpose } from '@/lib/supabase/rpc';
+import { compressImage } from '@/lib/media/compress';
 
 export type UploadedMedia = { mediaId: string; url: string };
 
-type Purpose = Exclude<MediaPurpose, 'avatar' | 'support_attachment'>;
+type Purpose = Exclude<MediaPurpose,
+  'avatar' | 'support_attachment' | 'order_payment_proof'>;
 
-const MAX_DIMENSION = 1600;
 const ACCEPT = 'image/jpeg,image/png,image/webp,image/avif';
-
-/**
- * يضغط الصورة في المتصفح قبل الرفع إلى WebP بحد 1600px.
- *
- * لماذا في المتصفح؟ صور الهواتف السودانية غالبًا 4-8MB، وحد الـbucket
- * 5MB. الضغط هنا يوفّر على المستخدم باقة بيانات ووقتًا على 3G، ويجعل
- * صفحات المتجر أسرع. إن فشل الضغط لأي سبب نرفع الملف الأصلي —
- * القاعدة هي التي تقرر القبول أو الرفض في كل الحالات.
- */
-async function compressImage(file: File): Promise<{ blob: Blob; mime: string; width: number; height: number }> {
-  const fallback = { blob: file, mime: file.type, width: 0, height: 0 };
-  if (typeof document === 'undefined') return fallback;
-  try {
-    const bitmap = await createImageBitmap(file);
-    const scale = Math.min(1, MAX_DIMENSION / Math.max(bitmap.width, bitmap.height));
-    const width = Math.max(1, Math.round(bitmap.width * scale));
-    const height = Math.max(1, Math.round(bitmap.height * scale));
-
-    const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return fallback;
-    ctx.drawImage(bitmap, 0, 0, width, height);
-    bitmap.close();
-
-    const blob = await new Promise<Blob | null>((resolve) =>
-      canvas.toBlob(resolve, 'image/webp', 0.85),
-    );
-    if (!blob || blob.size === 0) return fallback;
-    return { blob, mime: 'image/webp', width, height };
-  } catch {
-    return fallback;
-  }
-}
 
 type State = 'idle' | 'compressing' | 'uploading' | 'finalizing' | 'error';
 

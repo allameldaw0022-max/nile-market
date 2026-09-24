@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getActor } from '@/lib/auth/actor';
 import { CheckoutForm, type PaymentOption, type Zone } from '@/components/storefront/CheckoutForm';
 import { loadCart, quoteCart } from '@/lib/cart/actions';
+import { checkoutPaymentInfo } from '@/lib/cart/receipt';
 
 export const metadata: Metadata = {
   title: 'إتمام الطلب',
@@ -23,7 +24,7 @@ export default async function CheckoutPage({ params }: PageProps<'/sites/[host]/
   if (lines.length === 0) redirect('/cart');
 
   const supabase = await createClient();
-  const [{ data: zoneRows }, { data: settings }, quote, actor] = await Promise.all([
+  const [{ data: zoneRows }, { data: settings }, quote, actor, bank] = await Promise.all([
     supabase.from('delivery_zones')
       .select('id, name, fee, min_order_free')
       .eq('store_id', store.storeId).eq('is_active', true).is('deleted_at', null)
@@ -33,6 +34,8 @@ export default async function CheckoutPage({ params }: PageProps<'/sites/[host]/
       .eq('store_id', store.storeId).maybeSingle(),
     quoteCart({ host }),
     getActor(),
+    // بيانات الحساب تُفتح لمن له سلة في هذا المتجر — لا لكل زائر
+    checkoutPaymentInfo(host),
   ]);
 
   const zones: Zone[] = (zoneRows ?? []).map((z) => ({
@@ -48,11 +51,11 @@ export default async function CheckoutPage({ params }: PageProps<'/sites/[host]/
   });
   if (settings?.bank_transfer_enabled) payments.push({
     value: 'bank_transfer', label: 'تحويل بنكي',
-    hint: 'ستظهر لك بيانات الحساب بعد تأكيد الطلب لترفع الإثبات.',
+    hint: 'تظهر لك بيانات الحساب هنا، تحوّل، ثم ترفق الإيصال قبل تأكيد الطلب.',
   });
   if (settings?.bankak_enabled) payments.push({
     value: 'bankak', label: 'بنكك',
-    hint: 'تحويل عبر بنكك، ثم ترفع صورة الإشعار.',
+    hint: 'تحويل عبر بنكك، ثم ترفق صورة الإشعار قبل تأكيد الطلب.',
   });
 
   const profile = actor.kind === 'user' ? actor : null;
@@ -71,6 +74,7 @@ export default async function CheckoutPage({ params }: PageProps<'/sites/[host]/
       <div className="mt-5">
         <CheckoutForm
           host={host} lines={lines} zones={zones} payments={payments}
+          bankAccounts={bank.accounts} bankakNumber={bank.bankak}
           // مفتاح التكرار يُولَّد مع الصفحة: ضغطتان على «تأكيد» أو إعادة
           // إرسال النموذج تعيدان الطلب نفسه لا طلبًا ثانيًا (§13).
           idempotencyKey={randomUUID()}

@@ -1,14 +1,19 @@
 'use client';
 import { useEffect, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { AlertTriangle, Check, Loader2, ShieldCheck } from 'lucide-react';
+import { AlertTriangle, Check, Copy, Landmark, Loader2, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Input, Textarea } from '@/components/ui/Field';
 import { formatMoney } from '@/lib/money/format';
 import { placeOrder, quoteCart, type CartLine, type Quote } from '@/lib/cart/actions';
+import { beginOrderReceiptUpload } from '@/lib/cart/receipt';
+import { ReceiptUploader, type ReceiptValue } from '@/components/shared/ReceiptUploader';
 
 export type Zone = { id: string; name: string; fee: number; minOrderFree: number | null };
+export type BankAccount = {
+  bank?: string; account?: string; holder?: string; logo?: string;
+};
 export type PaymentOption = {
   value: 'cash_on_delivery' | 'bank_transfer' | 'bankak';
   label: string; hint: string;
@@ -27,6 +32,7 @@ export type PaymentOption = {
  */
 export function CheckoutForm({
   host, lines, zones, payments, initialQuote, defaults, idempotencyKey,
+  bankAccounts, bankakNumber,
 }: {
   host: string;
   lines: CartLine[];
@@ -36,6 +42,9 @@ export function CheckoutForm({
   defaults: { name: string; phone: string; email: string };
   /** يُولَّد على الخادم مع الصفحة: ثابت طوال هذه الزيارة. */
   idempotencyKey: string;
+  /** حسابات التاجر — تُفتح لمن له سلة في هذا المتجر فقط. */
+  bankAccounts: BankAccount[];
+  bankakNumber: string | null;
 }) {
   const router = useRouter();
   const [zoneId, setZoneId] = useState<string>(zones[0]?.id ?? '');
@@ -44,8 +53,22 @@ export function CheckoutForm({
   const [quote, setQuote] = useState<Quote>(initialQuote);
   const [payment, setPayment] = useState(payments[0]?.value ?? 'cash_on_delivery');
   const [error, setError] = useState<{ message: string; field?: string } | null>(null);
+  const [receipt, setReceipt] = useState<ReceiptValue | null>(null);
+  const [payRef, setPayRef] = useState('');
+  const [copied, setCopied] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const [quoting, startQuote] = useTransition();
+
+  // التحويل البنكي وبنكك يشتركان في نفس الدورة: حوّل، ثم أرفق
+  const byTransfer = payment === 'bank_transfer' || payment === 'bankak';
+
+  const copy = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(text);
+      setTimeout(() => setCopied(null), 2000);
+    } catch { /* الحافظة محجوبة */ }
+  };
 
   // كل تغيير في المنطقة أو الكوبون ⇒ تسعيرة جديدة من القاعدة
   useEffect(() => {
@@ -63,6 +86,12 @@ export function CheckoutForm({
 
   const submit = (formData: FormData) => start(async () => {
     setError(null);
+    // ★ الإيصال شرط إتمام الطلب. القاعدة ترفضه بدونه أيضًا (قيد
+    // مؤجَّل في 0045) — هذا الفحص لرسالة أوضح لا لحماية أقوى.
+    if (byTransfer && !receipt) {
+      setError({ message: 'أرفق إيصال التحويل لإتمام الطلب', field: 'proof' });
+      return;
+    }
     const res = await placeOrder({
       host,
       zoneId: zoneId || null,
@@ -79,6 +108,8 @@ export function CheckoutForm({
       },
       note: String(formData.get('note') ?? ''),
       idempotencyKey,
+      proofMediaId: byTransfer ? receipt?.mediaId ?? null : null,
+      paymentReference: byTransfer ? payRef : undefined,
     });
 
     if (!res.ok) {
@@ -182,6 +213,61 @@ export function CheckoutForm({
                 </span>
               </label>
             ))}
+
+            {byTransfer && (
+              <div className="space-y-4 rounded-md border border-teal-600
+                              bg-teal-50 p-4">
+                <div className="space-y-2">
+                  <p className="flex items-center gap-1.5 text-sm font-bold text-ink-900">
+                    <Landmark size={14} /> حوّل المبلغ إلى حساب المتجر
+                  </p>
+                  {payment === 'bankak' && bankakNumber && (
+                    <AccountRow bank="بنكك" account={bankakNumber}
+                                onCopy={() => copy(bankakNumber)}
+                                copied={copied === bankakNumber} />
+                  )}
+                  {payment === 'bank_transfer' && bankAccounts.map((a, i) => (
+                    <AccountRow key={`${a.account}-${i}`} bank={a.bank ?? 'بنك'}
+                                account={a.account ?? ''} holder={a.holder}
+                                logo={a.logo}
+                                onCopy={() => copy(a.account ?? '')}
+                                copied={copied === a.account} />
+                  ))}
+                  {((payment === 'bank_transfer' && bankAccounts.length === 0)
+                    || (payment === 'bankak' && !bankakNumber)) && (
+                    <p className="text-xs text-danger">
+                      لم ينشر المتجر بيانات حسابه بعد — تواصل معه قبل التحويل.
+                    </p>
+                  )}
+                  <p className="text-sm font-bold text-ink-900">
+                    المبلغ المطلوب:{' '}
+                    <span className="tabular text-teal-700">
+                      {formatMoney(quote.total)}
+                    </span>
+                  </p>
+                </div>
+
+                <Input label="رقم العملية أو اسم المحوِّل (اختياري)" dir="ltr"
+                       value={payRef} onChange={(e) => setPayRef(e.target.value)}
+                       hint="يساعد المتجر على مطابقة تحويلك بسرعة." />
+
+                <ReceiptUploader
+                  label="إيصال التحويل"
+                  hint="صورة واضحة للإشعار أو ملف PDF. لا يراه إلا المتجر."
+                  value={receipt} onChange={setReceipt} disabled={pending}
+                  begin={({ mime, size }) =>
+                    beginOrderReceiptUpload({ host, mime, size })}
+                />
+                {error?.field === 'proof' && (
+                  <p role="alert" className="text-xs text-danger">{error.message}</p>
+                )}
+
+                <p className="text-xs text-ink-600">
+                  إرفاق الإيصال لا يؤكّد الدفع: يصل طلبك إلى المتجر
+                  «بانتظار التحقق»، ويؤكّده المتجر بعد وصول المبلغ.
+                </p>
+              </div>
+            )}
           </div>
         </Card>
       </div>
@@ -234,15 +320,44 @@ export function CheckoutForm({
 
         <Button type="submit" size="lg" className="mt-4 w-full" loading={pending}
                 disabled={quoting || short || !quote.canCheckout
-                          || lines.length === 0 || zones.length === 0}>
+                          || lines.length === 0 || zones.length === 0
+                          || (byTransfer && !receipt)}>
           تأكيد الطلب
         </Button>
+        {byTransfer && !receipt && (
+          <p className="mt-2 text-center text-xs text-ink-500">
+            أرفق إيصال التحويل أولًا.
+          </p>
+        )}
 
         <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-ink-500">
           <ShieldCheck size={13} /> كل المبالغ محسوبة لدى المتجر
         </p>
       </Card>
     </form>
+  );
+}
+
+function AccountRow({ bank, account, holder, logo, onCopy, copied }: {
+  bank: string; account: string; holder?: string; logo?: string;
+  onCopy: () => void; copied: boolean;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-2 text-sm">
+      {logo && (
+        /* eslint-disable-next-line @next/next/no-img-element */
+        <img src={logo} alt="" width={28} height={28}
+             className="size-7 rounded border border-ink-200 bg-white object-contain p-0.5" />
+      )}
+      <span className="font-bold text-ink-900">{bank}</span>
+      {holder && <span className="text-xs text-ink-500">{holder}</span>}
+      <code className="min-w-0 flex-1 truncate rounded bg-white px-2 py-1 text-xs
+                       text-ink-900" dir="ltr">{account}</code>
+      <button type="button" onClick={onCopy} aria-label={`نسخ رقم ${bank}`}
+              className="rounded p-1.5 text-ink-500 hover:text-teal-700">
+        {copied ? <Check size={14} className="text-success" /> : <Copy size={14} />}
+      </button>
+    </div>
   );
 }
 

@@ -7,6 +7,7 @@ import { Card, CardHeader } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/States';
 import { Badge } from '@/components/ui/Badge';
 import { SubscriptionReviewRow } from '@/components/admin/SubscriptionReviewRow';
+import { SubscriptionProof } from '@/components/admin/SubscriptionProof';
 import { formatDateTime, formatMoney } from '@/lib/money/format';
 
 export const metadata: Metadata = {
@@ -26,8 +27,10 @@ const STATUS: Record<string, { label: string; tone: 'warning' | 'success' | 'dan
 type RequestRow = {
   id: string; net_amount: number; status: string; reference: string | null;
   created_at: string; rejection_reason: string | null;
+  proof_media_id: string | null;
   stores: { name: string; slug: string } | null;
   plans: { name: string } | null;
+  media_files: { mime_type: string } | null;
 };
 
 export default async function AdminSubscriptionsPage() {
@@ -39,7 +42,9 @@ export default async function AdminSubscriptionsPage() {
   const supabase = await createClient();
   const { data } = await supabase
     .from('subscription_requests')
-    .select('id, net_amount, status, reference, created_at, rejection_reason, stores(name, slug), plans(name)')
+    .select('id, net_amount, status, reference, created_at, rejection_reason, ' +
+            'proof_media_id, stores(name, slug), plans(name), ' +
+            'media_files(mime_type)')
     .order('created_at', { ascending: false })
     .limit(100);
 
@@ -52,7 +57,8 @@ export default async function AdminSubscriptionsPage() {
       <div>
         <h1 className="text-xl font-extrabold text-ink-900">طلبات الاشتراك</h1>
         <p className="text-sm text-ink-500">
-          الاعتماد يُفعّل الاشتراك ويقيّد الإيراد وعمولة الشريك في معاملة واحدة.
+          راجع إيصال التحويل قبل القرار. الاعتماد يُفعّل الاشتراك ويقيّد
+          الإيراد وعمولة الشريك في معاملة واحدة.
         </p>
       </div>
 
@@ -67,25 +73,40 @@ export default async function AdminSubscriptionsPage() {
         ) : (
           <ul className="divide-y divide-ink-200">
             {pending.map((r) => (
-              <li key={r.id} className="flex flex-wrap items-center gap-x-4 gap-y-3
-                                        px-4 py-4">
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-bold text-ink-900">
-                    {r.stores?.name ?? '—'}
-                  </p>
-                  <p className="text-xs text-ink-500">
-                    {r.plans?.name ?? '—'} · {formatDateTime(r.created_at)}
-                    {r.reference && <span dir="ltr"> · {r.reference}</span>}
-                  </p>
+              <li key={r.id} className="px-4 py-4">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-bold text-ink-900">
+                      {r.stores?.name ?? '—'}
+                    </p>
+                    <p className="text-xs text-ink-500">
+                      {r.plans?.name ?? '—'} · {formatDateTime(r.created_at)}
+                      {/* D20: الاشتراك تحويل يدوي حصرًا — لا بوابة دفع */}
+                      {' · تحويل بنكي'}
+                      {r.reference && <span dir="ltr"> · {r.reference}</span>}
+                    </p>
+                  </div>
+                  <span className="font-extrabold tabular text-ink-900">
+                    {formatMoney(r.net_amount)}
+                  </span>
+                  {canApprove ? (
+                    <SubscriptionReviewRow requestId={r.id} />
+                  ) : (
+                    <Badge tone="warning">قيد المراجعة</Badge>
+                  )}
                 </div>
-                <span className="font-extrabold tabular text-ink-900">
-                  {formatMoney(r.net_amount)}
-                </span>
-                {canApprove ? (
-                  <SubscriptionReviewRow requestId={r.id} />
-                ) : (
-                  <Badge tone="warning">قيد المراجعة</Badge>
-                )}
+
+                {/* ★ لا اعتماد على العمياء: الإيصال معروض مع الطلب */}
+                <div className="mt-3 rounded-md border border-ink-200 p-3">
+                  {r.proof_media_id ? (
+                    <SubscriptionProof requestId={r.id}
+                                       mime={r.media_files?.mime_type ?? null} />
+                  ) : (
+                    <p className="text-xs text-ink-500">
+                      لا إيصال مرفق — هذا الطلب سابق لإلزامية الإيصال.
+                    </p>
+                  )}
+                </div>
               </li>
             ))}
           </ul>

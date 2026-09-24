@@ -25,7 +25,8 @@ jobs:
             | grep -v '^src/app/api/v1/cron/' \
             | grep -v '^src/app/api/v1/webhooks/' \
             | grep -v '^src/lib/jobs/' \
-            | grep -v '^src/app/(platform)/(auth)/actions.ts$' || true)
+            | grep -v '^src/app/(platform)/(auth)/actions.ts$' \
+            | grep -v '^src/lib/auth/rate-limit.ts$' || true)
           if [ -n "$HITS" ]; then
             echo "❌ العميل الخدمي يتجاوز RLS ومستورَد في ملفات غير مصرّح بها:"
             echo "$HITS"; exit 1

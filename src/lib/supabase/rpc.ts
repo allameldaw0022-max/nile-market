@@ -16,8 +16,8 @@ type Client = SupabaseClient<Database>;
 
 export type MediaPurpose =
   | 'product_image' | 'store_logo' | 'store_banner' | 'category_image'
-  | 'payment_proof' | 'support_attachment' | 'import_file' | 'export_file'
-  | 'avatar';
+  | 'payment_proof' | 'order_payment_proof' | 'support_attachment'
+  | 'import_file' | 'export_file' | 'avatar';
 
 export type ProductStatus = 'draft' | 'active' | 'hidden' | 'archived';
 
@@ -265,6 +265,60 @@ export type RpcMap = {
         product_name: string; variant_name: string | null;
         unit_price: number; quantity: number; line_total: number;
       }[];
+    }[];
+  };
+  checkout_payment_info: {
+    args: { p_store_id: string; p_anon_token?: string | null };
+    returns: {
+      bank_accounts: { bank?: string; account?: string; holder?: string;
+                       logo?: string }[];
+      bankak_number: string | null;
+    }[];
+  };
+  prepare_order_proof_upload: {
+    args: { p_store_id: string; p_anon_token: string | null;
+            p_mime: string; p_size: number; p_ext?: string };
+    returns: { media_id: string; bucket: string; path: string }[];
+  };
+  create_order_with_proof: {
+    args: {
+      p_store_id: string;
+      p_items: { product_id: string; variant_id: string | null; quantity: number }[];
+      p_zone_id: string | null;
+      p_contact: { name: string; phone: string; email: string | null };
+      p_address: { line: string; landmark: string | null };
+      p_payment_method: 'bank_transfer' | 'bankak';
+      p_proof_media_id: string;
+      p_coupon_code?: string | null;
+      p_idempotency_key?: string | null;
+      p_note?: string | null;
+      p_reference?: string | null;
+      p_anon_token?: string | null;
+    };
+    returns: {
+      order_id: string; order_number: string; total: number; guest_token: string;
+    }[];
+  };
+  order_payment_proofs: {
+    args: { p_order_id: string };
+    returns: {
+      payment_id: string; payment_status: string; amount: number;
+      reference: string | null; failed_reason: string | null;
+      submitted_at: string; confirmed_at: string | null;
+      confirmed_by_name: string | null;
+      bucket: string; path: string; mime_type: string; size_bytes: number;
+    }[];
+  };
+  review_order_payment: {
+    args: { p_payment_id: string; p_action: 'approve' | 'reject';
+            p_reason?: string | null };
+    returns: void;
+  };
+  subscription_request_proof: {
+    args: { p_request_id: string };
+    returns: {
+      bucket: string; path: string; mime_type: string;
+      size_bytes: number; uploaded_at: string;
     }[];
   };
   order_payment_instructions: {

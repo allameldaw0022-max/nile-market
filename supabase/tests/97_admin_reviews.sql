@@ -19,7 +19,8 @@ select t.reset();
 select id as basicid from plans where code = 'basic'
 \gset
 select t.login(:'ownerA');
-select request_id as reqid from submit_subscription_request(:'A', :'basicid')
+select request_id as reqid from submit_subscription_request(
+  :'A', :'basicid', null, t.sub_proof(:'A'))
 \gset
 
 -- التاجر لا يعتمد طلبه بنفسه
@@ -66,7 +67,8 @@ select t.reset();
 select id as basicid from plans where code = 'basic'
 \gset
 select t.login(:'ownerA');
-select request_id as reqid from submit_subscription_request(:'A', :'basicid')
+select request_id as reqid from submit_subscription_request(
+  :'A', :'basicid', null, t.sub_proof(:'A'))
 \gset
 
 select t.login(:'adminFin');

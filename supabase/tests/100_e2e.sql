@@ -234,7 +234,8 @@ select id as basicid from plans where code = 'basic'
 \gset
 select t.login('11111111-1111-1111-1111-111111111111');
 select request_id as reqid from submit_subscription_request(
-  'a0000000-0000-0000-0000-00000000000a', :'basicid', 'E2E-REF')
+  'a0000000-0000-0000-0000-00000000000a', :'basicid', 'E2E-REF',
+  t.sub_proof('a0000000-0000-0000-0000-00000000000a'))
 \gset
 select t.login(:'adminFin');
 select t.ok((select review_subscription_request(:'reqid', 'approve') ->> 'status'

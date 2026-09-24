@@ -48,7 +48,10 @@ export type UploadTicket = {
 
 export async function beginUpload(input: {
   storeId: string;
-  purpose: Exclude<MediaPurpose, 'avatar' | 'support_attachment'>;
+  // `order_payment_proof` ليس هنا عمدًا: يرفعه زبون المتجر لا عضوه،
+  // وله بابه المستقل في `lib/cart/receipt.ts` بشرط سلة لا بشرط صلاحية.
+  purpose: Exclude<MediaPurpose,
+    'avatar' | 'support_attachment' | 'order_payment_proof'>;
   mime: string;
   size: number;
 }): Promise<ActionResult<UploadTicket>> {

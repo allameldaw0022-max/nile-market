@@ -192,6 +192,10 @@ export async function placeOrder(input: {
   address: { line: string; landmark?: string };
   note?: string;
   idempotencyKey: string;
+  /** إيصال التحويل — إلزامي في التحويل البنكي وبنكك. */
+  proofMediaId?: string | null;
+  /** رقم العملية كما كتبه الزبون — للمطابقة لا للتأكيد. */
+  paymentReference?: string;
 }): Promise<ActionResult<PlacedOrder>> {
   try {
     const store = await storeFor(input.host);
@@ -211,25 +215,55 @@ export async function placeOrder(input: {
     const lines = await loadCart(input.host);
     if (lines.length === 0) throw errors.validation('السلة فارغة');
 
+    const items = lines.map((l) => ({
+      product_id: l.productId,
+      variant_id: l.variantId,
+      quantity: l.quantity,
+    }));
+    const contact = { name, phone, email: input.contact.email?.trim() || null };
+    const address = {
+      line: input.address.line.trim(),
+      landmark: input.address.landmark?.trim() || null,
+    };
+
     const supabase = await createClient();
-    const { data, error } = await rpc(supabase, 'create_order', {
-      p_store_id: store.storeId,
-      p_items: lines.map((l) => ({
-        product_id: l.productId,
-        variant_id: l.variantId,
-        quantity: l.quantity,
-      })),
-      p_zone_id: input.zoneId,
-      p_contact: { name, phone, email: input.contact.email?.trim() || null },
-      p_address: {
-        line: input.address.line.trim(),
-        landmark: input.address.landmark?.trim() || null,
-      },
-      p_payment_method: input.paymentMethod,
-      p_coupon_code: input.couponCode,
-      p_idempotency_key: input.idempotencyKey,
-      p_note: input.note?.trim() || null,
-    });
+
+    // ★ التحويل البنكي وبنكك يمرّان بمسار الإيصال حصريًا: الطلب
+    // والدفعة المعلّقة يُكتبان في معاملة واحدة، والقاعدة ترفض طلب
+    // تحويل بلا إيصال أيًّا كان المنادي (قيد مؤجَّل في 0045).
+    const byTransfer =
+      input.paymentMethod === 'bank_transfer' || input.paymentMethod === 'bankak';
+
+    if (byTransfer && !input.proofMediaId) {
+      throw errors.validation('أرفق إيصال التحويل لإتمام الطلب', 'proof');
+    }
+
+    const { data, error } = byTransfer
+      ? await rpc(supabase, 'create_order_with_proof', {
+        p_store_id: store.storeId,
+        p_items: items,
+        p_zone_id: input.zoneId,
+        p_contact: contact,
+        p_address: address,
+        p_payment_method: input.paymentMethod as 'bank_transfer' | 'bankak',
+        p_proof_media_id: input.proofMediaId!,
+        p_coupon_code: input.couponCode,
+        p_idempotency_key: input.idempotencyKey,
+        p_note: input.note?.trim() || null,
+        p_reference: input.paymentReference?.trim() || null,
+        p_anon_token: await readCartToken(input.host),
+      })
+      : await rpc(supabase, 'create_order', {
+        p_store_id: store.storeId,
+        p_items: items,
+        p_zone_id: input.zoneId,
+        p_contact: contact,
+        p_address: address,
+        p_payment_method: input.paymentMethod,
+        p_coupon_code: input.couponCode,
+        p_idempotency_key: input.idempotencyKey,
+        p_note: input.note?.trim() || null,
+      });
     if (error) throw fromPostgres(error);
 
     const row = firstRow(data);

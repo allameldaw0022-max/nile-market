@@ -18,7 +18,8 @@ select id as basicid from plans where code = 'basic'
 \gset
 
 select t.login(:'ownerA');
-select t.ok((select net_amount = 20000 from submit_subscription_request(:'A', :'basicid')),
+select t.ok((select net_amount = 20000 from submit_subscription_request(
+               :'A', :'basicid', null, t.sub_proof(:'A'))),
             '★ المبلغ يُقرأ من سعر الباقة (20,000) لا من الطلب');
 select t.ok((select amount = 20000 and net_amount = 20000 from subscription_requests
              where store_id = :'A'),
@@ -70,11 +71,13 @@ select t.reset();
 select id as basicid from plans where code = 'basic'
 \gset
 select t.login(:'ownerA');
+select t.sub_proof(:'A') as proof1
+\gset
 select request_id as req1 from submit_subscription_request(
-  :'A', :'basicid', null, null, 'same-key')
+  :'A', :'basicid', null, :'proof1', 'same-key')
 \gset
 select t.ok((select request_id = :'req1' from submit_subscription_request(
-               :'A', :'basicid', null, null, 'same-key')),
+               :'A', :'basicid', null, :'proof1', 'same-key')),
             '★ نفس المفتاح ⇒ نفس الطلب لا طلب ثانٍ');
 select t.ok((select count(*) = 1 from subscription_requests where store_id = :'A'),
             'وصف واحد في الجدول');
