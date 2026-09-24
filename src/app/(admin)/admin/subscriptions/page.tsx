@@ -120,23 +120,32 @@ export default async function AdminSubscriptionsPage() {
             {reviewed.map((r) => {
               const s = STATUS[r.status] ?? { label: r.status, tone: 'neutral' as const };
               return (
-                <li key={r.id} className="flex flex-wrap items-center gap-x-4 gap-y-1
-                                          px-4 py-3">
-                  <span className="min-w-0 flex-1 truncate font-bold text-ink-900">
-                    {r.stores?.name ?? '—'}
-                  </span>
-                  <span className="text-xs text-ink-500">
-                    {r.plans?.name ?? '—'} · {formatDateTime(r.created_at)}
-                    {r.rejection_reason && (
-                      <span className="block text-danger">
-                        {r.rejection_reason}
-                      </span>
-                    )}
-                  </span>
-                  <span className="font-bold tabular text-ink-900">
-                    {formatMoney(r.net_amount)}
-                  </span>
-                  <Badge tone={s.tone}>{s.label}</Badge>
+                <li key={r.id} className="px-4 py-3">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                    <span className="min-w-0 flex-1 truncate font-bold text-ink-900">
+                      {r.stores?.name ?? '—'}
+                    </span>
+                    <span className="text-xs text-ink-500">
+                      {r.plans?.name ?? '—'} · {formatDateTime(r.created_at)}
+                      {r.rejection_reason && (
+                        <span className="block text-danger">
+                          {r.rejection_reason}
+                        </span>
+                      )}
+                    </span>
+                    <span className="font-bold tabular text-ink-900">
+                      {formatMoney(r.net_amount)}
+                    </span>
+                    <Badge tone={s.tone}>{s.label}</Badge>
+                  </div>
+                  {/* الإيصال يبقى متاحًا بعد القرار: التدقيق لاحقًا
+                      يحتاج ما رآه المراجع لحظتها */}
+                  {r.proof_media_id && (
+                    <div className="mt-2">
+                      <SubscriptionProof requestId={r.id}
+                                         mime={r.media_files?.mime_type ?? null} />
+                    </div>
+                  )}
                 </li>
               );
             })}
