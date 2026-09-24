@@ -557,10 +557,12 @@ export type RpcMap = {
   };
   platform_users: {
     args: { p_search?: string | null; p_status?: string | null;
-            p_limit?: number; p_offset?: number };
+            p_limit?: number; p_offset?: number; p_incomplete?: boolean };
     returns: {
       profile_id: string; full_name: string | null; email: string | null;
-      phone: string | null; account_status: string; is_staff: boolean;
+      phone: string | null; phone_source: string | null;
+      account_status: string; is_staff: boolean;
+      email_verified_at: string | null;
       stores_count: number; created_at: string; last_seen_at: string | null;
       partner_id: string | null; partner_status: string | null;
       referral_code: string | null;

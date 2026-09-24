@@ -60,6 +60,9 @@ export function PartnerSignup() {
         <Input name="full_name" label="الاسم الكامل" required autoComplete="name" />
         <Input name="email" type="email" label="البريد الإلكتروني" required
                autoComplete="email" placeholder="you@example.com" />
+        <Input name="phone" type="tel" label="رقم واتساب" required dir="ltr"
+               inputMode="tel" autoComplete="tel" placeholder="0912345678"
+               hint="نتواصل معك عليه في كل ما يخص عمولاتك." />
         <Input name="password" type="password" label="كلمة المرور" required
                autoComplete="new-password" minLength={8} hint="8 أحرف على الأقل" />
         <Button type="submit" className="w-full" size="lg" loading={pending}>

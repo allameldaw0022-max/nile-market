@@ -9,6 +9,7 @@ import { setPartnerIntent } from '@/lib/partners/intent';
 import { recordLoginEvent } from '@/lib/auth/sessions';
 import { safeNext } from '@/lib/safe-next';
 import { rateLimit } from '@/lib/auth/rate-limit';
+import { normalizePhone } from '@/lib/phone';
 
 export type AuthResult = { ok: false; message: string } | { ok: true; message?: string };
 
@@ -47,10 +48,15 @@ export async function signUp(_prev: AuthResult | null, formData: FormData): Prom
   const email = String(formData.get('email') ?? '').trim().toLowerCase();
   const password = String(formData.get('password') ?? '');
   const fullName = String(formData.get('full_name') ?? '').trim();
+  // ★ يُوحَّد قبل الحفظ لا بعده: الرقم الواحد يُكتب بأربع صور،
+  // وتخزينه كما كُتب يُفشل رابط واتساب على صورة ويُنجحه على أخرى.
+  const phone = normalizePhone(String(formData.get('phone') ?? ''));
 
   if (!email.includes('@')) return { ok: false, message: 'أدخل بريدًا إلكترونيًا صحيحًا' };
   if (password.length < 8) return { ok: false, message: 'كلمة المرور يجب ألا تقل عن 8 أحرف' };
   if (fullName.length < 2) return { ok: false, message: 'أدخل اسمك الكامل' };
+  if (!phone || phone.replace(/\D/g, '').length < 9)
+    return { ok: false, message: 'أدخل رقم واتساب صحيح — نتواصل معك عليه' };
 
   const ip = await clientKey();
   if (!(await rateLimit(`signup:${ip}`, 3, 3600))) {
@@ -63,7 +69,8 @@ export async function signUp(_prev: AuthResult | null, formData: FormData): Prom
     options: {
       // ★ لا يُمرَّر أي دور أو صلاحية هنا: البيانات الوصفية يتحكم بها
       // المستخدم بالكامل. الأدوار تُمنح لاحقًا بعملية مدقَّقة (D7).
-      data: { full_name: fullName },
+      // الاسم والهاتف وحدهما — ولا يمنحان شيئًا.
+      data: { full_name: fullName, phone },
       emailRedirectTo: `${config.siteUrl}/auth/confirm`,
     },
   });

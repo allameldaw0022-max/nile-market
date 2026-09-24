@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { Users } from 'lucide-react';
+import { MailWarning, MessageCircle, Store, Users } from 'lucide-react';
 import { requirePlatformAccess } from '@/lib/authz/guards';
 import { adminHasLevel, getActor } from '@/lib/auth/actor';
 import { createClient } from '@/lib/supabase/server';
@@ -11,6 +11,7 @@ import { EmptyState, ErrorState } from '@/components/ui/States';
 import { AccountStatusActions } from '@/components/admin/AccountStatusActions';
 import { MarketingPartnerActions } from '@/components/admin/MarketingPartnerActions';
 import { formatDate, formatNumber } from '@/lib/money/format';
+import { localPhone, waNumber } from '@/lib/phone';
 import { rpc } from '@/lib/supabase/rpc';
 
 export const metadata: Metadata = {
@@ -21,6 +22,13 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 const PAGE_SIZE = 25;
+
+/** من أين جاء الرقم — رقم متجر ليس بالضرورة رقم صاحب الحساب. */
+const PHONE_SOURCE: Record<string, string> = {
+  profile:  'من التسجيل',
+  store:    'من بيانات متجره',
+  customer: 'من طلب سابق',
+};
 
 const STATUS: Record<string, { label: string; tone: 'success' | 'danger' | 'neutral' }> = {
   active:    { label: 'نشط',   tone: 'success' },
@@ -48,6 +56,7 @@ export default async function AdminUsersPage(
   const page = Math.max(1, Number(sp.page ?? 1) || 1);
   const term = (typeof sp.q === 'string' ? sp.q : '').trim().slice(0, 60);
   const status = typeof sp.status === 'string' ? sp.status : '';
+  const incomplete = sp.incomplete === '1';
 
   const supabase = await createClient();
   const { data, error } = await rpc(supabase, 'platform_users', {
@@ -55,6 +64,7 @@ export default async function AdminUsersPage(
     p_status: STATUS[status] ? status : null,
     p_limit: PAGE_SIZE,
     p_offset: (page - 1) * PAGE_SIZE,
+    p_incomplete: incomplete,
   });
   if (error) return <ErrorState description="تعذّر تحميل المستخدمين" />;
 
@@ -66,6 +76,7 @@ export default async function AdminUsersPage(
     const params = new URLSearchParams();
     if (term) params.set('q', term);
     if (status) params.set('status', status);
+    if (incomplete) params.set('incomplete', '1');
     for (const [k, v] of Object.entries(patch)) {
       if (v === null || v === '') params.delete(k);
       else params.set(k, String(v));
@@ -79,6 +90,7 @@ export default async function AdminUsersPage(
         <h1 className="text-xl font-extrabold text-ink-900">المستخدمون</h1>
         <p className="text-sm text-ink-500 tabular">
           {formatNumber(Number(total))} حساب
+          {incomplete && ' — لم يُكملوا التسجيل'}
         </p>
       </div>
 
@@ -89,6 +101,7 @@ export default async function AdminUsersPage(
                           border-ink-400 bg-white px-3 text-[14px] text-ink-900
                           placeholder:text-ink-500 focus:border-teal-600" />
         <input type="hidden" name="status" value={status} />
+        {incomplete && <input type="hidden" name="incomplete" value="1" />}
         <Button type="submit" variant="outline" size="sm">بحث</Button>
       </form>
 
@@ -98,6 +111,10 @@ export default async function AdminUsersPage(
           <Link key={value} href={qs({ status: value, page: null })}
                 className={chip(status === value)}>{s.label}</Link>
         ))}
+        {/* ★ من سجّل ولم يُكمل: بريد غير مؤكَّد أو بلا متجر —
+            وهؤلاء بالضبط من يُراسَلون لمعرفة ما أوقفهم. */}
+        <Link href={qs({ incomplete: incomplete ? null : '1', page: null })}
+              className={chip(incomplete)}>لم يُكمل التسجيل</Link>
       </nav>
 
       {rows.length === 0 ? (
@@ -126,7 +143,42 @@ export default async function AdminUsersPage(
                       )}
                     </p>
                     <p className="truncate text-xs text-ink-500" dir="ltr">
-                      {u.email ?? '—'}{u.phone ? ` · ${u.phone}` : ''}
+                      {u.email ?? '—'}
+                    </p>
+
+                    {/* ★ الرقم مع زرّ واتساب: الغرض مراسلة من توقّف،
+                        فالرقم بلا زرّ يعني نسخًا ولصقًا في كل مرة. */}
+                    <p className="mt-1 flex flex-wrap items-center gap-2 text-xs">
+                      {u.phone ? (
+                        <>
+                          <a href={`https://wa.me/${waNumber(u.phone)}`}
+                             target="_blank" rel="noopener noreferrer"
+                             className="inline-flex items-center gap-1 rounded-md
+                                        border border-ink-200 px-2 py-1 font-bold
+                                        text-teal-700 hover:border-teal-500">
+                            <MessageCircle size={12} />
+                            <span dir="ltr" className="tabular">
+                              {localPhone(u.phone)}
+                            </span>
+                          </a>
+                          <span className="text-ink-500">
+                            {PHONE_SOURCE[u.phone_source ?? ''] ?? ''}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-ink-500">لا رقم مسجَّل</span>
+                      )}
+
+                      {!u.email_verified_at && (
+                        <span className="inline-flex items-center gap-1 text-gold-700">
+                          <MailWarning size={12} /> لم يؤكّد بريده
+                        </span>
+                      )}
+                      {Number(u.stores_count) === 0 && !u.is_staff && (
+                        <span className="inline-flex items-center gap-1 text-ink-500">
+                          <Store size={12} /> بلا متجر
+                        </span>
+                      )}
                     </p>
                   </div>
 
