@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { ChevronRight } from 'lucide-react';
 import { resolveStoreByHost } from '@/lib/tenant/resolve';
+import { decodeSlugParam } from '@/lib/tenant/params';
 import { createClient } from '@/lib/supabase/server';
 import { ProductShowcase } from '@/components/storefront/ProductShowcase';
 import { Button } from '@/components/ui/Button';
@@ -26,7 +27,8 @@ async function loadCategory(host: string, slug: string) {
 export async function generateMetadata(
   { params }: PageProps<'/sites/[host]/categories/[slug]'>,
 ): Promise<Metadata> {
-  const { host, slug } = await params;
+  const { host, slug: rawSlug } = await params;
+  const slug = decodeSlugParam(rawSlug);
   const found = await loadCategory(host, slug);
   if (!found) return { title: 'التصنيف غير موجود' };
   return {
@@ -40,7 +42,8 @@ export async function generateMetadata(
 export default async function CategoryPage(
   { params, searchParams }: PageProps<'/sites/[host]/categories/[slug]'>,
 ) {
-  const { host, slug } = await params;
+  const { host, slug: rawSlug } = await params;
+  const slug = decodeSlugParam(rawSlug);
   const found = await loadCategory(host, slug);
   if (!found) notFound();
 

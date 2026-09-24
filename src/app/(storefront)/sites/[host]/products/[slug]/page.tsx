@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { ChevronRight, ImageOff, ShieldCheck, Truck } from 'lucide-react';
 import { resolveStoreByHost } from '@/lib/tenant/resolve';
+import { decodeSlugParam } from '@/lib/tenant/params';
 import { createClient } from '@/lib/supabase/server';
 import { AddToCartButton } from '@/components/storefront/AddToCartButton';
 import { WishlistButton } from '@/components/storefront/WishlistButton';
@@ -59,7 +60,7 @@ export async function generateMetadata(
   { params }: PageProps<'/sites/[host]/products/[slug]'>,
 ): Promise<Metadata> {
   const { host, slug } = await params;
-  const found = await load(host, slug);
+  const found = await load(host, decodeSlugParam(slug));
   if (!found) return { title: 'المنتج غير موجود' };
 
   const { store, product } = found;
@@ -83,7 +84,7 @@ export default async function ProductPage(
   { params }: PageProps<'/sites/[host]/products/[slug]'>,
 ) {
   const { host, slug } = await params;
-  const found = await load(host, slug);
+  const found = await load(host, decodeSlugParam(slug));
   if (!found) notFound();
 
   const { store, product } = found;

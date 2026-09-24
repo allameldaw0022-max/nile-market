@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { resolveStoreByHost } from '@/lib/tenant/resolve';
+import { decodeSlugParam } from '@/lib/tenant/params';
 import { createClient } from '@/lib/supabase/server';
 
 export const revalidate = 300;
@@ -20,7 +21,8 @@ const PAGES: Record<string, { title: string; key: string }> = {
 export async function generateMetadata(
   { params }: PageProps<'/sites/[host]/pages/[slug]'>,
 ): Promise<Metadata> {
-  const { host, slug } = await params;
+  const { host, slug: rawSlug } = await params;
+  const slug = decodeSlugParam(rawSlug);
   const page = PAGES[slug];
   const store = await resolveStoreByHost(host);
   if (!page || !store) return { title: 'الصفحة غير موجودة' };
@@ -31,7 +33,8 @@ export async function generateMetadata(
 }
 
 export default async function PolicyPage({ params }: PageProps<'/sites/[host]/pages/[slug]'>) {
-  const { host, slug } = await params;
+  const { host, slug: rawSlug } = await params;
+  const slug = decodeSlugParam(rawSlug);
   const page = PAGES[slug];
   if (!page) notFound();
 
