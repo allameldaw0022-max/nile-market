@@ -128,6 +128,53 @@ select t.ok((select count(*) = 2 from referral_visits
             'وكلاهما زيارة في نفس الجدول');
 rollback;
 
+\echo '── الأشكال الثلاثة تُسنِد إلى نفس الشريك ──'
+begin;
+select t.reset();
+select serial_no as sn2, referral_code as rc2 from partners where id = :'PARTNER'
+\gset
+select t.logout();
+-- `/1` و`/r/1` يمرّان بنفس الترجمة، و`?ref=CODE` يستعمل الرمز مباشرة
+select t.ok((select partner_code_by_serial(:'sn2') = :'rc2'),
+            '★★ `/1` و`/r/1` يترجمان إلى نفس رمز `?ref=`');
+
+\o /dev/null
+select record_referral_visit(:'rc2', 'formpath0123456789abcdef01234567', '/1');
+select record_referral_visit((select partner_code_by_serial(:'sn2')),
+                             'formshort0123456789abcdef0123456', '/r/1');
+select record_referral_visit(:'rc2', 'formlegacy0123456789abcdef01234', '/');
+\o
+select t.reset();
+select t.ok((select count(*) = 3 from referral_visits
+             where partner_id = :'PARTNER'
+               and visitor_token in ('formpath0123456789abcdef01234567',
+                                     'formshort0123456789abcdef0123456',
+                                     'formlegacy0123456789abcdef01234')),
+            '★★★ والثلاثة يسجّلون في نفس الجدول لنفس الشريك');
+
+-- ونتيجة الإسناد واحدة أيًّا كان الشكل الذي جاء منه الزائر
+select t.ok((select app.attribute_referral(:'B', 'formpath0123456789abcdef01234567')
+             is not null),
+            'الإسناد من `/1` ينجح');
+select t.ok((select partner_id = :'PARTNER' from referrals where store_id = :'B'),
+            '★★★ ويُسنِد إلى نفس الشريك تمامًا');
+rollback;
+
+\echo '── رقم لا شريك له: لا إحالة ولا زيارة ──'
+begin;
+select t.reset();
+select t.logout();
+select t.ok((select partner_code_by_serial(987654) is null),
+            '★★ رقم مخترَع لا يُترجَم ⇒ لا رابط إحالة منه');
+select t.ok((select record_referral_visit(null, 'ghost0123456789abcdef0123456789')
+             = false),
+            '★★★ ولا تُسجَّل له زيارة');
+select t.reset();
+select t.ok((select count(*) = 0 from referral_visits
+             where visitor_token = 'ghost0123456789abcdef0123456789'),
+            'ولا صفّ في الجدول');
+rollback;
+
 \echo '── الإسناد: آخر لمسة · نافذة 30 يومًا · لا إسناد ذاتي ──'
 begin;
 select t.reset();

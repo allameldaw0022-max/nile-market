@@ -18,8 +18,9 @@ export function siteUrl(): string {
  * ★ شكلان لنفس النظام، لا نظامَي إسناد:
  *   · `domain` — `https://1nilemarket.online` كما في المواصفة.
  *     يتطلّب تسجيل الدومين وشهادته لكل رقم (راجع التقرير).
- *   · `path`   — `https://nilemarket.online/r/1`. يعمل اليوم بلا أي
+ *   · `path`   — `https://nilemarket.online/1`. يعمل اليوم بلا أي
  *     إعداد خارجي، وهو الافتراضي حتى يكتمل الأول.
+ *     و`/r/1` يبقى عاملًا للروابط المنشورة قبل هذا الشكل.
  *
  * الشكل يُختار بمتغيّر بيئة واحد؛ الترجمة إلى رمز الإحالة تحدث
  * خادميًا في الحالتين عبر `partner_code_by_serial`.
@@ -36,7 +37,7 @@ export function partnerShortLink(serial: number | null): string | null {
   if (partnerLinkMode() === 'domain') {
     return `https://${serial}${rootDomain()}`;
   }
-  return `${siteUrl().replace(/\/$/, '')}/r/${serial}`;
+  return `${siteUrl().replace(/\/$/, '')}/${serial}`;
 }
 
 /** الرابط الطويل — يبقى صالحًا إلى الأبد (D19). */
@@ -56,5 +57,21 @@ export function serialFromHost(host: string): number | null {
   const prefix = h.slice(0, h.length - root.length);
   if (!/^\d{1,9}$/.test(prefix)) return null;
   const n = Number(prefix);
+  return n > 0 ? n : null;
+}
+
+/**
+ * يطابق مسارًا على شكل `/<رقم>` ويعيد الرقم.
+ *
+ * ★ الحصر متعمَّد: جزء واحد، أرقام فقط، وأكبر من صفر. فلا يبتلع
+ * `/admin` ولا `/partner` ولا `/r/1` ولا `/1/2` — ولا يخطف مسارًا
+ * جديدًا يُضاف لاحقًا ما دام لا يبدأ برقم.
+ *
+ * ★ يُستدعى على مضيف المنصة وحده؛ مسارات المتاجر لا تمرّ به.
+ */
+export function serialFromPath(pathname: string): number | null {
+  const match = /^\/(\d{1,9})$/.exec(pathname);
+  if (!match) return null;
+  const n = Number(match[1]);
   return n > 0 ? n : null;
 }

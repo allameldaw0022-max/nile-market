@@ -2,7 +2,7 @@ import { randomBytes } from 'node:crypto';
 import { NextResponse, type NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { config as platform, isPlatformHost } from '@/lib/config';
-import { serialFromHost } from '@/lib/partners/links';
+import { serialFromHost, serialFromPath } from '@/lib/partners/links';
 import {
   REFERRAL_COOKIE, REFERRAL_MAX_AGE, VISITOR_COOKIE, VISITOR_MAX_AGE,
 } from '@/lib/referral';
@@ -79,12 +79,28 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  // ★ الرابط القصير للشريك: `1nilemarket.online` وأخواته.
+  /**
+   * رقم الشريك ⟶ رمز الإحالة، من القاعدة وللشريك النشِط وحده.
+   * شكلا الرابط القصير (`/1` و`1nilemarket.online`) يمرّان بها معًا.
+   */
+  const codeForSerial = async (value: number): Promise<string | null> => {
+    try {
+      const { data } = await supabase.rpc('partner_code_by_serial', {
+        p_serial: value,
+      });
+      return typeof data === 'string' && data ? data : null;
+    } catch (error) {
+      console.error('[referral] تعذّر ترجمة الرابط القصير', error);
+      return null;
+    }
+  };
+
+  // ★ الرابط القصير بالمضيف: `1nilemarket.online` وأخواته.
   //
-  // مدخل ثانٍ لنظام الإحالة القائم لا نظام ثانٍ: الرقم يُترجَم في
-  // القاعدة إلى رمز الإحالة، وتُسجَّل الزيارة بنفس الدالة، ثم
-  // يُحوَّل الزائر إلى الموقع الرئيسي. Last-touch ونافذة الثلاثين
-  // يومًا ومنع الإسناد الذاتي تسري كما هي.
+  // مدخل ثانٍ لنظام الإحالة القائم لا نظام ثانٍ: الرقم يُترجَم إلى
+  // رمز الإحالة، ثم يُحوَّل الزائر إلى الدومين الجذر حاملًا `?ref=`
+  // فتلتقطه الكتلة أعلاه. Last-touch ونافذة الثلاثين يومًا ومنع
+  // الإسناد الذاتي تسري كما هي.
   //
   // ★ يُفحص قبل توجيه المستأجر: هذه المضيفات ليست متاجر، وبدون هذا
   // الفحص كانت ستُعاد كتابتها إلى `/sites/1nilemarket.online` ⇒ 404.
@@ -95,30 +111,13 @@ export async function proxy(request: NextRequest) {
     target.search = search;
     const hop = NextResponse.redirect(target, 302);
 
-    try {
-      const { data: code } = await supabase.rpc('partner_code_by_serial', {
-        p_serial: serial,
-      });
-      if (typeof code === 'string' && code) {
-        let token = request.cookies.get(REFERRAL_COOKIE)?.value;
-        if (!token || token.length < 24) {
-          token = randomBytes(32).toString('hex');
-        }
-        // الكوكي يُكتب على الدومين الجذر لا على الرابط القصير، وإلا
-        // ضاع فور التحويل. (Domain= يسمح بذلك لأنهما دومينان مستقلان
-        // فعليًا — ولهذا يُسجَّل الأثر في القاعدة أيضًا.)
-        hop.cookies.set(REFERRAL_COOKIE, token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          path: '/',
-          maxAge: REFERRAL_MAX_AGE,
-        });
-        target.searchParams.set('ref', code);
-        return NextResponse.redirect(target, 302);
-      }
-    } catch (error) {
-      console.error('[referral] تعذّر ترجمة الرابط القصير', error);
+    const code = await codeForSerial(serial);
+    if (code) {
+      // ★ لا يُسجَّل شيء هنا: التحويل يحمل `?ref=` فيمرّ الطلب
+      // التالي بنفس كتلة الالتقاط أعلاه. مسار إسناد واحد للأشكال
+      // الثلاثة، فلا تختلف النتيجة بينها.
+      target.searchParams.set('ref', code);
+      return NextResponse.redirect(target, 302);
     }
     return hop;
   }
@@ -128,6 +127,26 @@ export async function proxy(request: NextRequest) {
     if (pathname.startsWith('/sites')) {
       return new NextResponse(null, { status: 404 });
     }
+
+    // ★ الرابط القصير `/1` · `/25` على الدومين الجذر.
+    //
+    // يُترجم الرقم إلى رمز الإحالة ثم يُحوَّل إلى `/?ref=CODE` —
+    // أي إلى **نفس** كتلة الالتقاط التي يمرّ بها الرابط القديم.
+    // لا نظام إسناد ثانٍ ولا فرق في النتيجة بين الأشكال الثلاثة.
+    //
+    // ★ رقم بلا شريك نشط لا يُحوَّل: يمضي الطلب كما هو فلا يجد
+    // مسارًا مطابقًا، وتظهر صفحة 404 الموقع. لا نُنشئ إحالة من رقم
+    // مخترَع، ولا نبتلع مسارًا ليس لنا.
+    const pathSerial = serialFromPath(pathname);
+    if (pathSerial !== null) {
+      const code = await codeForSerial(pathSerial);
+      if (code) {
+        const target = new URL('/', request.nextUrl.origin);
+        target.searchParams.set('ref', code);
+        return NextResponse.redirect(target, 302);
+      }
+    }
+
     return response;
   }
 

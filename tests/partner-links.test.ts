@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 process.env.NEXT_PUBLIC_ROOT_DOMAIN = 'nilemarket.online';
 process.env.NEXT_PUBLIC_SITE_URL = 'https://nilemarket.online';
 
-const { serialFromHost, partnerShortLink, partnerLegacyLink } =
+const { serialFromHost, serialFromPath, partnerShortLink, partnerLegacyLink } =
   await import('../src/lib/partners/links.ts');
 
 /**
@@ -46,8 +46,60 @@ test('★ والصفر أو ما ليس رقمًا مرفوض', () => {
 
 test('الرابط القصير في وضع المسار يعمل بلا إعداد خارجي', () => {
   delete process.env.NEXT_PUBLIC_PARTNER_LINK_MODE;
-  assert.equal(partnerShortLink(7), 'https://nilemarket.online/r/7');
+  assert.equal(partnerShortLink(1), 'https://nilemarket.online/1');
+  assert.equal(partnerShortLink(25), 'https://nilemarket.online/25');
+  assert.equal(partnerShortLink(100), 'https://nilemarket.online/100');
   assert.equal(partnerShortLink(null), null);
+});
+
+test('★★ وما يُعرض على الشريك هو ما يلتقطه الـproxy', () => {
+  delete process.env.NEXT_PUBLIC_PARTNER_LINK_MODE;
+  for (const n of [1, 25, 100, 999999999]) {
+    const link = partnerShortLink(n);
+    assert.equal(serialFromPath(new URL(link!).pathname), n);
+  }
+});
+
+/**
+ * ★★★ الحارس الحقيقي لهذا الشكل: مسار من جزء واحد على الدومين
+ * الجذر. خطأ في التعبير هنا يبتلع مسار لوحة أو مسارًا يُضاف غدًا،
+ * فيصير رابط إدارة إحالةً — أو 404.
+ */
+test('★★★ المسار الرقمي لا يخطف مسارًا من مسارات النظام', () => {
+  for (const p of [
+    '/admin', '/admin/users', '/dashboard', '/dashboard/orders',
+    '/partner', '/partner/payouts', '/partners', '/partners/join',
+    '/auth/callback', '/auth/confirm', '/r/1', '/pricing', '/support',
+    '/legal/terms', '/onboarding', '/account', '/login', '/signup',
+    '/sites/shop.example.com', '/api/v1/cron/daily', '/',
+  ]) {
+    assert.equal(serialFromPath(p), null, p);
+  }
+});
+
+test('★★ ولا يبتلع مسارًا يبدأ برقم لكنه ليس رقمًا وحده', () => {
+  assert.equal(serialFromPath('/1/2'), null);
+  assert.equal(serialFromPath('/1abc'), null);
+  assert.equal(serialFromPath('/1/'), null);
+  assert.equal(serialFromPath('/12.34'), null);
+  assert.equal(serialFromPath('/1?ref=X'), null, 'المسار بلا استعلام');
+});
+
+test('★ والصفر ليس رقم شريك', () => {
+  assert.equal(serialFromPath('/0'), null);
+  assert.equal(serialFromPath('/00'), null);
+});
+
+test('يلتقط أرقام الشركاء وحدها', () => {
+  assert.equal(serialFromPath('/1'), 1);
+  assert.equal(serialFromPath('/25'), 25);
+  assert.equal(serialFromPath('/100'), 100);
+});
+
+test('★ ويبقى `/r/1` شكلًا صالحًا للروابط المنشورة قبله', () => {
+  // الشكل القديم لم يعد يُعرض، لكنه مسار قائم في التطبيق: لا
+  // يلتقطه المطابق الرقمي، فيصل إلى معالجه كما كان.
+  assert.equal(serialFromPath('/r/1'), null);
 });
 
 test('وفي وضع الدومين يطابق المضيف الذي يفهمه الـproxy', () => {
