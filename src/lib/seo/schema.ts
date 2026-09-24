@@ -37,6 +37,9 @@ export function productSchema(input: {
   /** null ⇒ لا نعرف التوفّر (المتجر لا يتابع المخزون) فلا نعلنه. */
   inStock: boolean | null;
   canBuy: boolean;
+  /** متوسّط التقييم وعدده — يُحذفان معًا حين لا يوجد تقييم. */
+  ratingAvg?: number | null;
+  ratingCount?: number;
 }): StorefrontJsonLd {
   const availability = input.canBuy === false
     ? 'https://schema.org/PreOrder'
@@ -46,10 +49,26 @@ export function productSchema(input: {
         ? 'https://schema.org/InStock'
         : 'https://schema.org/OutOfStock';
 
+  // ★ لا `aggregateRating` بلا تقييم حقيقي: إعلان متوسّط مخترع في
+  // البيانات المنظَّمة تزويرٌ تعاقب عليه محرّكات البحث، ويُسقط
+  // النتيجة كلّها لا الحقل وحده.
+  const rating = (input.ratingCount ?? 0) > 0 && input.ratingAvg != null
+    ? {
+        aggregateRating: {
+          '@type': 'AggregateRating',
+          ratingValue: Number(input.ratingAvg).toFixed(1),
+          reviewCount: input.ratingCount,
+          bestRating: '5',
+          worstRating: '1',
+        },
+      }
+    : {};
+
   return {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: input.name,
+    ...rating,
     ...(input.description ? { description: input.description } : {}),
     ...(input.sku ? { sku: input.sku } : {}),
     ...(input.image ? { image: [input.image] } : {}),

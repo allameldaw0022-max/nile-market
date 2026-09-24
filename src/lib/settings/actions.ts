@@ -97,6 +97,45 @@ export async function saveStoreProfile(
   }
 }
 
+/**
+ * غلاف المتجر.
+ *
+ * ★ الرابط يصل من المتصفّح، فلا يُقبل إلا ملفًا في الدلو العام لهذا
+ * المشروع — بالضبط كشعار البنك (`cleanLogo` أدناه). بدون ذلك كان
+ * يمكن حقن رابط خارجي يُحمَّل في **كل** صفحة من صفحات المتجر:
+ * تتبّعٌ لكل زائر في أحسن الأحوال، وصورة مسيئة باسم التاجر في
+ * أسوئها.
+ *
+ * ★ والرفع نفسه مرّ بـ`prepare_upload` التي تفحص `products:update`
+ * على هذا المتجر وحده، فالمسار مغلق من طرفيه.
+ */
+export async function saveStoreCover(input: {
+  storeId: string; url: string | null;
+}): Promise<ActionResult> {
+  try {
+    const { membership } = await requireStoreAccess(input.storeId, 'settings:update');
+    const url = cleanPublicUrl(input.url ?? undefined, 'رابط الغلاف');
+
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from('stores')
+      .update({ banner_url: url ?? null })
+      .eq('id', membership.storeId);
+    if (error) throw fromPostgres(error);
+
+    // الغلاف يظهر في افتتاحية المتجر، فوسم المستأجر يُبطَل فورًا
+    const { data: domain } = await supabase
+      .from('store_domains').select('hostname')
+      .eq('store_id', membership.storeId).eq('is_primary', true).maybeSingle();
+    if (domain?.hostname) updateTag(tenantTag(domain.hostname));
+    updateTag(storeTag(membership.storeId, 'settings'));
+
+    return ok(undefined);
+  } catch (err) {
+    return actionError(err);
+  }
+}
+
 export type BankAccount = {
   bank: string; account: string; holder?: string;
   /** رابط شعار البنك في `store-public` — اختياري. */
@@ -110,16 +149,20 @@ export type BankAccount = {
  * يُحمَّل في صفحة تعليمات الدفع — تتبّعٌ للزبون في أحسن الأحوال،
  * وصورة مضلِّلة عن حساب بنكي في أسوئها.
  */
-function cleanLogo(value: string | undefined): string | undefined {
+function cleanPublicUrl(
+  value: string | undefined, label = 'رابط الشعار',
+): string | undefined {
   const url = value?.trim();
   if (!url) return undefined;
   const prefix = `${process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''}/storage/v1/object/public/store-public/`;
   if (!prefix.startsWith('https://') || !url.startsWith(prefix)) {
-    throw errors.validation('رابط الشعار غير صالح');
+    throw errors.validation(`${label} غير صالح`);
   }
-  if (url.length > 500) throw errors.validation('رابط الشعار طويل جدًا');
+  if (url.length > 500) throw errors.validation(`${label} طويل جدًا`);
   return url;
 }
+
+const cleanLogo = (value: string | undefined) => cleanPublicUrl(value);
 
 /**
  * الحسابات البنكية. تُخزَّن في `store_payment_settings` المفصول، ولا

@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/server';
 import { rpc } from '@/lib/supabase/rpc';
 import { Card } from '@/components/ui/Card';
 import { StoreProfileForm, type StoreProfile } from '@/components/dashboard/StoreProfileForm';
+import { StoreCoverForm } from '@/components/dashboard/StoreCoverForm';
 import { BankAccountsForm } from '@/components/dashboard/BankAccountsForm';
 import type { BankAccount } from '@/lib/settings/actions';
 
@@ -37,7 +38,8 @@ export default async function SettingsPage() {
   const supabase = await createClient();
   const [{ data: store }, { data: settings }, { data: payment }, { data: ops }] =
     await Promise.all([
-    supabase.from('stores').select('name, business_type, description, slug')
+    supabase.from('stores')
+      .select('name, business_type, description, slug, banner_url')
       .eq('id', membership.storeId).maybeSingle(),
     supabase.from('store_settings')
       .select('whatsapp_number, contact_phone, contact_email, address, cod_enabled, bank_transfer_enabled, bankak_enabled')
@@ -103,6 +105,9 @@ export default async function SettingsPage() {
       </nav>
 
       <StoreProfileForm storeId={membership.storeId} initial={profile} canEdit={canEdit} />
+
+      <StoreCoverForm storeId={membership.storeId}
+                      initialUrl={store?.banner_url ?? null} canEdit={canEdit} />
 
       {canBanking && (
         <BankAccountsForm storeId={membership.storeId} initialAccounts={accounts}

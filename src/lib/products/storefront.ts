@@ -4,7 +4,7 @@ import type { StorefrontProduct } from '@/components/storefront/ProductCard';
 import { searchTerm, ilikeAny } from '@/lib/search';
 
 export const STOREFRONT_SELECT =
-  'id, name, slug, price, compare_at_price, ' +
+  'id, name, slug, price, compare_at_price, rating_avg, rating_count, ' +
   'product_images(media_file_id, is_primary, media_files(path, bucket, blur_data_url))';
 
 export type Sort = 'newest' | 'price_asc' | 'price_desc' | 'name';

@@ -2353,6 +2353,8 @@ export type Database = {
           name: string
           price: number
           published_at: string | null
+          rating_avg: number | null
+          rating_count: number
           seo: Json
           sku: string | null
           slug: string
@@ -2377,6 +2379,8 @@ export type Database = {
           name: string
           price: number
           published_at?: string | null
+          rating_avg?: number | null
+          rating_count?: number
           seo?: Json
           sku?: string | null
           slug: string
@@ -2401,6 +2405,8 @@ export type Database = {
           name?: string
           price?: number
           published_at?: string | null
+          rating_avg?: number | null
+          rating_count?: number
           seo?: Json
           sku?: string | null
           slug?: string

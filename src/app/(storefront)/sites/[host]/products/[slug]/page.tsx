@@ -14,6 +14,10 @@ import { ProductCard, type StorefrontProduct } from '@/components/storefront/Pro
 import { formatMoney } from '@/lib/money/format';
 import { publicUrl } from '@/lib/media/url';
 import { JsonLd } from '@/components/seo/JsonLd';
+import { RatingSummary } from '@/components/storefront/Stars';
+import { ProductReviews, type PublicReview, type ReviewViewerState }
+  from '@/components/storefront/ProductReviews';
+import { rpc } from '@/lib/supabase/rpc';
 import { breadcrumbSchema, productSchema } from '@/lib/seo/schema';
 
 export const revalidate = 60;
@@ -27,6 +31,7 @@ type ProductRow = {
   id: string; name: string; slug: string; description: string | null;
   price: number; compare_at_price: number | null; sku: string | null;
   track_inventory: boolean; category_id: string | null;
+  rating_avg: number | null; rating_count: number;
   seo: Record<string, unknown>;
   product_images: ImageRow[] | null;
   product_variants: {
@@ -37,7 +42,7 @@ type ProductRow = {
 
 const SELECT =
   'id, name, slug, description, price, compare_at_price, sku, track_inventory, ' +
-  'category_id, seo, ' +
+  'category_id, seo, rating_avg, rating_count, ' +
   'product_images(sort_order, is_primary, media_files(bucket, path, blur_data_url)), ' +
   'product_variants(id, name, price, is_active), ' +
   'inventory(quantity, reserved)';
@@ -101,6 +106,8 @@ export default async function ProductPage(
     && Number(product.compare_at_price) > Number(product.price);
 
   const related = await loadRelated(store.storeId, product.category_id, product.id);
+  const { reviews, viewer } = await loadReviews(product.id);
+  const ratingAvg = product.rating_avg == null ? null : Number(product.rating_avg);
 
   // حالة المفضّلة لهذا المنتج وللمنتجات المشابهة في نداء واحد
   const [actor, saved] = await Promise.all([
@@ -123,6 +130,8 @@ export default async function ProductPage(
     storeName: store.name,
     inStock: product.track_inventory ? stock > 0 : null,
     canBuy: store.canCheckout,
+    ratingAvg,
+    ratingCount: product.rating_count,
   });
 
   const trail = breadcrumbSchema(store.primaryHost, [
@@ -176,6 +185,12 @@ export default async function ProductPage(
         <div>
           <h1 className="text-xl font-extrabold text-ink-900 sm:text-2xl">{product.name}</h1>
 
+          {product.rating_count > 0 && (
+            <a href="#reviews" className="mt-2 inline-flex">
+              <RatingSummary avg={ratingAvg} count={product.rating_count} size={15} />
+            </a>
+          )}
+
           <div className="mt-3 flex items-baseline gap-3">
             <p className="text-2xl font-extrabold text-teal-700 tabular">
               {formatMoney(product.price)}
@@ -218,6 +233,12 @@ export default async function ProductPage(
         </div>
       </div>
 
+      <div id="reviews" className="scroll-mt-20">
+        <ProductReviews host={host} productId={product.id} slug={product.slug}
+                        avg={ratingAvg} count={product.rating_count}
+                        reviews={reviews} viewer={viewer} />
+      </div>
+
       {related.length > 0 && (
         <section className="mt-12">
           <h2 className="font-bold text-ink-900">منتجات مشابهة</h2>
@@ -240,13 +261,41 @@ async function loadRelated(
   const supabase = await createClient();
   const { data } = await supabase
     .from('products')
-    .select('id, name, slug, price, compare_at_price, ' +
+    .select('id, name, slug, price, compare_at_price, rating_avg, rating_count, ' +
             'product_images(media_file_id, is_primary, ' +
             'media_files(path, bucket, blur_data_url))')
     .eq('store_id', storeId).eq('category_id', categoryId)
     .eq('status', 'active').is('deleted_at', null)
     .neq('id', excludeId).limit(4);
   return (data ?? []) as unknown as StorefrontProduct[];
+}
+
+/**
+ * التقييمات المنشورة وحالة الزائر — نداءان متوازيان.
+ *
+ * ★ `product_review_state` تُنادى للجميع: للزائر تعيد «auth» بلا
+ * أي معلومة عن طلبات أحد، فلا يختلف شكل الطلب بين مشترٍ وغيره.
+ */
+async function loadReviews(productId: string): Promise<{
+  reviews: PublicReview[]; viewer: ReviewViewerState;
+}> {
+  const supabase = await createClient();
+  const [listRes, stateRes] = await Promise.all([
+    rpc(supabase, 'product_reviews_page', { p_product_id: productId, p_limit: 10 }),
+    rpc(supabase, 'product_review_state', { p_product_id: productId }),
+  ]);
+
+  const state = stateRes.data?.[0] ?? null;
+  return {
+    reviews: listRes.data ?? [],
+    viewer: {
+      canReview: state?.can_review ?? false,
+      reason: state?.reason ?? 'auth',
+      myRating: state?.my_rating ?? null,
+      myBody: state?.my_body ?? null,
+      myHidden: state?.my_status === 'hidden',
+    },
+  };
 }
 
 function pickCover(product: ProductRow) {

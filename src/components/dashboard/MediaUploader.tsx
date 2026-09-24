@@ -205,6 +205,97 @@ export function StoreLogoUploader({
   );
 }
 
+// ── غلاف المتجر ─────────────────────────────────────────────────────
+/**
+ * رافع صورة الغلاف.
+ *
+ * ★ نسخة ثانية من `StoreLogoUploader`؟ لا: المعاينة وحدها تختلف —
+ * عريضة و`cover` لا مربّعة و`contain`، لأن الغلاف يُقصّ فعلًا في
+ * الصفحة ويجب أن يُرى القصّ هنا قبل النشر. أما الضغط والصلاحية
+ * والرفع والإعادة فمن `useUploader` نفسه بلا تكرار سطر.
+ */
+export function StoreCoverUploader({
+  storeId, currentUrl, onUploaded, onRemove,
+}: {
+  storeId: string;
+  currentUrl: string | null;
+  onUploaded: (url: string, mediaId: string) => void;
+  onRemove?: () => void;
+}) {
+  const { state, error, run, retry } = useUploader(storeId, 'store_banner');
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const busy = state === 'compressing' || state === 'uploading' || state === 'finalizing';
+
+  const handle = async (file: File | undefined) => {
+    if (!file) return;
+    const res = await run(file);
+    if (res) onUploaded(res.url, res.mediaId);
+  };
+
+  return (
+    <div className="space-y-3">
+      {/* ★ النسبة هنا هي نسبة الافتتاحية على الشاشات الواسعة، فما
+          يراه التاجر في المعاينة هو ما يراه زبونه. */}
+      <div className="relative aspect-[16/6] overflow-hidden rounded-lg border
+                      border-ink-200 bg-ink-900 sm:aspect-[16/5]">
+        {currentUrl ? (
+          <>
+            <Image src={currentUrl} alt="غلاف المتجر" fill sizes="(max-width: 640px) 100vw, 640px"
+                   className="object-cover" />
+            <span aria-hidden className="absolute inset-0 bg-ink-900/45" />
+          </>
+        ) : (
+          <span className="flex size-full items-center justify-center text-white/40">
+            <ImagePlus size={30} strokeWidth={1.5} />
+          </span>
+        )}
+        {/* محاكاة النصّ فوق الصورة: يكشف الغلاف الذي يبتلع الاسم */}
+        <span className="pointer-events-none absolute inset-0 flex items-center
+                         px-4 text-[15px] font-bold text-white sm:text-[18px]">
+          اسم متجرك يظهر هنا
+        </span>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <Button type="button" variant="outline" size="sm" loading={busy}
+                icon={<UploadCloud size={15} />}
+                onClick={() => inputRef.current?.click()}>
+          {currentUrl ? 'تغيير الغلاف' : 'رفع صورة غلاف'}
+        </Button>
+        {currentUrl && onRemove && !busy && (
+          <button type="button" onClick={onRemove}
+                  className="inline-flex h-9 items-center gap-1.5 rounded-md px-2.5
+                             text-[13px] font-semibold text-danger
+                             transition-colors hover:bg-danger-bg">
+            <Trash2 size={14} aria-hidden />
+            إزالة
+          </button>
+        )}
+        <Busy state={state} />
+      </div>
+
+      {!busy && (
+        <p className="text-xs text-ink-500">
+          صورة عريضة (مثلًا 1600×500) — JPG أو PNG أو WebP حتى 5 ميجابايت.
+          بلا غلاف يظهر الشريط الداكن المعتاد.
+        </p>
+      )}
+
+      <input ref={inputRef} type="file" accept={ACCEPT} className="sr-only"
+             onChange={(e) => {
+               void handle(e.target.files?.[0]);
+               e.target.value = '';
+             }} />
+
+      {state === 'error' && error && (
+        <ErrorLine message={error} onRetry={() => {
+          void retry().then((r) => { if (r) onUploaded(r.url, r.mediaId); });
+        }} />
+      )}
+    </div>
+  );
+}
+
 // ── صور المنتج (متعددة، مرتَّبة، الأولى أساسية) ─────────────────────
 export function ProductImagesUploader({ storeId, value, onChange, max = 8 }: {
   storeId: string;

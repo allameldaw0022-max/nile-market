@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { ImageOff } from 'lucide-react';
 import { formatMoney } from '@/lib/money/format';
 import { QuickAdd } from './QuickAdd';
+import { RatingSummary } from './Stars';
 import { WishlistButton } from './WishlistButton';
 
 type ImageRow = {
@@ -15,6 +16,8 @@ export type StorefrontProduct = {
   price: number; compare_at_price: number | null;
   has_variants?: boolean | null;
   track_inventory?: boolean | null;
+  rating_avg?: number | null;
+  rating_count?: number | null;
   inventory?: { quantity: number; reserved: number }[] | null;
   product_images?: ImageRow[] | null;
 };
@@ -46,6 +49,9 @@ export function ProductCard({ product, host, priority = false, saved = false, si
   const was = product.compare_at_price != null ? Number(product.compare_at_price) : null;
   const hasDiscount = was != null && was > price;
   const off = hasDiscount ? Math.round(((was - price) / was) * 100) : 0;
+
+  const ratingCount = product.rating_count ?? 0;
+  const ratingAvg = product.rating_avg == null ? null : Number(product.rating_avg);
 
   const inv = product.inventory?.[0];
   const tracked = product.track_inventory !== false && inv != null;
@@ -108,6 +114,12 @@ export function ProductCard({ product, host, priority = false, saved = false, si
                          group-hover:text-teal-700 sm:text-[14px]">
             {product.name}
           </h3>
+
+          {/* ★ لا شريط نجوم فارغ لمنتج جديد: خمس نجوم رمادية تُقرأ
+              «قُيّم بصفر»، والبطاقات تصير كلّها سطرًا أطول بلا معنى. */}
+          {ratingCount > 0 && (
+            <RatingSummary avg={ratingAvg} count={ratingCount} size={12} />
+          )}
 
           <div className="mt-auto min-w-0">
             <p className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">

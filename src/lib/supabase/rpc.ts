@@ -336,6 +336,27 @@ export type RpcMap = {
     args: { p_product_id: string };
     returns: { in_wishlist: boolean; store_id: string }[];
   };
+  submit_product_review: {
+    args: { p_product_id: string; p_rating: number; p_body?: string | null };
+    returns: { review_id: string; rating_avg: number | null;
+               rating_count: number }[];
+  };
+  product_reviews_page: {
+    args: { p_product_id: string; p_limit?: number; p_offset?: number };
+    returns: { id: string; rating: number; body: string | null;
+               author_name: string; created_at: string }[];
+  };
+  product_review_state: {
+    args: { p_product_id: string };
+    returns: {
+      can_review: boolean;
+      reason: 'auth' | 'unavailable' | 'not_purchased' | null;
+      my_rating: number | null;
+      my_body: string | null;
+      my_status: 'published' | 'hidden' | null;
+      my_updated: string | null;
+    }[];
+  };
   wishlist_state: {
     args: { p_product_ids: string[] };
     returns: { product_id: string }[];

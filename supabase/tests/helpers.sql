@@ -127,3 +127,33 @@ begin
   values (v_bucket, v_path, (select auth.uid()));
   return v_id;
 end $$;
+
+-- ---------------------------------------------------------------------
+-- طلب مكتمل حقيقي لعميل مسجَّل: هو سند كل ما يلي.
+create or replace function t.buy(
+  p_store uuid, p_profile uuid, p_product uuid,
+  p_status public.order_status default 'completed'
+)
+returns uuid language plpgsql as $$
+declare v_customer uuid; v_order uuid;
+begin
+  insert into public.customers (store_id, profile_id, name, phone)
+  values (p_store, p_profile, 'أحمد محمد الطيب', '09' || substr(replace(gen_random_uuid()::text,'-',''), 1, 8))
+  on conflict (store_id, profile_id) where profile_id is not null and deleted_at is null
+  do update set updated_at = now()
+  returning id into v_customer;
+
+  insert into public.orders
+    (store_id, order_number, customer_id, contact_name, contact_phone,
+     status, payment_method, subtotal, total, idempotency_key)
+  values (p_store, 'T-' || substr(replace(gen_random_uuid()::text,'-',''), 1, 8),
+          v_customer, 'أحمد محمد الطيب', '0900000000',
+          p_status, 'cash_on_delivery', 20000, 20000, gen_random_uuid()::text)
+  returning id into v_order;
+
+  insert into public.order_items
+    (order_id, store_id, product_id, product_name, unit_price, quantity, line_total)
+  values (v_order, p_store, p_product, 'منتج', 20000, 1, 20000);
+  return v_order;
+end $$;
+grant execute on all functions in schema t to anon, authenticated, service_role;
