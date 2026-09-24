@@ -312,6 +312,12 @@ select t.ok((select payment_status = 'paid' from orders where id = :'oid1'),
 select t.ok((select confirmed_by = :'ownerA' and status = 'paid'
              from payments where id = :'pid'),
             'والدفعة تحمل اسم من أكّدها ووقتها');
+select t.ok((select status = 'confirmed' from orders where id = :'oid1'),
+            '★★ والطلب ينتقل للمرحلة التالية بنفس القرار');
+select t.ok((select count(*) = 1 from order_status_history
+             where order_id = :'oid1' and to_status = 'confirmed'
+               and reason = 'تأكيد وصول التحويل البنكي'),
+            'والانتقال مكتوب في سجل الطلب بسببه');
 select t.login(:'ownerA');
 select t.throws('select review_order_payment(' || quote_literal(:'pid') || ', ''reject'', ''تراجعت'')',
                 '★★ ودفعة مؤكَّدة لا تُراجَع مرة أخرى');

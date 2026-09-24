@@ -633,7 +633,8 @@ security definer
 set search_path = ''
 as $$
 declare
-  v_pay public.payments%rowtype;
+  v_pay   public.payments%rowtype;
+  v_order public.orders%rowtype;
 begin
   select * into v_pay from public.payments where id = p_payment_id for update;
   if not found or v_pay.kind <> 'order' then
@@ -660,6 +661,19 @@ begin
       (payment_id, event, from_status, to_status, actor_id)
     values (p_payment_id, 'store_confirmed_transfer', 'pending', 'paid',
             (select auth.uid()));
+
+    -- ★ «تأكيد الدفع والانتقال بالطلب للمرحلة التالية»: طلب جديد
+    -- وصل تحويله صار طلبًا مؤكَّدًا. يمرّ بـ`transition_order` نفسها
+    -- فتُطبَّق آلة الحالة ويُكتب سجلّها — ولا يُفرض على من لا يملك
+    -- صلاحية التحديث: الدفعة تبقى مؤكَّدة وتُترك الحالة لصاحبها.
+    select * into v_order from public.orders where id = v_pay.order_id;
+    if found and v_order.status = 'new'
+       and app.has_store_permission(
+             v_pay.store_id,
+             app.order_transition_permission('new', 'confirmed')) then
+      perform public.transition_order(v_pay.order_id, 'confirmed',
+                                      'تأكيد وصول التحويل البنكي');
+    end if;
 
   elsif p_action = 'reject' then
     if coalesce(trim(p_reason), '') = '' then
