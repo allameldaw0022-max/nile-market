@@ -11,6 +11,11 @@ import { cookies } from 'next/headers';
  *
  * ★ HttpOnly وقصير العمر: إشارة تنقّل لا صلاحية. لا يمنح شيئًا —
  * `become_partner` تفحص الحساب في القاعدة على أي حال.
+ *
+ * ★ لا دالة حذف هنا عمدًا: الحذف يحتاج Server Action أو Route
+ * Handler، والقارئ الوحيد صفحة تُصيَّر (فترمي E1180 إن حاولت).
+ * الكوكي ينتهي من تلقائه، ولا أثر له بعد إنشاء الملف لأن صاحبه
+ * يصير شريكًا فلا يُقرأ مرة أخرى.
  */
 const COOKIE = 'nm_partner_intent';
 const MAX_AGE = 60 * 60 * 2;   // ساعتان تكفيان لفتح رسالة التأكيد
@@ -31,7 +36,3 @@ export async function hasPartnerIntent(): Promise<boolean> {
   return jar.get(COOKIE)?.value === '1';
 }
 
-export async function clearPartnerIntent(): Promise<void> {
-  const jar = await cookies();
-  jar.delete(COOKIE);
-}

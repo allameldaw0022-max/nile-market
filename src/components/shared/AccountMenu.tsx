@@ -5,7 +5,7 @@ import { ChevronDown, LogOut, ShieldCheck, UserRound } from 'lucide-react';
 import { signOut } from '@/app/(platform)/(auth)/actions';
 
 /**
- * قائمة الحساب في لوحة التاجر.
+ * قائمة الحساب — مشتركة بين لوحة التاجر ولوحة الشريك والقسم العام.
  *
  * ★★ سبب وجودها: لم يكن في اللوحة أي مخرج. `signOut()` كانت مكتوبة في
  * الكود و**غير مستعملة في أي مكوّن**، فالتاجر يدخل ولا يستطيع الخروج
@@ -15,9 +15,15 @@ import { signOut } from '@/app/(platform)/(auth)/actions';
  *
  * ★ نفس آليّة `StoreMenu` في الإغلاق: نقرة خارج القائمة أو Escape.
  * تكرار السلوك مقصود — قائمتان متجاورتان تتصرّفان تصرّفًا واحدًا.
+ *
+ * ★ مشتركة لا مكرّرة: مخرج واحد بسلوك واحد في كل مكان يقف فيه
+ * حساب مسجَّل. أي نسخة ثانية كانت ستتأخّر عن هذه عند أول تعديل.
  */
-export function AccountMenu({ email, isPlatformStaff }: {
-  email: string | null; isPlatformStaff: boolean;
+export function AccountMenu({ email, isPlatformStaff, links = [] }: {
+  email: string | null;
+  isPlatformStaff: boolean;
+  /** روابط سياقية تسبق «مركز الأمان» — تختلف باختلاف اللوحة. */
+  links?: { href: string; label: string }[];
 }) {
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement>(null);
@@ -60,8 +66,17 @@ export function AccountMenu({ email, isPlatformStaff }: {
             </p>
           )}
 
+          {links.map((l) => (
+            <Link key={l.href} role="menuitem" href={l.href}
+                  onClick={() => setOpen(false)}
+                  className={`${item} text-ink-900`}>
+              <UserRound size={15} className="text-ink-400" aria-hidden />
+              {l.label}
+            </Link>
+          ))}
+
           <Link role="menuitem" href="/account/security" onClick={() => setOpen(false)}
-                className={`${item} text-ink-900`}>
+                className={`${item} border-t border-ink-100 text-ink-900`}>
             <ShieldCheck size={15} className="text-ink-400" aria-hidden />
             مركز الأمان
           </Link>

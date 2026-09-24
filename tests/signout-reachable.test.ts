@@ -49,9 +49,58 @@ test('لوحة التاجر نفسها فيها مخرج — لا صفحة أخ�
   const layout = read(join(root, 'app/(dashboard)/dashboard/layout.tsx'));
   assert.match(layout, /AccountMenu/, 'قائمة الحساب مركَّبة في ترويسة اللوحة');
 
-  const menu = read(join(root, 'components/dashboard/AccountMenu.tsx'));
+  const menu = read(join(root, 'components/shared/AccountMenu.tsx'));
   assert.match(menu, /action=\{signOut\}/, 'الزرّ يستدعي الإجراء فعلًا');
   assert.match(menu, /مركز الأمان/, 'ومعه طريق إلى مركز الأمان');
+});
+
+/**
+ * ★★ المخرج في **كل** منطقة يقف فيها حساب مسجَّل.
+ *
+ * الشريك كان يدخل لوحته مباشرة بعد التسجيل ولا يجد فيها أي خروج،
+ * والقسم العام كان يعرض زرّ اللوحة وحده لمن سجّل. مخرج في لوحة
+ * التاجر لا ينفع من لم يصل إليها قط.
+ */
+test('★★ ومنطقة الشريك والقسم العام كذلك', () => {
+  const partner = read(join(root, 'app/(partner)/partner/layout.tsx'));
+  assert.match(partner, /AccountMenu/, 'ترويسة الشريك فيها قائمة الحساب');
+
+  const platform = read(join(root, 'app/(platform)/layout.tsx'));
+  assert.match(platform, /AccountMenu/, 'والقسم العام كذلك');
+});
+
+test('★★ والمخرج يظهر على الهاتف لا على الشاشات الواسعة وحدها', () => {
+  // القائمة الواسعة مخفيّة على الهاتف، فلولا هذا لبقي المستخدم
+  // على شاشة ضيّقة بلا أي طريق للخروج.
+  const nav = code(join(root, 'components/marketing/MobileNav.tsx'));
+  assert.match(nav, /action=\{signOut\}/, 'القائمة الضيّقة فيها زرّ خروج');
+});
+
+/**
+ * ★★★ العطل الذي أوقع «تعذّر إتمام العملية» بعد التسجيل كشريك.
+ *
+ * `cookies().delete()` كانت تُنادى أثناء تصيير `/partners/join`،
+ * وNext يرمي `ReadonlyRequestCookiesError` (E1180): الكوكيز لا
+ * تُعدَّل إلا في Server Action أو Route Handler. النتيجة أنّ ملف
+ * الشريك يُنشأ فعلًا ثم ينهار العرض بعده — فيرى المسجِّل صفحة خطأ
+ * ويظنّ أن التسجيل فشل.
+ *
+ * الحارس يمنع عودة الصنف كلّه: لا كتابة كوكي من ملف يُصيَّر.
+ */
+test('★★★ لا تُكتب كوكي أثناء تصيير صفحة أو تخطيط (E1180)', () => {
+  const rendered = files.filter((f) =>
+    /\/(page|layout|template|not-found|error)\.tsx$/.test(f));
+  assert.ok(rendered.length > 20, 'الفحص يرى صفحات المشروع فعلًا');
+
+  const MUTATORS = /\b(setPartnerIntent|clearPartnerIntent|ensureCartToken|setLastOrder|clearCartToken)\b/;
+
+  for (const f of rendered) {
+    const body = code(f);
+    assert.doesNotMatch(body, MUTATORS,
+      `${f.replace(root, 'src')}: كتابة كوكي في ملف يُصيَّر ⇒ E1180`);
+    assert.doesNotMatch(body, /cookies\(\)[\s\S]{0,40}?\.(set|delete)\(/,
+      `${f.replace(root, 'src')}: cookies().set/delete أثناء التصيير ⇒ E1180`);
+  }
 });
 
 test('الخروج من جهاز واحد ≠ الخروج من كل الأجهزة', () => {

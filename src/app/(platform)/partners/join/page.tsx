@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 import { Handshake } from 'lucide-react';
 import { getActor } from '@/lib/auth/actor';
 import { becomePartner } from '@/lib/partners/actions';
-import { clearPartnerIntent, hasPartnerIntent } from '@/lib/partners/intent';
+import { hasPartnerIntent } from '@/lib/partners/intent';
 import { ErrorState } from '@/components/ui/States';
 import { PartnerSignup } from '@/components/partner/PartnerSignup';
 import { JoinConfirm } from '@/components/partner/JoinConfirm';
@@ -71,7 +71,14 @@ export default async function PartnerJoinPage() {
         </div>
       );
     }
-    await clearPartnerIntent();
+    // ★★ لا يُحذف كوكي النيّة هنا: الكوكيز لا تُعدَّل أثناء تصيير
+    // Server Component (Next يرمي E1180)، وهذا بالضبط ما كان يُظهر
+    // «تعذّر إتمام العملية» بعد التسجيل — والملف كان يُنشأ فعلًا ثم
+    // ينهار العرض بعده.
+    //
+    // ولا حاجة إلى حذفه: بعد الإنشاء يصير للحساب `partnerId`، فيخرج
+    // الطلب التالي من الأعلى إلى `/partner` ولا يبلغ فحص النيّة
+    // أصلًا. والكوكي ينتهي من تلقائه خلال ساعتين.
     redirect('/partner');
   }
 

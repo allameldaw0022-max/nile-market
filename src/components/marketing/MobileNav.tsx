@@ -1,7 +1,8 @@
 'use client';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
-import { Menu, X } from 'lucide-react';
+import { LogOut, Menu, X } from 'lucide-react';
+import { signOut } from '@/app/(platform)/(auth)/actions';
 
 /**
  * قائمة التنقّل على الشاشات الضيّقة.
@@ -10,9 +11,11 @@ import { Menu, X } from 'lucide-react';
  * فتح القائمة لا إلى أعلى الصفحة — وإلا ضاع مكان المستخدم. وتُقفل
  * تمرير الصفحة خلفها حتى لا تتحرّك الخلفية تحت الإصبع.
  */
-export function MobileNav({ items, signedIn, appHref, appLabel }: {
+export function MobileNav({ items, signedIn, appHref, appLabel, extra = [] }: {
   items: { href: string; label: string }[];
   signedIn: boolean; appHref: string; appLabel: string;
+  /** روابط تخصّ الحساب المسجَّل (لوحة الشريك مثلًا). */
+  extra?: { href: string; label: string }[];
 }) {
   const [open, setOpen] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
@@ -67,11 +70,31 @@ export function MobileNav({ items, signedIn, appHref, appLabel }: {
             </ul>
             <div className="mt-4 grid gap-2">
               {signedIn ? (
-                <Link href={appHref} onClick={() => setOpen(false)}
-                      className="inline-flex h-11 items-center justify-center rounded-md
-                                 bg-teal-600 font-semibold text-white">
-                  {appLabel}
-                </Link>
+                <>
+                  <Link href={appHref} onClick={() => setOpen(false)}
+                        className="inline-flex h-11 items-center justify-center rounded-md
+                                   bg-teal-600 font-semibold text-white">
+                    {appLabel}
+                  </Link>
+                  {extra.map((l) => (
+                    <Link key={l.href} href={l.href} onClick={() => setOpen(false)}
+                          className="inline-flex h-11 items-center justify-center rounded-md
+                                     border border-ink-200 font-semibold text-ink-900">
+                      {l.label}
+                    </Link>
+                  ))}
+                  {/* ★ المخرج على الهاتف: القائمة الواسعة مخفيّة هنا،
+                      فبدونه لا طريق للخروج من الحساب على شاشة ضيّقة. */}
+                  <form action={signOut}>
+                    <button type="submit"
+                            className="inline-flex h-11 w-full items-center justify-center
+                                       gap-2 rounded-md border border-ink-200
+                                       font-semibold text-danger">
+                      <LogOut size={16} aria-hidden className="flip-rtl" />
+                      تسجيل الخروج
+                    </button>
+                  </form>
+                </>
               ) : (
                 <>
                   <Link href="/signup" onClick={() => setOpen(false)}

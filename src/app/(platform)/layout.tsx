@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { getActor } from '@/lib/auth/actor';
 import { buttonClass } from '@/components/ui/Button';
 import { SkipLink } from '@/components/ui/SkipLink';
+import { AccountMenu } from '@/components/shared/AccountMenu';
 import { Wordmark } from '@/components/marketing/Wordmark';
 import { MobileNav } from '@/components/marketing/MobileNav';
 
@@ -21,6 +22,9 @@ export default async function PlatformLayout({ children }: LayoutProps<'/'>) {
   const hasStore = actor.kind === 'user' && actor.stores.length > 0;
   const appHref = hasStore ? '/dashboard' : '/onboarding';
   const appLabel = hasStore ? 'لوحة التحكم' : 'أنشئ متجرك';
+  // الشريك يصل إلى لوحته من أي صفحة عامة
+  const partnerLink = actor.kind === 'user' && actor.partnerId
+    ? [{ href: '/partner', label: 'لوحة الشريك' }] : [];
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -41,7 +45,16 @@ export default async function PlatformLayout({ children }: LayoutProps<'/'>) {
 
           <div className="ms-auto flex items-center gap-2">
             {signedIn ? (
-              <Link href={appHref} className={buttonClass('primary', 'sm')}>{appLabel}</Link>
+              <>
+                <Link href={appHref} className={buttonClass('primary', 'sm')}>{appLabel}</Link>
+                {/* ★ مخرج في القسم العام أيضًا: من سجّل ووقف هنا كان
+                    يرى زرّ لوحة فقط، بلا طريقة للخروج من الحساب. */}
+                <span className="hidden sm:block">
+                  <AccountMenu email={actor.kind === 'user' ? actor.email : null}
+                               isPlatformStaff={actor.kind === 'user' && Boolean(actor.admin)}
+                               links={partnerLink} />
+                </span>
+              </>
             ) : (
               <>
                 <Link href="/login"
@@ -52,7 +65,8 @@ export default async function PlatformLayout({ children }: LayoutProps<'/'>) {
                 <Link href="/signup" className={buttonClass('primary', 'sm')}>أنشئ متجرك</Link>
               </>
             )}
-            <MobileNav items={NAV} signedIn={signedIn} appHref={appHref} appLabel={appLabel} />
+            <MobileNav items={NAV} signedIn={signedIn} appHref={appHref}
+                       appLabel={appLabel} extra={partnerLink} />
           </div>
         </nav>
       </header>

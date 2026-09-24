@@ -9,7 +9,7 @@ import { NotificationBell } from '@/components/dashboard/NotificationBell';
 import { GlobalSearch } from '@/components/dashboard/GlobalSearch';
 import { NavDrawer, SideNav } from '@/components/dashboard/SideNav';
 import { StoreMenu } from '@/components/dashboard/StoreMenu';
-import { AccountMenu } from '@/components/dashboard/AccountMenu';
+import { AccountMenu } from '@/components/shared/AccountMenu';
 import { SkipLink } from '@/components/ui/SkipLink';
 import { NAV_GROUPS } from '@/lib/dashboard-nav';
 

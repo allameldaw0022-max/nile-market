@@ -4,6 +4,7 @@ import { Handshake } from 'lucide-react';
 import { getActor } from '@/lib/auth/actor';
 import { SkipLink } from '@/components/ui/SkipLink';
 import { PartnerNav } from '@/components/partner/PartnerNav';
+import { AccountMenu } from '@/components/shared/AccountMenu';
 
 /**
  * منطقة الشريك.
@@ -29,10 +30,17 @@ export default async function PartnerLayout({ children }: LayoutProps<'/partner'
             <Handshake size={19} className="text-gold-700" />
             برنامج الشركاء
           </Link>
-          <Link href="/" className="ms-auto text-sm font-bold text-ink-500
-                     hover:text-teal-700">
-            سوق النيل
-          </Link>
+          {/* ★ مخرج ظاهر: الشريك يدخل هنا مباشرة بعد التسجيل، ولم
+              يكن في هذه المنطقة أي طريق للخروج من الحساب. */}
+          <div className="ms-auto flex items-center gap-2">
+            <Link href="/" className="hidden text-sm font-bold text-ink-500
+                       hover:text-teal-700 sm:block">
+              سوق النيل
+            </Link>
+            <AccountMenu email={actor.email}
+                         isPlatformStaff={Boolean(actor.admin)}
+                         links={[{ href: '/', label: 'سوق النيل' }]} />
+          </div>
         </div>
         <PartnerNav />
       </header>
