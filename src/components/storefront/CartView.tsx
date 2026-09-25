@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/States';
 import { formatMoney } from '@/lib/money/format';
 import { setCartQuantity, type CartLine, type Quote } from '@/lib/cart/actions';
+import { publishCartCount } from './CartBadge';
 
 /**
  * السلة. كل مبلغ معروض هنا جاء محسوبًا من القاعدة — لا ضرب ولا جمع
@@ -28,6 +29,10 @@ export function CartView({ host, lines, quote, canCheckout }: {
     setError(null);
     const res = await setCartQuantity({ host, itemId, quantity });
     if (!res.ok) { setError(res.message); return; }
+    // ★ هنا `refresh` مشروع: الصفحة المعروضة **هي** السلة، فالأسعار
+    // والإجماليات وحالة المخزون كلّها تتغيّر. الشارة تُحدَّث فورًا
+    // بالعدد العائد فلا تنتظر دورة الخادم.
+    publishCartCount(res.data.cartCount);
     router.refresh();
   });
 

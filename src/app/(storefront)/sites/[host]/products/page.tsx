@@ -2,11 +2,11 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { resolveStoreByHost } from '@/lib/tenant/resolve';
-import { createClient } from '@/lib/supabase/server';
 import { ProductShowcase } from '@/components/storefront/ProductShowcase';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { listStorefrontProducts, type Sort } from '@/lib/products/storefront';
+import { storeChrome } from '@/lib/tenant/chrome';
 
 export const revalidate = 60;
 
@@ -42,16 +42,17 @@ export default async function AllProductsPage(
   const sortParam = typeof sp.sort === 'string' ? sp.sort : 'newest';
   const sort = (SORTS.some((s) => s.value === sortParam) ? sortParam : 'newest') as Sort;
 
-  const supabase = await createClient();
-  const { data: categories } = await supabase
-    .from('categories').select('id, name, slug')
-    .eq('store_id', store.storeId).eq('is_active', true).is('deleted_at', null)
-    .order('sort_order').limit(24);
-
-  const { products, total } = await listStorefrontProducts({
-    storeId: store.storeId, sort,
-    from: (page - 1) * PAGE_SIZE, size: PAGE_SIZE,
-  });
+  // ★ كانت التصنيفات تُجلب ثم تُنتظر ثم تُجلب المنتجات — موجتان
+  // متسلسلتان لا تعتمد إحداهما على الأخرى. والتصنيفات نفسها كان
+  // التخطيط قد جلبها لتوّه. الآن: القشرة المخزَّنة + المنتجات معًا.
+  const [chrome, { products, total }] = await Promise.all([
+    storeChrome(store.storeId),
+    listStorefrontProducts({
+      storeId: store.storeId, sort,
+      from: (page - 1) * PAGE_SIZE, size: PAGE_SIZE,
+    }),
+  ]);
+  const categories = chrome.categories;
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (

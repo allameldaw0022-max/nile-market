@@ -1,5 +1,6 @@
 'use server';
 import 'server-only';
+import { cache } from 'react';
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { resolveStoreByHost } from '@/lib/tenant/resolve';
@@ -35,9 +36,21 @@ export type CartLine = {
   available: number; imageUrl: string | null;
 };
 
+/**
+ * ★ لماذا يعيد كل فعل `cartCount`:
+ *
+ * كان المتصفّح بعد كل «أضف إلى السلة» ينادي `router.refresh()`
+ * لتحديث رقم واحد في الترويسة، و`revalidatePath` يُبطل المسار فوقه.
+ * قياسٌ فعلي على نسخة إنتاج: نقرة واحدة = **١٩ نداءً** إلى القاعدة،
+ * وإعادة بناء كاملة للمسار مرّتين، وزيارتان مسجَّلتان في الإحصاءات
+ * لم يقم بهما أحد.
+ *
+ * الآن الفعل يقرأ السلة مرّة ويعيد العدد، فيحدّث `CartBadge` نفسه:
+ * نداءان بدل تسعة عشر، ولا تعاد كتابة الصفحة تحت يد الزبون.
+ */
 export async function addToCart(input: {
   host: string; productId: string; quantity?: number; variantId?: string | null;
-}): Promise<ActionResult<{ quantity: number }>> {
+}): Promise<ActionResult<{ quantity: number; cartCount: number }>> {
   try {
     const store = await storeFor(input.host);
     const actor = await getActor();
@@ -57,8 +70,7 @@ export async function addToCart(input: {
     const row = firstRow(data);
     if (!row) throw errors.internal();
 
-    revalidatePath(`/sites/${input.host}/cart`);
-    return ok({ quantity: row.quantity });
+    return ok({ quantity: row.quantity, cartCount: await cartCount(input.host) });
   } catch (err) {
     return actionError(err);
   }
@@ -66,7 +78,7 @@ export async function addToCart(input: {
 
 export async function setCartQuantity(input: {
   host: string; itemId: string; quantity: number;
-}): Promise<ActionResult> {
+}): Promise<ActionResult<{ cartCount: number }>> {
   try {
     const store = await storeFor(input.host);
     const token = await readCartToken(input.host);
@@ -80,11 +92,16 @@ export async function setCartQuantity(input: {
     });
     if (error) throw fromPostgres(error);
 
-    revalidatePath(`/sites/${input.host}/cart`);
-    return ok(undefined);
+    return ok({ cartCount: await cartCount(input.host) });
   } catch (err) {
     return actionError(err);
   }
+}
+
+/** عدد القطع في السلة — رقم الترويسة، من القاعدة لا من تخمين. */
+async function cartCount(host: string): Promise<number> {
+  const lines = await loadCart(host);
+  return lines.reduce((sum, line) => sum + line.quantity, 0);
 }
 
 /** يُنادى بعد تسجيل الدخول: سلة الزائر تنضم إلى سلة الحساب. */
@@ -107,8 +124,15 @@ export async function mergeGuestCart(host: string): Promise<ActionResult<{ merge
   }
 }
 
-/** قراءة السلة — تُستخدم من الصفحات ومن الأفعال بعد كل تغيير. */
-export async function loadCart(host: string): Promise<CartLine[]> {
+/**
+ * قراءة السلة — تُستخدم من الصفحات ومن الأفعال بعد كل تغيير.
+ *
+ * ★ `cache` من React: التخطيط يقرأ السلة لعدّاد الترويسة وصفحة
+ * السلة تقرأها للأسطر، فكان النداء يتكرّر في الطلب الواحد. الآن
+ * نداء واحد ونتيجة واحدة — ولا تخزين بين الطلبات: السلة تخصّ
+ * زائرًا بعينه ولا يجوز أن تُشارَك.
+ */
+export const loadCart = cache(async (host: string): Promise<CartLine[]> => {
   const store = await resolveStoreByHost(host);
   if (!store) return [];
   const token = await readCartToken(host);
@@ -133,7 +157,7 @@ export async function loadCart(host: string): Promise<CartLine[]> {
     imageUrl: r.image_bucket && r.image_path
       ? publicUrl(r.image_bucket, r.image_path) : null,
   }));
-}
+});
 
 export type Quote = {
   subtotal: number; deliveryFee: number; discountTotal: number; total: number;

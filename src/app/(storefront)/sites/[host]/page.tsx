@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, ShieldCheck, Truck, Wallet } from 'lucide-react';
 import { resolveStoreByHost } from '@/lib/tenant/resolve';
+import { storeChrome } from '@/lib/tenant/chrome';
 import { createClient } from '@/lib/supabase/server';
 import { ProductShowcase } from '@/components/storefront/ProductShowcase';
 import { StoreHero } from '@/components/storefront/StoreHero';
@@ -48,13 +49,11 @@ export default async function StoreHome({ params }: PageProps<'/sites/[host]'>) 
 
   const supabase = await createClient();
 
-  const [{ data: categories }, { data: latest }, { data: deals }, { data: settings },
-         { data: ops }] =
+  // ★ التصنيفات والهوية وطرق الدفع من القشرة المخزَّنة نفسها التي
+  // يستعملها التخطيط ⇒ لا نداء ثانٍ لها في هذه الصفحة.
+  const [chrome, { data: latest }, { data: deals }] =
     await Promise.all([
-      supabase.from('categories')
-        .select('id, name, slug')
-        .eq('store_id', store.storeId).eq('is_active', true).is('deleted_at', null)
-        .order('sort_order').limit(12),
+      storeChrome(store.storeId),
       supabase.from('products')
         .select(
           'id, name, slug, price, compare_at_price, rating_avg, rating_count, has_variants, track_inventory, inventory(quantity, reserved), product_images(media_file_id, is_primary, media_files(path, bucket, blur_data_url))')
@@ -67,25 +66,20 @@ export default async function StoreHome({ params }: PageProps<'/sites/[host]'>) 
         .eq('store_id', store.storeId).eq('status', 'active').is('deleted_at', null)
         .not('compare_at_price', 'is', null)
         .order('created_at', { ascending: false }).limit(4),
-      supabase.from('stores')
-        .select('description, banner_url, logo_url')
-        .eq('id', store.storeId).maybeSingle(),
-      supabase.from('store_settings')
-        .select('whatsapp_number, contact_phone, cod_enabled, bank_transfer_enabled, bankak_enabled')
-        .eq('store_id', store.storeId).maybeSingle(),
     ]);
 
+  const categories = chrome.categories;
   const onSale = (deals ?? []).filter(
     (p) => p.compare_at_price != null && Number(p.compare_at_price) > Number(p.price));
-  const banner = settings?.banner_url ?? null;
-  const logo = settings?.logo_url ?? null;
+  const banner = chrome.bannerUrl;
+  const logo = chrome.logoUrl;
 
   // ★ نصّ الدفع من إعدادات التاجر الحقيقية لا من قائمة ثابتة: متجر
   // لا يقبل الدفع عند الاستلام لا يجوز أن تَعِد صفحته به.
   const pay = [
-    ops?.cod_enabled && 'عند الاستلام',
-    ops?.bank_transfer_enabled && 'تحويل بنكي',
-    ops?.bankak_enabled && 'بنكك',
+    chrome.codEnabled && 'عند الاستلام',
+    chrome.bankTransferEnabled && 'تحويل بنكي',
+    chrome.bankakEnabled && 'بنكك',
   ].filter(Boolean) as string[];
   const payLine = pay.length > 0
     ? `${pay.join(' · ')} — تختار عند إتمام الطلب.`
@@ -97,8 +91,8 @@ export default async function StoreHome({ params }: PageProps<'/sites/[host]'>) 
         name={store.name}
         logoUrl={logo}
         bannerUrl={banner}
-        description={settings?.description ?? null}
-        whatsapp={ops?.whatsapp_number ?? null}
+        description={chrome.description}
+        whatsapp={chrome.whatsapp}
         productCount={latest?.length ?? 0}
         categoryCount={categories?.length ?? 0}
       />
@@ -174,8 +168,8 @@ export default async function StoreHome({ params }: PageProps<'/sites/[host]'>) 
         {/* ★ يغلق الصفحة بنداء، ويملأ المسافة التي كانت تُترك بيضاء
             بين آخر منتج والتذييل في المتاجر قليلة المحتوى. */}
         <StoreContact storeName={store.name}
-                      whatsapp={ops?.whatsapp_number ?? null}
-                      phone={ops?.contact_phone ?? null} />
+                      whatsapp={chrome.whatsapp}
+                      phone={chrome.contactPhone} />
       </div>
     </>
   );

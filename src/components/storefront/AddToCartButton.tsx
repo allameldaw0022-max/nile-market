@@ -1,9 +1,9 @@
 'use client';
 import { useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
 import { AlertTriangle, Check, Minus, Plus, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { addToCart } from '@/lib/cart/actions';
+import { publishCartCount } from './CartBadge';
 
 /**
  * زر الإضافة إلى السلة.
@@ -18,7 +18,6 @@ export function AddToCartButton({ host, productId, variantId, available, disable
   disabled?: boolean;
   disabledNote?: string;
 }) {
-  const router = useRouter();
   const [quantity, setQuantity] = useState(1);
   const [error, setError] = useState<string | null>(null);
   const [added, setAdded] = useState(false);
@@ -33,7 +32,9 @@ export function AddToCartButton({ host, productId, variantId, available, disable
     const res = await addToCart({ host, productId, quantity, variantId });
     if (!res.ok) { setError(res.message); return; }
     setAdded(true);
-    router.refresh();
+    // ★ رقم الترويسة وحده يتغيّر — لا `router.refresh()` يعيد بناء
+    // المسار كلّه لأجله (انظر التعليق في `cart/actions.ts`).
+    publishCartCount(res.data.cartCount);
   });
 
   if (disabled) {

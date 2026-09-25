@@ -56,7 +56,9 @@ export function WishlistButton({
         return;
       }
       setSaved(res.data.inWishlist);
-      router.refresh();
+      // ★ لا `router.refresh()`: الحالة كلّها في هذا الزرّ، وإعادة
+      // بناء المسار لأجل قلب واحد كانت تعيد جلب الصفحة كاملة.
+      // صفحة المفضّلة نفسها تُبطَّل خادميًا في الفعل.
     });
   };
 

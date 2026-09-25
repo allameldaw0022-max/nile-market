@@ -2,13 +2,14 @@ import { notFound, permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Heart, MessageCircle, Search, ShoppingBag, User } from 'lucide-react';
+import { Heart, MessageCircle, Search, User } from 'lucide-react';
 import { resolveStoreByHost } from '@/lib/tenant/resolve';
-import { createClient } from '@/lib/supabase/server';
+import { storeChrome } from '@/lib/tenant/chrome';
 import { getActor } from '@/lib/auth/actor';
 import { loadCart } from '@/lib/cart/actions';
 import { readCartToken } from '@/lib/cart/token';
 import { GuestCartMerger } from '@/components/storefront/GuestCartMerger';
+import { CartBadge } from '@/components/storefront/CartBadge';
 import { StoreMobileNav } from '@/components/storefront/StoreMobileNav';
 import { ServiceWorkerRegister } from '@/components/pwa/ServiceWorkerRegister';
 import { InstallPrompt } from '@/components/pwa/InstallPrompt';
@@ -81,34 +82,24 @@ export default async function StorefrontLayout({
     );
   }
 
-  const supabase = await createClient();
-  const [{ data: settings }, { data: branding }, { data: navCategories },
-         cartLines, actor, guestToken] = await Promise.all([
-    supabase.from('store_settings')
-      .select('whatsapp_number, theme')
-      .eq('store_id', store.storeId)
-      .maybeSingle(),
-    // الهوية البصرية على `stores` لا على الإعدادات التشغيلية
-    supabase.from('stores')
-      .select('logo_url, description')
-      .eq('id', store.storeId)
-      .maybeSingle(),
-    // ★ في نفس الـPromise.all: التنقّل يحتاجها في كل صفحة، وجلبها
-    // هنا لا يضيف رحلة متسلسلة.
-    supabase.from('categories')
-      .select('id, name, slug')
-      .eq('store_id', store.storeId).eq('is_active', true).is('deleted_at', null)
-      .order('sort_order').limit(8),
+  // ★ قشرة المتجر (الهوية والإعدادات والتصنيفات) من مصدر واحد
+  // مخزَّن: الصفحة تطلب نفس الدالة فلا تتكرّر النداءات، ولا نداء
+  // أصلًا بين الطلبات حتى يُبطِل التاجرُ الوسمَ بتعديل.
+  const [chrome, cartLines, actor, guestToken] = await Promise.all([
+    storeChrome(store.storeId),
     loadCart(host),
     getActor(),
     readCartToken(host),
   ]);
+  const branding = { logo_url: chrome.logoUrl, description: chrome.description };
+  const navCategories = chrome.categories.slice(0, 8);
 
   // إحصاء الزيارة بعد التأكّد من أن المتجر نشط ومرئي — لا تُحسب
   // زيارة لمتجر موقوف. والقاعدة تتجاهل التكرار خلال دقيقة.
+  // ★ لا `await` على الكتابة: `trackVisit` تجدولها بعد الجواب.
   await trackVisit(store.storeId);
 
-  const whatsapp = settings?.whatsapp_number ?? null;
+  const whatsapp = chrome.whatsapp;
   const cartCount = cartLines.reduce((sum, line) => sum + line.quantity, 0);
   // الدمج يُطلب فقط حين يوجد الطرفان: حساب مسجَّل وتوكن سلة زائر
   const needsMerge = actor.kind === 'user' && Boolean(guestToken);
@@ -186,19 +177,7 @@ export default async function StorefrontLayout({
                 <User size={20} aria-hidden />
               </Link>
             )}
-            <Link href="/cart"
-                  aria-label={cartCount > 0 ? `السلة (${cartCount})` : 'السلة'}
-                  className="relative grid size-11 place-items-center rounded-md
-                             text-ink-700 transition-colors hover:bg-ink-100">
-              <ShoppingBag size={20} aria-hidden />
-              {cartCount > 0 && (
-                <span className="absolute top-1 end-1 grid min-w-[18px] place-items-center
-                                 rounded-full bg-teal-600 px-1 text-[10px] font-extrabold
-                                 leading-[18px] text-white tabular">
-                  {cartCount}
-                </span>
-              )}
-            </Link>
+            <CartBadge initial={cartCount} />
           </div>
         </div>
 

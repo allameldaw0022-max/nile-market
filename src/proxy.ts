@@ -40,8 +40,14 @@ export async function proxy(request: NextRequest) {
     },
   );
 
-  // تجديد التوكن — لا يُحذف
-  await supabase.auth.getUser();
+  // تجديد التوكن — لا يُحذف.
+  //
+  // ★ لكن لا يُنادى لزائر بلا جلسة أصلًا: `getUser()` بلا كوكي
+  // جلسة لا يفعل شيئًا، ومعظم زوّار المتاجر كذلك. الفحص يوفّر
+  // عملًا على كل طلب من كل زائر — وهو أكثر مسار تنفيذًا في المنصة.
+  const hasSession = request.cookies.getAll()
+    .some((c) => c.name.startsWith('sb-') && c.name.includes('auth-token'));
+  if (hasSession) await supabase.auth.getUser();
 
   const host = (request.headers.get('host') ?? '').toLowerCase();
   const { pathname, search } = request.nextUrl;

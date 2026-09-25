@@ -1,8 +1,8 @@
 'use client';
 import { useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
 import { Check, Loader2, Plus } from 'lucide-react';
 import { addToCart } from '@/lib/cart/actions';
+import { publishCartCount } from './CartBadge';
 
 /**
  * إضافة سريعة من بطاقة المنتج.
@@ -21,7 +21,6 @@ export function QuickAdd({ host, productId, label, variant = 'icon' }: {
   /** `wide` زرّ ممتدّ بنصّ داخل البطاقة؛ `icon` مربّع صغير. */
   variant?: 'icon' | 'wide';
 }) {
-  const router = useRouter();
   const [state, setState] = useState<'idle' | 'done' | 'error'>('idle');
   const [pending, start] = useTransition();
 
@@ -37,7 +36,7 @@ export function QuickAdd({ host, productId, label, variant = 'icon' }: {
           const res = await addToCart({ host, productId, quantity: 1 });
           if (!res.ok) { setState('error'); return; }
           setState('done');
-          router.refresh();
+          publishCartCount(res.data.cartCount);
           setTimeout(() => setState('idle'), 2200);
         });
       }}
