@@ -167,9 +167,12 @@ export default async function StoreHome({ params }: PageProps<'/sites/[host]'>) 
 
         {/* ★ يغلق الصفحة بنداء، ويملأ المسافة التي كانت تُترك بيضاء
             بين آخر منتج والتذييل في المتاجر قليلة المحتوى. */}
+        {/* ★ `banner` نفسه الممرَّر إلى الافتتاحية: مصدر واحد
+            لمكانين، فلا يفترقان أبدًا. */}
         <StoreContact storeName={store.name}
                       whatsapp={chrome.whatsapp}
-                      phone={chrome.contactPhone} />
+                      phone={chrome.contactPhone}
+                      coverUrl={banner} />
       </div>
     </>
   );

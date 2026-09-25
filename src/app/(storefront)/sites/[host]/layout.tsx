@@ -263,19 +263,28 @@ export default async function StorefrontLayout({
       <footer className="border-t border-ink-200 bg-white">
         <div className="mx-auto max-w-6xl px-4 py-12">
           <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
-            <div className="lg:pe-6">
-              <div className="flex items-center gap-2.5">
+            {/* ★ `min-w-0` على عنصر الشبكة لا على النصّ وحده:
+                عنصر الشبكة عرضه الأدنى `auto`، فاسم متجر طويل كان
+                يوسّع العمود فوق عرض الشاشة ويُنشئ تمريرًا أفقيًّا
+                للصفحة كلّها (قيس: ٤٢٨px داخل شاشة ٣٩٠px). و`truncate`
+                على النصّ لا تعمل ما لم يُسمح لكل أب فوقه بالانكماش. */}
+            <div className="min-w-0 lg:pe-6">
+              <div className="flex min-w-0 items-center gap-2.5">
                 {branding?.logo_url && (
                   <Image src={branding.logo_url} alt="" width={36} height={36}
                          className="size-9 shrink-0 rounded-md object-cover
                                     ring-1 ring-ink-200" />
                 )}
-                <p className="min-w-0 truncate text-[16px] font-bold text-ink-900">
+                {/* ★ سطران بدل قصّ بثلاث نقاط: اسم التاجر في تذييل
+                    متجره لا يُبتر. */}
+                <p className="line-clamp-2 min-w-0 break-words text-[16px]
+                              font-bold text-ink-900">
                   {store.name}
                 </p>
               </div>
               {branding?.description && (
-                <p className="mt-3 text-[13px] leading-relaxed text-ink-500">
+                <p className="mt-3 break-words text-[13px] leading-relaxed
+                              text-ink-500">
                   {branding.description}
                 </p>
               )}

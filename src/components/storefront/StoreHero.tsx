@@ -62,20 +62,21 @@ export function StoreHero({
         </>
       )}
 
-      <div className="relative mx-auto max-w-6xl px-4 py-6 sm:py-9 lg:py-10">
+      <div className="relative mx-auto max-w-6xl px-4 py-7 sm:py-10 lg:py-12">
         {/* ★ صفّ واحد على الهاتف أيضًا: التكديس العمودي كان يضيف
             ~١٢٠px بلا معلومة إضافية. */}
-        <div className="flex items-center gap-3.5 sm:gap-5">
+        <div className="flex items-center gap-4 sm:gap-6">
           <div className="shrink-0">
             {logoUrl ? (
-              <Image src={logoUrl} alt="" width={96} height={96}
-                     className="size-14 rounded-xl object-cover
-                                ring-1 ring-white/25 sm:size-[72px]" />
+              <Image src={logoUrl} alt="" width={128} height={128}
+                     className="size-16 rounded-2xl object-cover ring-1
+                                ring-white/25 sm:size-20 lg:size-24" />
             ) : (
               <span aria-hidden
-                    className="grid size-14 place-items-center rounded-xl
-                               bg-white/10 text-[22px] font-bold text-white
-                               ring-1 ring-white/25 sm:size-[72px] sm:text-[28px]">
+                    className="grid size-16 place-items-center rounded-2xl
+                               bg-white/10 text-[26px] font-bold text-white
+                               ring-1 ring-white/25 sm:size-20 sm:text-[32px]
+                               lg:size-24 lg:text-[38px]">
                 {initial}
               </span>
             )}
@@ -83,17 +84,34 @@ export function StoreHero({
 
           <div className="min-w-0 flex-1">
             <p className="flex items-center gap-1.5 text-[11px] font-semibold
-                          text-gold-500 sm:text-[12px]">
+                          uppercase tracking-wide text-gold-500 sm:text-[12px]">
               <Store size={12} aria-hidden />
               متجر إلكتروني
             </p>
-            <h1 className="mt-1 truncate text-[19px] font-bold leading-tight
-                           text-white sm:text-[26px] lg:text-[30px]">
+
+            {/* ★ اسم المتجر هو بطل هذه المساحة لا سطرٌ فيها: كان
+                ١٩px على الهاتف فيُقرأ كعنوان فرعي بجانب الشعار.
+                الآن ٢٨→٤٨px بوزن ٧٠٠ حقيقي (لا وزن مُصطنَع) وتقارب
+                حروف سالب خفيف — حضور بلا زخرفة.
+
+                ★ ولا `truncate`: كانت تبتر اسم أيّ متجر طويل بثلاث
+                نقاط. الآن يلتفّ إلى سطرين كحدّ أقصى، و`break-words`
+                يكسر الكلمة الواحدة الطويلة (اسم بلا مسافات) بدل أن
+                تدفع الصفحة أفقيًّا. */}
+            {/* ★ `leading-[1.2]` لا أقلّ: العربية لها نزلات
+                (ي · ج · ع) وتشكيل، و`line-clamp` يقصّ الصندوق عند
+                حدّ السطر — فمع ارتفاع سطر ضيّق كانت نزلات السطر
+                الثاني تُبتر في الأسماء الطويلة. */}
+            <h1 className="mt-1.5 line-clamp-2 break-words text-[28px]
+                           font-bold leading-[1.2] tracking-[-0.015em]
+                           text-white text-balance
+                           sm:mt-2 sm:text-[40px] lg:text-[48px]">
               {name}
             </h1>
+
             {facts.length > 0 && (
-              <p className="mt-1 text-[11px] font-medium tabular text-white/55
-                            sm:text-[12px]">
+              <p className="mt-2 text-[11px] font-medium tabular text-white/55
+                            sm:mt-2.5 sm:text-[12px]">
                 {facts.join(' · ')}
               </p>
             )}
