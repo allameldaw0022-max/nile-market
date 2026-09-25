@@ -20,8 +20,62 @@ import {
  *  - مسارات اللوحات مرفوضة على دومينات المستأجرين ⇒ 404 لا redirect
  *    (حتى لا يكشف وجودها).
  */
+/**
+ * سياسة المحتوى (CSP).
+ *
+ * ★ `script-src` بـnonce و`strict-dynamic` لا بقائمة نطاقات: القائمة
+ * تُلتفّ بأي ملف مرفوع على نطاق مسموح، والـnonce يتغيّر كل طلب فلا
+ * يمكن تخمينه. وهذا هو الحاجز الفعلي ضد XSS المنعكس.
+ *
+ * ★ و`style-src` يقبل `unsafe-inline` عن قصد: الواجهة تستعمل خاصية
+ * `style` المضمّنة (عرض شريط النجوم مثلًا)، ومنعها يكسر الصفحة
+ * مقابل مكسب أمني ضئيل — الأنماط المضمّنة لا تنفّذ شفرة. الصرامة
+ * تُصرف حيث تنفع: السكربتات.
+ *
+ * ★ `connect-src` يفتح مضيف Supabase وحده: المتصفّح يرفع الصور
+ * ويجدّد الجلسة مباشرةً معه. و`frame-ancestors 'none'` يكرّر
+ * `X-Frame-Options` للمتصفّحات الحديثة.
+ */
+function buildCsp(nonce: string): string {
+  const supabase = (() => {
+    try { return new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? '').origin; }
+    catch { return ''; }
+  })();
+  const ws = supabase.replace(/^https:/, 'wss:');
+  const dev = process.env.NODE_ENV === 'development';
+
+  return [
+    "default-src 'self'",
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${dev ? " 'unsafe-eval'" : ''}`,
+    "style-src 'self' 'unsafe-inline'",
+    `img-src 'self' blob: data:${supabase ? ` ${supabase}` : ''}`,
+    "font-src 'self'",
+    `connect-src 'self'${supabase ? ` ${supabase} ${ws}` : ''}`,
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+    'upgrade-insecure-requests',
+  ].join('; ');
+}
+
 export async function proxy(request: NextRequest) {
-  let response = NextResponse.next({ request });
+  // نونس جديد لكل طلب — لا يُعاد استعماله ولا يُخمَّن
+  const nonce = randomBytes(16).toString('base64');
+  const csp = buildCsp(nonce);
+
+  // Next يقرأ النونس من ترويسة الطلب ليضعه على سكربتاته
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-nonce', nonce);
+  requestHeaders.set('Content-Security-Policy', csp);
+
+  /** السياسة تُثبَّت على كل جواب يخرج من هنا مهما كان مساره. */
+  const withCsp = <T extends NextResponse>(res: T): T => {
+    res.headers.set('Content-Security-Policy', csp);
+    return res;
+  };
+
+  let response = NextResponse.next({ request: { headers: requestHeaders } });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -31,7 +85,7 @@ export async function proxy(request: NextRequest) {
         getAll: () => request.cookies.getAll(),
         setAll(list) {
           list.forEach(({ name, value }) => request.cookies.set(name, value));
-          response = NextResponse.next({ request });
+          response = NextResponse.next({ request: { headers: requestHeaders } });
           list.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, options),
           );
@@ -115,7 +169,7 @@ export async function proxy(request: NextRequest) {
     const target = new URL(pathname === '/' ? '/' : pathname,
                            `https://${platform.rootDomain}`);
     target.search = search;
-    const hop = NextResponse.redirect(target, 302);
+    const hop = withCsp(NextResponse.redirect(target, 302));
 
     const code = await codeForSerial(serial);
     if (code) {
@@ -123,7 +177,7 @@ export async function proxy(request: NextRequest) {
       // التالي بنفس كتلة الالتقاط أعلاه. مسار إسناد واحد للأشكال
       // الثلاثة، فلا تختلف النتيجة بينها.
       target.searchParams.set('ref', code);
-      return NextResponse.redirect(target, 302);
+      return withCsp(NextResponse.redirect(target, 302));
     }
     return hop;
   }
@@ -131,7 +185,7 @@ export async function proxy(request: NextRequest) {
   if (isPlatformHost(host)) {
     // منع الوصول المباشر إلى مسارات المستأجر من دومين المنصة
     if (pathname.startsWith('/sites')) {
-      return new NextResponse(null, { status: 404 });
+      return withCsp(new NextResponse(null, { status: 404 }));
     }
 
     // ★ الرابط القصير `/1` · `/25` على الدومين الجذر.
@@ -149,17 +203,17 @@ export async function proxy(request: NextRequest) {
       if (code) {
         const target = new URL('/', request.nextUrl.origin);
         target.searchParams.set('ref', code);
-        return NextResponse.redirect(target, 302);
+        return withCsp(NextResponse.redirect(target, 302));
       }
     }
 
-    return response;
+    return withCsp(response);
   }
 
   // ── دومين مستأجر ──
   const PLATFORM_ONLY = ['/dashboard', '/admin', '/partner', '/onboarding'];
   if (PLATFORM_ONLY.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
-    return new NextResponse(null, { status: 404 });
+    return withCsp(new NextResponse(null, { status: 404 }));
   }
 
   // ★ مسارات المصادقة المشتركة لا تُعاد كتابتها إلى مساحة المتجر.
@@ -170,7 +224,7 @@ export async function proxy(request: NextRequest) {
   // وهذا بالضبط ما يجعل الجلسة تُكتب على المضيف الصحيح: المعالج
   // يعمل على مضيف المتجر، فيكتب الكوكي عليه لا على المنصّة.
   if (pathname === '/auth' || pathname.startsWith('/auth/')) {
-    return response;
+    return withCsp(response);
   }
 
   // ★ توكن الزائر للإحصاءات: عشوائي، HttpOnly، ولا يحمل أي معرّف
@@ -194,12 +248,12 @@ export async function proxy(request: NextRequest) {
 
   // التخطيط لا يرى المسار الأصلي بعد إعادة الكتابة — نمرّره ليُسجَّل
   // في الإحصاءات كما رآه الزائر لا كما أعيد كتابته
-  const headers = new Headers(request.headers);
-  headers.set('x-nm-path', pathname);
+  // ترويسات الطلب نفسها (فيها النونس) + مسار الزائر قبل إعادة الكتابة
+  requestHeaders.set('x-nm-path', pathname);
 
-  const rewritten = NextResponse.rewrite(url, { request: { headers } });
+  const rewritten = NextResponse.rewrite(url, { request: { headers: requestHeaders } });
   response.cookies.getAll().forEach((c) => rewritten.cookies.set(c));
-  return rewritten;
+  return withCsp(rewritten);
 }
 
 export const config = {
