@@ -2,11 +2,33 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { Mail, MessageCircle, Phone } from 'lucide-react';
 import { resolveStoreByHost } from '@/lib/tenant/resolve';
-import { createClient } from '@/lib/supabase/server';
+import { storeInfo } from '@/lib/tenant/storeInfo';
 import { Card } from '@/components/ui/Card';
 import { waNumber } from '@/lib/phone';
 
 export const revalidate = 300;
+
+/**
+ * ★★ هذا ما يفتح التخزين التدريجي (ISR) لمسارٍ ذي معامل ديناميكي.
+ *
+ * دليل Next صريح: «`generateStaticParams` هي ما يُمكّن ISR للمسار
+ * الديناميكي». وبدونها يبقى المسار «يُصيَّر عند الطلب» بترويسة
+ * `Cache-Control: private, no-store` — أي تصييرٌ كامل لكل زائر،
+ * وهو الاختناق الذي قاسه اختبار الضغط.
+ *
+ * ★ وتعيد قائمة فارغة عن قصد: المضيفات ليست معروفة وقت البناء (ولا
+ * يجوز أن يسأل البناء القاعدة عن متاجر العملاء)، فلا يُبنى شيء
+ * مسبقًا — ويُبنى كل مضيف عند أول طلب له ثم يُخدَم من التخزين.
+ *
+ * ★ ومفتاح التخزين هو المسار، والمسار يحمل المضيف
+ * (`/sites/<host>/...` بعد إعادة كتابة الـproxy) ⇒ لكل متجر مدخله
+ * الخاص. وهذا هو جدار العزل نفسه الذي يحمي بقية النظام: عزلٌ
+ * بالمضيف لا بمعامل يرسله العميل.
+ */
+export async function generateStaticParams() {
+  return [];
+}
+
 
 export async function generateMetadata(
   { params }: PageProps<'/sites/[host]/contact'>,
@@ -25,14 +47,9 @@ export default async function ContactPage({ params }: PageProps<'/sites/[host]/c
   const store = await resolveStoreByHost(host);
   if (!store) notFound();
 
-  const supabase = await createClient();
-  const { data: settings } = await supabase
-    .from('store_settings')
-    .select('whatsapp_number, contact_phone, contact_email, address, social_links')
-    .eq('store_id', store.storeId).maybeSingle();
-
-  const whatsapp = settings?.whatsapp_number ?? null;
-  const address = (settings?.address ?? {}) as { city?: string; line?: string };
+  const settings = await storeInfo(store.storeId);
+  const whatsapp = settings.whatsapp;
+  const address = settings.address;
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
@@ -51,23 +68,23 @@ export default async function ContactPage({ params }: PageProps<'/sites/[host]/c
             <span className="tabular text-ink-500" dir="ltr">{whatsapp}</span>
           </a>
         )}
-        {settings?.contact_phone && (
-          <a href={`tel:${settings.contact_phone}`}
+        {settings.contactPhone && (
+          <a href={`tel:${settings.contactPhone}`}
              className="flex items-center gap-3 p-4 hover:bg-ink-50">
             <Phone size={20} className="text-teal-700" />
             <span className="flex-1 font-bold text-ink-900">هاتف</span>
-            <span className="tabular text-ink-500" dir="ltr">{settings.contact_phone}</span>
+            <span className="tabular text-ink-500" dir="ltr">{settings.contactPhone}</span>
           </a>
         )}
-        {settings?.contact_email && (
-          <a href={`mailto:${settings.contact_email}`}
+        {settings.contactEmail && (
+          <a href={`mailto:${settings.contactEmail}`}
              className="flex items-center gap-3 p-4 hover:bg-ink-50">
             <Mail size={20} className="text-teal-700" />
             <span className="flex-1 font-bold text-ink-900">البريد</span>
-            <span className="text-ink-500" dir="ltr">{settings.contact_email}</span>
+            <span className="text-ink-500" dir="ltr">{settings.contactEmail}</span>
           </a>
         )}
-        {!whatsapp && !settings?.contact_phone && !settings?.contact_email && (
+        {!whatsapp && !settings.contactPhone && !settings.contactEmail && (
           <p className="p-6 text-center text-sm text-ink-500">
             لم يضِف المتجر بيانات تواصل بعد.
           </p>

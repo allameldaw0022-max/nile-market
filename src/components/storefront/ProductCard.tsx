@@ -38,7 +38,7 @@ const publicUrl = (bucket: string, path: string) =>
  * المستخدم عبر مسار خادمي حقيقي، والإضافة السريعة لا تظهر لمنتج
  * بخيارات. لا أيقونة زخرفية هنا.
  */
-export function ProductCard({ product, host, priority = false, saved = false, signedIn = false }: {
+export function ProductCard({ product, host, priority = false, saved, signedIn }: {
   product: StorefrontProduct; host: string; priority?: boolean;
   saved?: boolean; signedIn?: boolean;
 }) {

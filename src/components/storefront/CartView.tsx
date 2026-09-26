@@ -9,7 +9,7 @@ import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/States';
 import { formatMoney } from '@/lib/money/format';
 import { setCartQuantity, type CartLine, type Quote } from '@/lib/cart/actions';
-import { publishCartCount } from './CartBadge';
+import { publishCartCount } from './cartEvent';
 
 /**
  * السلة. كل مبلغ معروض هنا جاء محسوبًا من القاعدة — لا ضرب ولا جمع

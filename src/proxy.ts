@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto';
-import { NextResponse, type NextRequest } from 'next/server';
+import { NextResponse, after, type NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { config as platform, isPlatformHost } from '@/lib/config';
 import { serialFromHost, serialFromPath } from '@/lib/partners/links';
@@ -36,7 +36,38 @@ import {
  * ويجدّد الجلسة مباشرةً معه. و`frame-ancestors 'none'` يكرّر
  * `X-Frame-Options` للمتصفّحات الحديثة.
  */
-function buildCsp(nonce: string): string {
+/**
+ * ★★ لماذا سياستان لا واحدة.
+ *
+ * النونس يتغيّر كل طلب، ولذلك يُلزم Next بتصيير **كل** صفحة من
+ * جديد: الصفحة المخزَّنة تحمل نونس اللحظة التي صُنعت فيها، فلا
+ * يطابق النونس في ترويسة الجواب التالي ⇒ تُحجب سكربتاتها كلّها.
+ * وهذا موثَّق في دليل Next نفسه: «لاستخدام النونس يجب أن تكون
+ * الصفحة مصيَّرة ديناميكيًا… التخزين المسبق وISR معطَّلان».
+ *
+ * وقِيس الأثر: كان سقف طبقة التطبيق ~٩٥ طلبًا/ثانية على أربع أنوية
+ * لأن كل صفحة متجر تُصيَّر لكل زائر.
+ *
+ * فالمقايضة تُصرَف حيث تنفع:
+ *   · **صفحات المتجر العامة** (الرئيسية، المنتجات، التصنيف، البحث،
+ *     الصفحات الثابتة، تواصل) — محتواها واحد لكل الزوّار، ولا
+ *     تحمل هويّة ولا مالًا ⇒ سياسة بلا نونس، فتُخزَّن.
+ *   · **كل ما عداها** (السلة، الدفع، الحساب، الدخول، المفضّلة،
+ *     تتبّع الطلب، اللوحات كلّها) ⇒ النونس و`strict-dynamic` كما هي.
+ *
+ * ★ وما لم يتغيّر في السياسة الأولى: `object-src 'none'` و
+ *   `base-uri 'self'` و`form-action 'self'` و`frame-ancestors 'none'`
+ *   و`default-src 'self'`. المتغيّر الوحيد أنّ `script-src` يقبل
+ *   `'unsafe-inline'` بدل النونس — لأنّ حمولة React تُبَثّ في وسم
+ *   `<script>` مضمّن بحجم ~١٨٥ ك.ب، ولا سبيل لتوقيعها بتلبيدة
+ *   في جوابٍ مخزَّن (جُرِّب `experimental.sri`: يوقّع الملفات
+ *   الخارجية فقط ويترك المضمّن بلا تلبيدة).
+ *
+ * ★ وحدود الخطر مقيسة لا مفترضة: مَصْرِف XSS الوحيد في الشجرة
+ *   كلّها هو `JsonLd` وهو `application/ld+json` (لا يُنفَّذ) ومع
+ *   ذلك يُهرِّب `<`. وكل نصّ آخر يمرّ بتهريب React.
+ */
+function buildCsp(nonce: string | null): string {
   const supabase = (() => {
     try { return new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? '').origin; }
     catch { return ''; }
@@ -44,9 +75,13 @@ function buildCsp(nonce: string): string {
   const ws = supabase.replace(/^https:/, 'wss:');
   const dev = process.env.NODE_ENV === 'development';
 
+  const scripts = nonce
+    ? `'self' 'nonce-${nonce}' 'strict-dynamic'${dev ? " 'unsafe-eval'" : ''}`
+    : `'self' 'unsafe-inline'${dev ? " 'unsafe-eval'" : ''}`;
+
   return [
     "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${dev ? " 'unsafe-eval'" : ''}`,
+    `script-src ${scripts}`,
     "style-src 'self' 'unsafe-inline'",
     `img-src 'self' blob: data:${supabase ? ` ${supabase}` : ''}`,
     "font-src 'self'",
@@ -60,14 +95,21 @@ function buildCsp(nonce: string): string {
 }
 
 export async function proxy(request: NextRequest) {
-  // نونس جديد لكل طلب — لا يُعاد استعماله ولا يُخمَّن
-  const nonce = randomBytes(16).toString('base64');
+  const reqHost = (request.headers.get('host') ?? '').toLowerCase();
+  const reqPath = request.nextUrl.pathname;
+  // صفحة متجر عامة ⇒ لا نونس، فتُخزَّن. غير ذلك ⇒ نونس لكل طلب.
+  const cacheable = !isPlatformHost(reqHost) && isCachedStorePath(reqPath);
+  const nonce = cacheable ? null : randomBytes(16).toString('base64');
   const csp = buildCsp(nonce);
 
-  // Next يقرأ النونس من ترويسة الطلب ليضعه على سكربتاته
+  // Next يقرأ النونس من ترويسة الطلب ليضعه على سكربتاته. ولا تُوضع
+  // الترويسة للصفحات المخزَّنة: وجودها وحده يجعل Next يحقن نونسًا
+  // في HTML يُخدَم لاحقًا لزائر آخر بترويسة أخرى.
   const requestHeaders = new Headers(request.headers);
-  requestHeaders.set('x-nonce', nonce);
-  requestHeaders.set('Content-Security-Policy', csp);
+  if (nonce) {
+    requestHeaders.set('x-nonce', nonce);
+    requestHeaders.set('Content-Security-Policy', csp);
+  }
 
   /** السياسة تُثبَّت على كل جواب يخرج من هنا مهما كان مساره. */
   const withCsp = <T extends NextResponse>(res: T): T => {
@@ -242,6 +284,43 @@ export async function proxy(request: NextRequest) {
     });
   }
 
+  // ★★ إحصاء الزيارة هنا لا في التخطيط.
+  //
+  // كان `trackVisit` يُنادى داخل تخطيط المتجر، فيقرأ `cookies()` و
+  // `headers()` أثناء التصيير — وذلك وحده كان يُخرج كل صفحات المتجر
+  // من التخزين. ونقله إلى هنا ليس تسوية بل تحسين مزدوج:
+  //   · الـproxy يعمل **قبل** طبقة التخزين، فالزيارة تُحسب حتى حين
+  //     تُخدَم الصفحة مخزَّنة — والإحصاء كان سيضيع لو بقي في التصيير.
+  //   · والمسار الحقيقي وتوكن الزائر بين يديه أصلًا، فلا تمرير
+  //     ترويسات ولا ثقة بما يرسله العميل.
+  //
+  // ★ و`after` تجعلها بعد الجواب: لا ينتظرها الزبون.
+  // ★ والحدّ في القاعدة كما كان: `track_store_visit` تتجاهل الزيارة
+  //   المكرّرة لنفس الزائر خلال دقيقة.
+  // ★ الجلب المسبق ليس زيارة: Next يطلب حمولة الصفحة حين يمرّ
+  //   الرابط أمام العين.
+  // ★ ولا زيارة لمسارات ليست صفحات: `/viewer` و`sw.js` وبيان PWA.
+  if (visitor
+      && request.headers.get('next-router-prefetch') !== '1'
+      && request.headers.get('rsc') !== '1'
+      && !NON_PAGE.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
+    const seenPath = pathname.slice(0, 200);
+    const token = visitor;
+    after(async () => {
+      try {
+        const storeId = await storeIdForHost(supabase, host);
+        if (!storeId) return;
+        // القاعدة تتجاهل زيارة متجر غير عامّ (`app.is_store_public`)
+        // وتتجاهل التكرار خلال دقيقة — فلا فحص هنا يكرّرها.
+        await supabase.rpc('track_store_visit', {
+          p_store_id: storeId, p_visitor_token: token, p_path: seenPath,
+        });
+      } catch {
+        // زيارة غير مسجَّلة أهون من صفحة لا تُعرض
+      }
+    });
+  }
+
   const url = request.nextUrl.clone();
   url.pathname = `/sites/${host}${pathname === '/' ? '' : pathname}`;
   url.search = search;
@@ -254,6 +333,62 @@ export async function proxy(request: NextRequest) {
   const rewritten = NextResponse.rewrite(url, { request: { headers: requestHeaders } });
   response.cookies.getAll().forEach((c) => rewritten.cookies.set(c));
   return withCsp(rewritten);
+}
+
+/**
+ * المسارات المخزَّنة فعلًا — وهي وحدها التي تتخلّى عن النونس.
+ *
+ * ★ القائمة تطابق ما يقوله بناء Next حرفيًا (`●`): الرئيسية، وصفحة
+ * المنتج، والسياسات، وتواصل. أمّا `/products` و`/categories/…`
+ * و`/search` فتقرأ `searchParams` (ترقيم وترتيب وكلمة بحث) فتبقى
+ * ديناميكية ⇒ تبقى بالنونس. لا نُضعِف سياسة مسارٍ لا يستفيد.
+ *
+ * ★ قائمة سماح لا قائمة منع: مسارٌ جديد يُضاف للمتجر غدًا يبدأ
+ * بالنونس، ولا يتخلّى عنه إلا بقرار صريح هنا ومعه
+ * `generateStaticParams` في الصفحة. الخطأ في هذا الاتجاه يكلّف
+ * أداءً؛ وفي الاتجاه الآخر يكلّف صفحةً مخزَّنة بسكربتات محجوبة.
+ */
+function isCachedStorePath(pathname: string): boolean {
+  if (pathname === '/' || pathname === '/contact') return true;
+  // صفحة منتج بعينه فقط — لا `/products` نفسها (لها searchParams)
+  if (/^\/products\/[^/]+\/?$/.test(pathname)) return true;
+  return pathname.startsWith('/pages/');
+}
+
+/** مسارات ليست صفحات يراها زائر ⇒ لا تُحسب زيارة. */
+const NON_PAGE = ['/viewer', '/manifest.webmanifest', '/robots.txt', '/sitemap.xml'];
+
+/**
+ * ترجمة المضيف إلى معرّف المتجر، بذاكرة داخل العملية.
+ *
+ * ★ لماذا ذاكرة محلّية لا `unstable_cache`: هذا يعمل في الـproxy،
+ * وواجهات تخزين Next غير متاحة فيه. والبيان المطلوب (مضيف ⟶ معرّف)
+ * لا يتغيّر إلا عند تغيير دومين، فتخزينه دقيقتين آمن.
+ *
+ * ★ والنتيجة أنّ الإحصاء لا يكلّف نداءً: أوّل طلب على نسخة باردة
+ * يترجم المضيف، وما بعده مجّانًا. ويجري كلّه داخل `after` بعد
+ * الجواب، فلا يراه الزبون أصلًا.
+ *
+ * ★ لا يُخزَّن هنا شيء عن زائر: مضيفٌ ومعرّف متجر فقط، وكلاهما عامّ.
+ */
+const HOST_TTL = 120_000;
+const hostCache = new Map<string, { id: string | null; at: number }>();
+
+async function storeIdForHost(
+  supabase: ReturnType<typeof createServerClient>, host: string,
+): Promise<string | null> {
+  const now = Date.now();
+  const hit = hostCache.get(host);
+  if (hit && now - hit.at < HOST_TTL) return hit.id;
+
+  const { data } = await supabase
+    .rpc('resolve_store_by_host', { p_host: host }).maybeSingle();
+  const id = (data as { store_id?: string } | null)?.store_id ?? null;
+
+  // حدٌّ على الحجم: نسخة واحدة قد ترى آلاف المضيفات
+  if (hostCache.size > 500) hostCache.clear();
+  hostCache.set(host, { id, at: now });
+  return id;
 }
 
 export const config = {

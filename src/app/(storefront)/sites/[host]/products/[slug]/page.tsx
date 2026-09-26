@@ -3,24 +3,45 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { ChevronRight, ImageOff, ShieldCheck, Truck } from 'lucide-react';
-import { resolveStoreByHost } from '@/lib/tenant/resolve';
+import { resolveStoreByHost, storeTag } from '@/lib/tenant/resolve';
 import { decodeSlugParam } from '@/lib/tenant/params';
-import { createClient } from '@/lib/supabase/server';
+import { unstable_cache } from 'next/cache';
+import { createPublicClient } from '@/lib/supabase/public';
 import { AddToCartButton } from '@/components/storefront/AddToCartButton';
 import { WishlistButton } from '@/components/storefront/WishlistButton';
-import { wishlistStateFor } from '@/lib/wishlist/actions';
-import { getActor } from '@/lib/auth/actor';
 import { ProductCard, type StorefrontProduct } from '@/components/storefront/ProductCard';
 import { formatMoney } from '@/lib/money/format';
 import { publicUrl } from '@/lib/media/url';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { RatingSummary } from '@/components/storefront/Stars';
-import { ProductReviews, type PublicReview, type ReviewViewerState }
+import { ProductReviews, type PublicReview }
   from '@/components/storefront/ProductReviews';
 import { rpc } from '@/lib/supabase/rpc';
 import { breadcrumbSchema, productSchema } from '@/lib/seo/schema';
 
 export const revalidate = 60;
+
+/**
+ * ★★ هذا ما يفتح التخزين التدريجي (ISR) لمسارٍ ذي معامل ديناميكي.
+ *
+ * دليل Next صريح: «`generateStaticParams` هي ما يُمكّن ISR للمسار
+ * الديناميكي». وبدونها يبقى المسار «يُصيَّر عند الطلب» بترويسة
+ * `Cache-Control: private, no-store` — أي تصييرٌ كامل لكل زائر،
+ * وهو الاختناق الذي قاسه اختبار الضغط.
+ *
+ * ★ وتعيد قائمة فارغة عن قصد: المضيفات ليست معروفة وقت البناء (ولا
+ * يجوز أن يسأل البناء القاعدة عن متاجر العملاء)، فلا يُبنى شيء
+ * مسبقًا — ويُبنى كل مضيف عند أول طلب له ثم يُخدَم من التخزين.
+ *
+ * ★ ومفتاح التخزين هو المسار، والمسار يحمل المضيف
+ * (`/sites/<host>/...` بعد إعادة كتابة الـproxy) ⇒ لكل متجر مدخله
+ * الخاص. وهذا هو جدار العزل نفسه الذي يحمي بقية النظام: عزلٌ
+ * بالمضيف لا بمعامل يرسله العميل.
+ */
+export async function generateStaticParams() {
+  return [];
+}
+
 
 type ImageRow = {
   sort_order: number; is_primary: boolean;
@@ -47,17 +68,32 @@ const SELECT =
   'product_variants(id, name, price, is_active), ' +
   'inventory(quantity, reserved)';
 
+/**
+ * ★★ عميل بلا كوكيز + تخزين بوسم منتجات المتجر.
+ *
+ * صفحة المنتج هي ٣٠٪ من حركة المتجر في مزيج الرحلة المقيس، ومحتواها
+ * واحد لكل الزوّار. وكان جلبها بعميل الجلسة يعني `cookies()` أثناء
+ * التصيير ⇒ تصيير كامل لكل طلب. الشخصي (المفضّلة وحالة التقييم)
+ * انتقل إلى `/viewer`.
+ */
+const productOf = (storeId: string, slug: string) => unstable_cache(
+  async () => {
+    const supabase = createPublicClient();
+    const { data } = await supabase
+      .from('products').select(SELECT)
+      .eq('store_id', storeId).eq('slug', slug)
+      .eq('status', 'active').is('deleted_at', null)
+      .maybeSingle();
+    return data;
+  },
+  ['sf-product', storeId, slug],
+  { revalidate: 60, tags: [storeTag(storeId, 'products')] },
+);
+
 async function load(host: string, slug: string) {
   const store = await resolveStoreByHost(host);
   if (!store) return null;
-
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from('products').select(SELECT)
-    .eq('store_id', store.storeId).eq('slug', slug)
-    .eq('status', 'active').is('deleted_at', null)
-    .maybeSingle();
-
+  const data = await productOf(store.storeId, slug)();
   return data ? { store, product: data as unknown as ProductRow } : null;
 }
 
@@ -105,16 +141,12 @@ export default async function ProductPage(
   const hasDiscount = product.compare_at_price != null
     && Number(product.compare_at_price) > Number(product.price);
 
-  const related = await loadRelated(store.storeId, product.category_id, product.id);
-  const { reviews, viewer } = await loadReviews(product.id);
-  const ratingAvg = product.rating_avg == null ? null : Number(product.rating_avg);
-
-  // حالة المفضّلة لهذا المنتج وللمنتجات المشابهة في نداء واحد
-  const [actor, saved] = await Promise.all([
-    getActor(),
-    wishlistStateFor([product.id, ...related.map((p) => p.id)]),
+  // ★ الاثنان عامّان ومخزَّنان، ويُجلبان معًا لا متسلسلين.
+  const [related, reviews] = await Promise.all([
+    loadRelated(store.storeId, product.category_id, product.id),
+    loadReviews(store.storeId, product.id),
   ]);
-  const signedIn = actor.kind === 'user';
+  const ratingAvg = product.rating_avg == null ? null : Number(product.rating_avg);
 
   // بيانات منظَّمة: تظهر النتيجة في جوجل بسعرها وتوفّرها (§22).
   // التوفّر من المخزون الحقيقي، ومتجر منتهي الاشتراك يُعلَن «طلب
@@ -218,7 +250,6 @@ export default async function ProductPage(
               منتهٍ (D14) لا يمنع الزبون من تعليم ما يريده لاحقًا. */}
           <div className="mt-3">
             <WishlistButton host={host} productId={product.id} label={product.name}
-                            initial={saved.has(product.id)} signedIn={signedIn}
                             variant="full" />
           </div>
 
@@ -236,7 +267,7 @@ export default async function ProductPage(
       <div id="reviews" className="scroll-mt-20">
         <ProductReviews host={host} productId={product.id} slug={product.slug}
                         avg={ratingAvg} count={product.rating_count}
-                        reviews={reviews} viewer={viewer} />
+                        reviews={reviews} />
       </div>
 
       {related.length > 0 && (
@@ -244,8 +275,7 @@ export default async function ProductPage(
           <h2 className="font-bold text-ink-900">منتجات مشابهة</h2>
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
             {related.map((p) => (
-              <ProductCard key={p.id} product={p} host={host}
-                           saved={saved.has(p.id)} signedIn={signedIn} />
+              <ProductCard key={p.id} product={p} host={host} />
             ))}
           </div>
         </section>
@@ -254,48 +284,58 @@ export default async function ProductPage(
   );
 }
 
+/** المنتجات المشابهة — عامّة ومخزَّنة بوسم منتجات المتجر. */
+const relatedOf = (storeId: string, categoryId: string, excludeId: string) =>
+  unstable_cache(
+    async () => {
+      const supabase = createPublicClient();
+      const { data } = await supabase
+        .from('products')
+        .select('id, name, slug, price, compare_at_price, rating_avg, rating_count, product_images(media_file_id, is_primary, media_files(path, bucket, blur_data_url))')
+        .eq('store_id', storeId).eq('category_id', categoryId)
+        .eq('status', 'active').is('deleted_at', null)
+        .neq('id', excludeId).limit(4);
+      return (data ?? []) as unknown as StorefrontProduct[];
+    },
+    ['sf-related', storeId, categoryId, excludeId],
+    { revalidate: 60, tags: [storeTag(storeId, 'products')] },
+  );
+
 async function loadRelated(
   storeId: string, categoryId: string | null, excludeId: string,
 ): Promise<StorefrontProduct[]> {
   if (!categoryId) return [];
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from('products')
-    .select('id, name, slug, price, compare_at_price, rating_avg, rating_count, ' +
-            'product_images(media_file_id, is_primary, ' +
-            'media_files(path, bucket, blur_data_url))')
-    .eq('store_id', storeId).eq('category_id', categoryId)
-    .eq('status', 'active').is('deleted_at', null)
-    .neq('id', excludeId).limit(4);
-  return (data ?? []) as unknown as StorefrontProduct[];
+  try { return await relatedOf(storeId, categoryId, excludeId)(); }
+  catch { return []; }
 }
 
 /**
- * التقييمات المنشورة وحالة الزائر — نداءان متوازيان.
+ * التقييمات المنشورة — عامّة ومخزَّنة.
  *
- * ★ `product_review_state` تُنادى للجميع: للزائر تعيد «auth» بلا
- * أي معلومة عن طلبات أحد، فلا يختلف شكل الطلب بين مشترٍ وغيره.
+ * ★★ كانت تُجلب مع `product_review_state` في نفس الموضع، والثانية
+ * تخصّ الزائر («هل اشترى هذا المنتج فيحقّ له التقييم؟»). فصلهما هو
+ * ما أتاح تخزين الصفحة: القائمة المنشورة واحدة للجميع، وحالة
+ * الزائر انتقلت إلى `/viewer`.
+ *
+ * ★ والوسم `store:<id>:reviews` هو الذي يُطلقه فعل إرسال التقييم،
+ * فتقييمٌ جديد يظهر فورًا لا بعد دقيقة.
  */
-async function loadReviews(productId: string): Promise<{
-  reviews: PublicReview[]; viewer: ReviewViewerState;
-}> {
-  const supabase = await createClient();
-  const [listRes, stateRes] = await Promise.all([
-    rpc(supabase, 'product_reviews_page', { p_product_id: productId, p_limit: 10 }),
-    rpc(supabase, 'product_review_state', { p_product_id: productId }),
-  ]);
+const reviewsOf = (storeId: string, productId: string) => unstable_cache(
+  async () => {
+    const supabase = createPublicClient();
+    const { data } = await rpc(supabase, 'product_reviews_page',
+                               { p_product_id: productId, p_limit: 10 });
+    return data ?? [];
+  },
+  ['sf-reviews', productId],
+  { revalidate: 60, tags: [storeTag(storeId, 'reviews'), storeTag(storeId, 'products')] },
+);
 
-  const state = stateRes.data?.[0] ?? null;
-  return {
-    reviews: listRes.data ?? [],
-    viewer: {
-      canReview: state?.can_review ?? false,
-      reason: state?.reason ?? 'auth',
-      myRating: state?.my_rating ?? null,
-      myBody: state?.my_body ?? null,
-      myHidden: state?.my_status === 'hidden',
-    },
-  };
+async function loadReviews(
+  storeId: string, productId: string,
+): Promise<PublicReview[]> {
+  try { return await reviewsOf(storeId, productId)(); }
+  catch { return []; }
 }
 
 function pickCover(product: ProductRow) {

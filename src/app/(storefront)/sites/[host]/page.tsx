@@ -4,12 +4,34 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft, ShieldCheck, Truck, Wallet } from 'lucide-react';
 import { resolveStoreByHost } from '@/lib/tenant/resolve';
 import { storeChrome } from '@/lib/tenant/chrome';
-import { createClient } from '@/lib/supabase/server';
+import { homeProducts } from '@/lib/products/home';
 import { ProductShowcase } from '@/components/storefront/ProductShowcase';
 import { StoreHero } from '@/components/storefront/StoreHero';
 import { StoreContact } from '@/components/storefront/StoreContact';
 
 export const revalidate = 60;
+
+/**
+ * ★★ هذا ما يفتح التخزين التدريجي (ISR) لمسارٍ ذي معامل ديناميكي.
+ *
+ * دليل Next صريح: «`generateStaticParams` هي ما يُمكّن ISR للمسار
+ * الديناميكي». وبدونها يبقى المسار «يُصيَّر عند الطلب» بترويسة
+ * `Cache-Control: private, no-store` — أي تصييرٌ كامل لكل زائر،
+ * وهو الاختناق الذي قاسه اختبار الضغط.
+ *
+ * ★ وتعيد قائمة فارغة عن قصد: المضيفات ليست معروفة وقت البناء (ولا
+ * يجوز أن يسأل البناء القاعدة عن متاجر العملاء)، فلا يُبنى شيء
+ * مسبقًا — ويُبنى كل مضيف عند أول طلب له ثم يُخدَم من التخزين.
+ *
+ * ★ ومفتاح التخزين هو المسار، والمسار يحمل المضيف
+ * (`/sites/<host>/...` بعد إعادة كتابة الـproxy) ⇒ لكل متجر مدخله
+ * الخاص. وهذا هو جدار العزل نفسه الذي يحمي بقية النظام: عزلٌ
+ * بالمضيف لا بمعامل يرسله العميل.
+ */
+export async function generateStaticParams() {
+  return [];
+}
+
 
 // ★ النصّ حرفيًا في كل استعلام: تمريره عبر ثابت يُفقد Supabase
 // استدلال الأنواع فيعود `GenericStringError` بدل صفوف المنتجات.
@@ -47,30 +69,16 @@ export default async function StoreHome({ params }: PageProps<'/sites/[host]'>) 
   const store = await resolveStoreByHost(host);
   if (!store) notFound();
 
-  const supabase = await createClient();
-
   // ★ التصنيفات والهوية وطرق الدفع من القشرة المخزَّنة نفسها التي
   // يستعملها التخطيط ⇒ لا نداء ثانٍ لها في هذه الصفحة.
-  const [chrome, { data: latest }, { data: deals }] =
-    await Promise.all([
-      storeChrome(store.storeId),
-      supabase.from('products')
-        .select(
-          'id, name, slug, price, compare_at_price, rating_avg, rating_count, has_variants, track_inventory, inventory(quantity, reserved), product_images(media_file_id, is_primary, media_files(path, bucket, blur_data_url))')
-        .eq('store_id', store.storeId).eq('status', 'active').is('deleted_at', null)
-        .order('created_at', { ascending: false }).limit(8),
-      // العروض: ما له سعر قبل الخصم أعلى من سعره الحالي
-      supabase.from('products')
-        .select(
-          'id, name, slug, price, compare_at_price, rating_avg, rating_count, has_variants, track_inventory, inventory(quantity, reserved), product_images(media_file_id, is_primary, media_files(path, bucket, blur_data_url))')
-        .eq('store_id', store.storeId).eq('status', 'active').is('deleted_at', null)
-        .not('compare_at_price', 'is', null)
-        .order('created_at', { ascending: false }).limit(4),
-    ]);
+  // ★ والمنتجات من استعلام واحد مخزَّن يُشتقّ منه «الأحدث» و«العروض»
+  //   — كانا استعلامين على نفس الجدول بنفس المرشّحات.
+  const [chrome, { latest, onSale }] = await Promise.all([
+    storeChrome(store.storeId),
+    homeProducts(store.storeId),
+  ]);
 
   const categories = chrome.categories;
-  const onSale = (deals ?? []).filter(
-    (p) => p.compare_at_price != null && Number(p.compare_at_price) > Number(p.price));
   const banner = chrome.bannerUrl;
   const logo = chrome.logoUrl;
 
@@ -93,7 +101,7 @@ export default async function StoreHome({ params }: PageProps<'/sites/[host]'>) 
         bannerUrl={banner}
         description={chrome.description}
         whatsapp={chrome.whatsapp}
-        productCount={latest?.length ?? 0}
+        productCount={latest.length}
         categoryCount={categories?.length ?? 0}
       />
 
@@ -140,11 +148,11 @@ export default async function StoreHome({ params }: PageProps<'/sites/[host]'>) 
           {/* ───── المنتجات ───── */}
           <section className="border-t border-ink-200 py-10 sm:py-12">
             <SectionHead title="منتجات المتجر"
-                         href={latest && latest.length > 0 ? '/products' : undefined}
+                         href={latest.length > 0 ? '/products' : undefined}
                          hrefLabel="عرض الكل" />
             <div className="mt-6">
               <ProductShowcase
-                products={latest ?? []} host={host}
+                products={latest} host={host}
                 emptyTitle="لا توجد منتجات متاحة حاليًا"
                 emptyDescription="تابع المتجر — ستُعرض المنتجات هنا فور إضافتها." />
             </div>

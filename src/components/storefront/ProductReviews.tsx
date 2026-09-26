@@ -1,8 +1,7 @@
-import Link from 'next/link';
 import { BadgeCheck, MessageSquare } from 'lucide-react';
 import { formatDate } from '@/lib/money/format';
 import { Stars } from './Stars';
-import { ReviewForm } from './ReviewForm';
+import { ReviewPanel } from './ReviewPanel';
 
 export type PublicReview = {
   id: string; rating: number; body: string | null;
@@ -20,17 +19,19 @@ export type ReviewViewerState = {
 /**
  * قسم التقييمات في صفحة المنتج.
  *
+ * ★ الجزء العامّ وحده هنا: المعدّل والعدد والتقييمات المنشورة. أمّا
+ * نموذج الكتابة فيعرفه `ReviewPanel` على العميل.
+ *
  * ★ كل تقييم هنا شراءٌ موثّق بحكم البناء: لا مسار كتابة إلا دالة
  * تُثبت وجود طلب حقيقي بهذا المنتج باسم صاحب التقييم. فالشارة ليست
  * وعدًا تسويقيًا بل وصفٌ لما تفرضه القاعدة.
  */
 export function ProductReviews({
-  host, productId, slug, avg, count, reviews, viewer,
+  host, productId, slug, avg, count, reviews,
 }: {
   host: string; productId: string; slug: string;
   avg: number | null; count: number;
   reviews: PublicReview[];
-  viewer: ReviewViewerState;
 }) {
   return (
     <section className="mt-12 border-t border-ink-200 pt-8">
@@ -92,55 +93,13 @@ export function ProductReviews({
           )}
         </div>
 
-        <div className="min-w-0">
-          {viewer.canReview ? (
-            <ReviewForm host={host} productId={productId} slug={slug}
-                        initialRating={viewer.myRating}
-                        initialBody={viewer.myBody}
-                        hidden={viewer.myHidden} />
-          ) : (
-            <ViewerNote reason={viewer.reason} />
-          )}
-        </div>
+        {/* ★★ حالة الزائن («هل اشترى فيحقّ له التقييم؟») من
+            `ViewerProvider` لا من الخادم: قراءتها أثناء التصيير كانت
+            تُخرج صفحة المنتج — ٣٠٪ من حركة المتجر — من التخزين.
+            والقائمة المنشورة أعلاه عامّة فتبقى خادميّة ومخزَّنة. */}
+        <ReviewPanel host={host} productId={productId} slug={slug} />
       </div>
     </section>
   );
 }
 
-/**
- * ★ لا يفضح شيئًا: «لم نجد طلبًا» تُقال لمن سجّل دخوله عن نفسه فقط،
- * ولا تُكشف حالة طلب أحد لأحد.
- */
-function ViewerNote({ reason }: { reason: ReviewViewerState['reason'] }) {
-  if (reason === 'auth') {
-    return (
-      <div className="rounded-lg border border-ink-200 bg-ink-50 p-4">
-        <p className="text-[14px] font-semibold text-ink-900">
-          التقييم لمن اشترى المنتج
-        </p>
-        <p className="mt-1 text-[13px] leading-relaxed text-ink-500">
-          سجّل دخولك بالحساب الذي اشتريتَ به ليظهر لك نموذج التقييم.
-        </p>
-        <Link href="/login"
-              className="mt-3 inline-flex h-10 items-center rounded-md border
-                         border-ink-200 bg-white px-4 text-[13px] font-semibold
-                         text-ink-900 transition-colors hover:border-teal-600
-                         hover:text-teal-700">
-          تسجيل الدخول
-        </Link>
-      </div>
-    );
-  }
-
-  return (
-    <div className="rounded-lg border border-ink-200 bg-ink-50 p-4">
-      <p className="text-[14px] font-semibold text-ink-900">
-        التقييم لمن اشترى المنتج
-      </p>
-      <p className="mt-1 text-[13px] leading-relaxed text-ink-500">
-        لم نجد لك طلبًا مكتملًا يحتوي هذا المنتج. بعد استلام طلبك يظهر
-        لك نموذج التقييم هنا.
-      </p>
-    </div>
-  );
-}

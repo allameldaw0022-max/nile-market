@@ -4,7 +4,9 @@ import type { Metadata } from 'next';
 import { ChevronRight } from 'lucide-react';
 import { resolveStoreByHost } from '@/lib/tenant/resolve';
 import { decodeSlugParam } from '@/lib/tenant/params';
-import { createClient } from '@/lib/supabase/server';
+import { unstable_cache } from 'next/cache';
+import { createPublicClient } from '@/lib/supabase/public';
+import { storeTag } from '@/lib/tenant/resolve';
 import { ProductShowcase } from '@/components/storefront/ProductShowcase';
 import { Button } from '@/components/ui/Button';
 import { listStorefrontProducts } from '@/lib/products/storefront';
@@ -12,15 +14,28 @@ import { listStorefrontProducts } from '@/lib/products/storefront';
 export const revalidate = 60;
 const PAGE_SIZE = 24;
 
+/**
+ * ★ عميل بلا كوكيز + تخزين: التصنيف بيانٌ عامّ واحد لكل الزوّار،
+ * وكان جلبه بعميل الجلسة يمنع تخزين الصفحة كلّها.
+ */
+const categoryOf = (storeId: string, slug: string) => unstable_cache(
+  async () => {
+    const supabase = createPublicClient();
+    const { data } = await supabase
+      .from('categories').select('id, name, slug')
+      .eq('store_id', storeId).eq('slug', slug)
+      .eq('is_active', true).is('deleted_at', null)
+      .maybeSingle();
+    return data;
+  },
+  ['sf-category', storeId, slug],
+  { revalidate: 300, tags: [storeTag(storeId, 'settings')] },
+);
+
 async function loadCategory(host: string, slug: string) {
   const store = await resolveStoreByHost(host);
   if (!store) return null;
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from('categories').select('id, name, slug')
-    .eq('store_id', store.storeId).eq('slug', slug)
-    .eq('is_active', true).is('deleted_at', null)
-    .maybeSingle();
+  const data = await categoryOf(store.storeId, slug)();
   return data ? { store, category: data } : null;
 }
 

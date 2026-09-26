@@ -2,18 +2,17 @@ import { notFound, permanentRedirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Heart, MessageCircle, Search, User } from 'lucide-react';
+import { MessageCircle, Search } from 'lucide-react';
 import { resolveStoreByHost } from '@/lib/tenant/resolve';
 import { storeChrome } from '@/lib/tenant/chrome';
-import { getActor } from '@/lib/auth/actor';
-import { loadCart } from '@/lib/cart/actions';
-import { readCartToken } from '@/lib/cart/token';
 import { GuestCartMerger } from '@/components/storefront/GuestCartMerger';
 import { CartBadge } from '@/components/storefront/CartBadge';
+import { AccountNav } from '@/components/storefront/AccountNav';
+import { ViewerProvider } from '@/components/storefront/ViewerProvider';
+import { DraftOwnerHint } from '@/components/storefront/DraftOwnerHint';
 import { StoreMobileNav } from '@/components/storefront/StoreMobileNav';
 import { ServiceWorkerRegister } from '@/components/pwa/ServiceWorkerRegister';
 import { InstallPrompt } from '@/components/pwa/InstallPrompt';
-import { trackVisit } from '@/lib/analytics/track';
 import { SkipLink } from '@/components/ui/SkipLink';
 import { waNumber } from '@/lib/phone';
 
@@ -50,6 +49,16 @@ export async function generateMetadata(
  *
  * ★ storeId يُشتق من الـhost في المسار حصريًا — لا يُقبل من أي مصدر
  * آخر. هذا هو جدار منع IDOR الأول.
+ *
+ * ★★ ولا يقرأ هذا التخطيط كوكيًّا واحدًا — بعد أن كان يقرأ ثلاثة
+ * (سلّة الزائر، وجلسته، وتوكن سلّته) ويسجّل زيارة. وجود أيٍّ منها
+ * كان يُخرج **كل** صفحات المتجر من التخزين ويفرض تصييرًا كاملًا
+ * لكل طلب: وهو الاختناق الذي قاسه اختبار الضغط (سقف ~٩٥
+ * طلبًا/ثانية على أربع أنوية، والانهيار عند ١٠٠٠ مستخدم).
+ *
+ * الشخصي انتقل إلى `/viewer` (لا يُخزَّن أبدًا)، وتسجيل الزيارة
+ * انتقل إلى الـproxy — وهو يرى المسار الحقيقي والكوكي ويعمل قبل
+ * طبقة التخزين، فالإحصاء لم ينقص بل صار يشمل الصفحات المخزَّنة.
  */
 export default async function StorefrontLayout({
   children, params,
@@ -76,35 +85,19 @@ export default async function StorefrontLayout({
   if (store.status === 'suspended') return <StoreNotice title="المتجر موقوف حاليًا" />;
   if (store.status === 'closed')    return <StoreNotice title="المتجر مغلق مؤقتًا" />;
   if (store.status !== 'active') {
-    return (
-      <StoreNotice title="هذا المتجر لم يُنشر بعد"
-                   storeId={store.storeId} draft />
-    );
+    return <StoreNotice title="هذا المتجر لم يُنشر بعد" draft />;
   }
 
   // ★ قشرة المتجر (الهوية والإعدادات والتصنيفات) من مصدر واحد
   // مخزَّن: الصفحة تطلب نفس الدالة فلا تتكرّر النداءات، ولا نداء
   // أصلًا بين الطلبات حتى يُبطِل التاجرُ الوسمَ بتعديل.
-  const [chrome, cartLines, actor, guestToken] = await Promise.all([
-    storeChrome(store.storeId),
-    loadCart(host),
-    getActor(),
-    readCartToken(host),
-  ]);
+  const chrome = await storeChrome(store.storeId);
   const branding = { logo_url: chrome.logoUrl, description: chrome.description };
   const navCategories = chrome.categories.slice(0, 8);
-
-  // إحصاء الزيارة بعد التأكّد من أن المتجر نشط ومرئي — لا تُحسب
-  // زيارة لمتجر موقوف. والقاعدة تتجاهل التكرار خلال دقيقة.
-  // ★ لا `await` على الكتابة: `trackVisit` تجدولها بعد الجواب.
-  await trackVisit(store.storeId);
-
   const whatsapp = chrome.whatsapp;
-  const cartCount = cartLines.reduce((sum, line) => sum + line.quantity, 0);
-  // الدمج يُطلب فقط حين يوجد الطرفان: حساب مسجَّل وتوكن سلة زائر
-  const needsMerge = actor.kind === 'user' && Boolean(guestToken);
 
   return (
+    <ViewerProvider>
     <div className="flex min-h-screen flex-col bg-white">
       <SkipLink />
       {/* ═══════════ الترويسة ═══════════
@@ -157,27 +150,8 @@ export default async function StorefrontLayout({
           </form>
 
           <div className="ms-auto flex shrink-0 items-center gap-0.5">
-            {actor.kind === 'user' ? (
-              <>
-                <Link href="/wishlist" aria-label="المفضّلة"
-                      className="hidden size-11 place-items-center rounded-md
-                                 text-ink-700 transition-colors hover:bg-ink-100 sm:grid">
-                  <Heart size={20} aria-hidden />
-                </Link>
-                <Link href="/account" aria-label="حسابي"
-                      className="hidden size-11 place-items-center rounded-md
-                                 text-ink-700 transition-colors hover:bg-ink-100 sm:grid">
-                  <User size={20} aria-hidden />
-                </Link>
-              </>
-            ) : (
-              <Link href="/login" aria-label="تسجيل الدخول"
-                    className="hidden size-11 place-items-center rounded-md
-                               text-ink-700 transition-colors hover:bg-ink-100 sm:grid">
-                <User size={20} aria-hidden />
-              </Link>
-            )}
-            <CartBadge initial={cartCount} />
+            <AccountNav />
+            <CartBadge />
           </div>
         </div>
 
@@ -242,7 +216,7 @@ export default async function StorefrontLayout({
         )}
       </header>
 
-      {needsMerge && <GuestCartMerger host={host} />}
+      <GuestCartMerger host={host} />
       <ServiceWorkerRegister />
       <InstallPrompt label={`ثبّت ${store.name} على شاشتك`} />
 
@@ -352,6 +326,7 @@ export default async function StorefrontLayout({
         </a>
       )}
     </div>
+    </ViewerProvider>
   );
 }
 
@@ -362,32 +337,19 @@ export default async function StorefrontLayout({
  * ليس له. والسطر الإضافي يظهر لصاحب المتجر وحده، لأنه هو من يقدر
  * على الفعل، وهو من كان يحتار أمام 404 بلا سبب.
  */
-async function StoreNotice({ title, storeId, draft = false }: {
-  title: string; storeId?: string; draft?: boolean;
+function StoreNotice({ title, draft = false }: {
+  title: string; draft?: boolean;
 }) {
-  const actor = await getActor();
-  const isOwner = Boolean(
-    storeId && actor.kind === 'user'
-    && actor.stores.some((s) => s.storeId === storeId),
-  );
-
   return (
     <div className="grid min-h-screen place-items-center bg-ink-50 px-4">
       <div className="max-w-sm text-center">
         <h1 className="text-xl font-extrabold text-ink-900">{title}</h1>
-
-        {isOwner && draft ? (
-          <>
-            <p className="mt-2 text-sm leading-relaxed text-ink-600">
-              متجرك جاهز على هذا الرابط، ولا يراه الزبائن حتى تنشره.
-              افتح لوحة التحكم واضغط «نشر المتجر».
-            </p>
-            <Link href="/dashboard"
-                  className="mt-4 inline-flex h-11 items-center justify-center
-                             rounded-md bg-teal-600 px-5 font-bold text-white">
-              انشر متجرك الآن
-            </Link>
-          </>
+        {/* ★ الرسالة للزائر واحدة مهما كان السبب — لا نكشف له حالة
+            متجر ليس له. والسطر الإضافي يظهر لصاحب المتجر وحده،
+            ويُحدَّد على العميل من `/viewer` لا خادميًا: قراءة الجلسة
+            هنا كانت تُخرج كل صفحات المتجر من التخزين. */}
+        {draft ? (
+          <ViewerProvider><DraftOwnerHint /></ViewerProvider>
         ) : (
           <p className="mt-2 text-sm text-ink-500">
             إن كنت صاحب المتجر، سجّل الدخول إلى لوحة التحكم لمعرفة التفاصيل.

@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import { Heart, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { toggleWishlist } from '@/lib/wishlist/actions';
+import { useViewer } from './ViewerProvider';
 
 /**
  * زرّ المفضّلة.
@@ -20,18 +21,35 @@ import { toggleWishlist } from '@/lib/wishlist/actions';
  * ★ الزائر يُوجَّه إلى دخول **هذا المتجر** بمسار نسبيّ: صفحة
  * `/sites/[host]/login` صارت موجودة، والجلسة تُكتب على مضيف المتجر
  * فيعود الزبون إلى الصفحة نفسها مسجَّلًا.
+ *
+ * ★★ الحالة (محفوظ؟ ومسجَّل؟) من `ViewerProvider` لا من الخادم:
+ * جلبها أثناء التصيير كان يعني `cookies()` داخل كل بطاقة منتج، أي
+ * تصييرًا كاملًا لكل زائر لصفحات محتواها واحد للجميع. و`initial`
+ * تبقى لمن يعرف الحالة خادميًا أصلًا (صفحة المفضّلة نفسها، وهي
+ * صفحة خاصّة غير مخزَّنة).
  */
 export function WishlistButton({
-  host, productId, label, initial, signedIn, variant = 'icon',
+  host, productId, label, initial, signedIn: signedInProp, variant = 'icon',
 }: {
   host: string; productId: string; label: string;
-  initial: boolean; signedIn: boolean;
+  initial?: boolean; signedIn?: boolean;
   variant?: 'icon' | 'full';
 }) {
   const router = useRouter();
-  const [saved, setSaved] = useState(initial);
+  const viewer = useViewer();
+  const signedIn = signedInProp ?? viewer.signedIn;
+  const fromServer = initial ?? viewer.saved.has(productId);
+  const [saved, setSaved] = useState(fromServer);
+  const [seen, setSeen] = useState(fromServer);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
+
+  // ★ الضبط أثناء الرسم لا داخل `useEffect`: حين تصل حالة المفضّلة من
+  //   `/viewer` تَجُبّ الحالة الابتدائية، بلا دورة رسم ثانية.
+  if (seen !== fromServer && !pending) {
+    setSeen(fromServer);
+    setSaved(fromServer);
+  }
 
   const act = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -56,6 +74,8 @@ export function WishlistButton({
         return;
       }
       setSaved(res.data.inWishlist);
+      setSeen(res.data.inWishlist);
+      viewer.setSaved(productId, res.data.inWishlist);
       // ★ لا `router.refresh()`: الحالة كلّها في هذا الزرّ، وإعادة
       // بناء المسار لأجل قلب واحد كانت تعيد جلب الصفحة كاملة.
       // صفحة المفضّلة نفسها تُبطَّل خادميًا في الفعل.

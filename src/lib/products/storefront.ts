@@ -1,5 +1,7 @@
 import 'server-only';
-import { createClient } from '@/lib/supabase/server';
+import { unstable_cache } from 'next/cache';
+import { createPublicClient } from '@/lib/supabase/public';
+import { storeTag } from '@/lib/tenant/resolve';
 import type { StorefrontProduct } from '@/components/storefront/ProductCard';
 import { searchTerm, ilikeAny } from '@/lib/search';
 
@@ -13,8 +15,14 @@ export type Sort = 'newest' | 'price_asc' | 'price_desc' | 'name';
  * قائمة منتجات المتجر للزائر.
  * `status = 'active'` و`deleted_at is null` شرطان صريحان هنا فوق ما
  * تفرضه RLS: المسودّات لا تظهر للزبون ولو تغيّرت سياسة يومًا ما.
+ *
+ * ★★ عميل بلا كوكيز: النتيجة **عامّة** — نفس القائمة لكل زائر —
+ * وكان استعمال عميل الجلسة هنا يجعل كل صفحة قائمة (كل المنتجات،
+ * التصنيف، البحث، الرئيسية) تلمس `cookies()` فتُصيَّر لكل طلب.
+ * وRLS سارية كما هي: مفتاح `anon` ودور `anon`، وما يراه هذا العميل
+ * هو بالضبط ما يحقّ لأي زائر أن يراه.
  */
-export async function listStorefrontProducts(input: {
+async function queryProducts(input: {
   storeId: string;
   categoryId?: string | null;
   term?: string | null;
@@ -22,7 +30,7 @@ export async function listStorefrontProducts(input: {
   from: number;
   size: number;
 }): Promise<{ products: StorefrontProduct[]; total: number }> {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   let query = supabase
     .from('products')
     .select(STOREFRONT_SELECT, { count: 'exact' })
@@ -46,4 +54,32 @@ export async function listStorefrontProducts(input: {
     products: (data ?? []) as unknown as StorefrontProduct[],
     total: count ?? 0,
   };
+}
+
+/**
+ * ★ نفس القائمة لا تُستعلَم مرّتين بين الطلبات: تُخزَّن بوسم
+ * `store:<id>:products` — وهو الوسم الذي تُطلقه أفعال المنتجات
+ * القائمة، فتعديل التاجر يظهر فورًا لا بعد دقيقة.
+ *
+ * ★ والمفتاح يحمل كل ما يغيّر النتيجة (المتجر، التصنيف، الكلمة،
+ * الترتيب، الصفحة) — وإلا خُدمت صفحةٌ بنتائج أخرى.
+ */
+export async function listStorefrontProducts(input: {
+  storeId: string;
+  categoryId?: string | null;
+  term?: string | null;
+  sort?: Sort;
+  from: number;
+  size: number;
+}): Promise<{ products: StorefrontProduct[]; total: number }> {
+  const key = [
+    'sf-products', input.storeId, input.categoryId ?? '-',
+    searchTerm(input.term) || '-', input.sort ?? 'newest',
+    String(input.from), String(input.size),
+  ];
+  const load = unstable_cache(() => queryProducts(input), key, {
+    revalidate: 60,
+    tags: [storeTag(input.storeId, 'products')],
+  });
+  return load();
 }

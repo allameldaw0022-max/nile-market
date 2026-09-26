@@ -1,51 +1,30 @@
 'use client';
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ShoppingBag } from 'lucide-react';
+import { useViewer } from './ViewerProvider';
 
-/** الحدث الذي يحمل عدد قطع السلة بعد كل تغيير. */
-export const CART_EVENT = 'nm:cart-count';
-
-/** يُطلقه كل فعل يغيّر السلة — العدد الحقيقي من القاعدة لا تخمين. */
-export function publishCartCount(count: number) {
-  if (typeof window === 'undefined') return;
-  window.dispatchEvent(new CustomEvent<number>(CART_EVENT, { detail: count }));
-}
+export { CART_EVENT, publishCartCount } from './cartEvent';
 
 /**
  * أيقونة السلة وعدّادها.
  *
  * ★ لماذا مكوّن عميل لأجل رقم: كان كل «أضف إلى السلة» ينادي
  * `router.refresh()` لتحديث هذا الرقم وحده، فيعيد الخادم بناء
- * المسار كلّه — التخطيط والصفحة والتقييمات والمنتجات المشابهة.
- * قياسٌ فعلي: نقرة واحدة كانت تُنتج **١٩ نداءً** إلى القاعدة
- * (وتسجّل زيارتين وهميّتين في الإحصاءات). الآن الفعل يعيد العدد
- * الحقيقي، ويسمعه هذا المكوّن وحده.
+ * المسار كلّه. قياسٌ فعلي: نقرة واحدة كانت تُنتج **١٩ نداءً** إلى
+ * القاعدة. الآن الفعل يعيد العدد الحقيقي ويُطلقه حدثًا.
  *
- * ★ والعدد الأولي يأتي من الخادم كما كان: الصفحة تصل مرسومة
- * بالعدد الصحيح قبل أن يعمل أي جافاسكربت.
+ * ★★ ولماذا لم يبقَ العدد الأولي خادميًا: قراءة سلّة الزائر أثناء
+ * التصيير تعني `cookies()` في التخطيط، وذلك وحده كان يمنع تخزين
+ * **كل** صفحة متجر ويفرض تصييرًا كاملًا لكل طلب — وهو الاختناق
+ * الذي قاسه اختبار الضغط (سقف ~٩٥ طلبًا/ثانية). فالعدد الآن يأتي
+ * من `/viewer` بعد الإماهة.
+ *
+ * ★ والثمن معلوم ومقصود: زائرٌ لديه سلّة قائمة يرى الشارة بعد
+ * جلبةٍ قصيرة لا مع أول بايت. وصفحة السلة نفسها تبقى خادميّة
+ * وهي المرجع — الشارة إشارة لا مصدر حقيقة.
  */
-export function CartBadge({ initial }: { initial: number }) {
-  const [count, setCount] = useState(initial);
-  const [lastServer, setLastServer] = useState(initial);
-
-  // ★ العدد الخادمي هو المرجع: حين يصل رقم جديد من الخادم (تنقّل أو
-  // إعادة بناء) يَجُبّ ما في الذاكرة. والضبط أثناء الرسم لا داخل
-  // `useEffect` — هذا هو النمط الذي توصي به React لمزامنة الحالة
-  // مع خاصيّة، ويتجنّب دورة رسم ثانية على كل تنقّل.
-  if (lastServer !== initial) {
-    setLastServer(initial);
-    setCount(initial);
-  }
-
-  useEffect(() => {
-    const onCount = (e: Event) => {
-      const next = (e as CustomEvent<number>).detail;
-      if (typeof next === 'number' && next >= 0) setCount(next);
-    };
-    window.addEventListener(CART_EVENT, onCount);
-    return () => window.removeEventListener(CART_EVENT, onCount);
-  }, []);
+export function CartBadge() {
+  const { cartCount: count } = useViewer();
 
   return (
     <Link href="/cart"

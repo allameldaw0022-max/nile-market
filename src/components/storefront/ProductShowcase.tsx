@@ -7,8 +7,6 @@ import { Package } from 'lucide-react';
 import { ProductCard, type StorefrontProduct } from './ProductCard';
 import { QuickAdd } from './QuickAdd';
 import { WishlistButton } from './WishlistButton';
-import { wishlistStateFor } from '@/lib/wishlist/actions';
-import { getActor } from '@/lib/auth/actor';
 
 const publicUrl = (bucket: string, path: string) =>
   `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${bucket}/${path}`;
@@ -27,8 +25,14 @@ const publicUrl = (bucket: string, path: string) =>
  *   ٤ فأكثر → الشبكة الطبيعية ٢/٣/٤.
  *
  * ★ ولا يُخترع منتج لملء الفراغ. الفراغ يُعالَج بالتكوين لا بالكذب.
+ *
+ * ★★ ولم يبقَ فيه جلبٌ لبيانات زائر: كان يجلب `getActor()` و
+ * `wishlistStateFor()` لأزرار المفضّلة، فكان كلّ عرضٍ للمنتجات —
+ * في الرئيسية وكل المنتجات والتصنيف والبحث والمنتجات المشابهة —
+ * يلمس `cookies()` ويُخرج المسار كلّه من التخزين. الأزرار الآن
+ * تقرأ حالتها من `ViewerProvider` على العميل.
  */
-export async function ProductShowcase({ products, host, emptyTitle, emptyDescription }: {
+export function ProductShowcase({ products, host, emptyTitle, emptyDescription }: {
   products: StorefrontProduct[];
   host: string;
   emptyTitle: string;
@@ -41,15 +45,8 @@ export async function ProductShowcase({ products, host, emptyTitle, emptyDescrip
     );
   }
 
-  const [actor, saved] = await Promise.all([
-    getActor(),
-    wishlistStateFor(products.map((p) => p.id)),
-  ]);
-
-  return (
-    <ProductShowcaseView products={products} host={host}
-                         saved={saved} signedIn={actor.kind === 'user'} />
-  );
+  // `saved`/`signedIn` غير ممرَّرين: كل زرّ يقرأهما من سياق الزائر.
+  return <ProductShowcaseView products={products} host={host} />;
 }
 
 /**
@@ -61,12 +58,13 @@ export async function ProductShowcase({ products, host, emptyTitle, emptyDescrip
 export function ProductShowcaseView({ products, host, saved, signedIn }: {
   products: StorefrontProduct[];
   host: string;
-  saved: Set<string>;
-  signedIn: boolean;
+  /** يُمرَّران في الاختبارات البصرية وحدها؛ الإنتاج يقرأ من السياق. */
+  saved?: Set<string>;
+  signedIn?: boolean;
 }) {
   if (products.length === 1) {
     return <FeaturedOne product={products[0]} host={host}
-                        saved={saved.has(products[0].id)} signedIn={signedIn} />;
+                        saved={saved?.has(products[0].id)} signedIn={signedIn} />;
   }
 
   // ★ أصناف Tailwind كاملة لا مركَّبة: المولِّد يقرأ النصّ ولا يرى
@@ -82,7 +80,7 @@ export function ProductShowcaseView({ products, host, saved, signedIn }: {
       <div className={`grid gap-3 [&>*]:min-w-0 sm:gap-4 ${shape.cols}`}>
         {products.map((p, i) => (
           <ProductCard key={p.id} product={p} host={host} priority={i < 2}
-                       saved={saved.has(p.id)} signedIn={signedIn} />
+                       saved={saved?.has(p.id)} signedIn={signedIn} />
         ))}
       </div>
     </div>
@@ -97,7 +95,8 @@ export function ProductShowcaseView({ products, host, saved, signedIn }: {
  * على الهاتف يعود التكديس رأسيًا — صورة ثم تفاصيل.
  */
 function FeaturedOne({ product, host, saved, signedIn }: {
-  product: StorefrontProduct; host: string; saved: boolean; signedIn: boolean;
+  product: StorefrontProduct; host: string;
+  saved?: boolean; signedIn?: boolean;
 }) {
   const img = product.product_images?.find((i) => i.is_primary) ?? product.product_images?.[0];
   const media = img?.media_files ?? null;

@@ -2,9 +2,31 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { resolveStoreByHost } from '@/lib/tenant/resolve';
 import { decodeSlugParam } from '@/lib/tenant/params';
-import { createClient } from '@/lib/supabase/server';
+import { storeInfo } from '@/lib/tenant/storeInfo';
 
 export const revalidate = 300;
+
+/**
+ * ★★ هذا ما يفتح التخزين التدريجي (ISR) لمسارٍ ذي معامل ديناميكي.
+ *
+ * دليل Next صريح: «`generateStaticParams` هي ما يُمكّن ISR للمسار
+ * الديناميكي». وبدونها يبقى المسار «يُصيَّر عند الطلب» بترويسة
+ * `Cache-Control: private, no-store` — أي تصييرٌ كامل لكل زائر،
+ * وهو الاختناق الذي قاسه اختبار الضغط.
+ *
+ * ★ وتعيد قائمة فارغة عن قصد: المضيفات ليست معروفة وقت البناء (ولا
+ * يجوز أن يسأل البناء القاعدة عن متاجر العملاء)، فلا يُبنى شيء
+ * مسبقًا — ويُبنى كل مضيف عند أول طلب له ثم يُخدَم من التخزين.
+ *
+ * ★ ومفتاح التخزين هو المسار، والمسار يحمل المضيف
+ * (`/sites/<host>/...` بعد إعادة كتابة الـproxy) ⇒ لكل متجر مدخله
+ * الخاص. وهذا هو جدار العزل نفسه الذي يحمي بقية النظام: عزلٌ
+ * بالمضيف لا بمعامل يرسله العميل.
+ */
+export async function generateStaticParams() {
+  return [];
+}
+
 
 /**
  * صفحات سياسات المتجر (الشحن · الاسترجاع · الخصوصية · الشروط).
@@ -41,12 +63,7 @@ export default async function PolicyPage({ params }: PageProps<'/sites/[host]/pa
   const store = await resolveStoreByHost(host);
   if (!store) notFound();
 
-  const supabase = await createClient();
-  const { data: settings } = await supabase
-    .from('store_settings').select('policies')
-    .eq('store_id', store.storeId).maybeSingle();
-
-  const policies = (settings?.policies ?? {}) as Record<string, string | undefined>;
+  const { policies } = await storeInfo(store.storeId);
   const body = (policies[page.key] ?? '').trim();
 
   return (

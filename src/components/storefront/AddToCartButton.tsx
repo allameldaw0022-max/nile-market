@@ -3,7 +3,7 @@ import { useState, useTransition } from 'react';
 import { AlertTriangle, Check, Minus, Plus, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { addToCart } from '@/lib/cart/actions';
-import { publishCartCount } from './CartBadge';
+import { publishCartCount } from './cartEvent';
 
 /**
  * زر الإضافة إلى السلة.

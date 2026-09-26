@@ -2,7 +2,7 @@
 import { useState, useTransition } from 'react';
 import { Check, Loader2, Plus } from 'lucide-react';
 import { addToCart } from '@/lib/cart/actions';
-import { publishCartCount } from './CartBadge';
+import { publishCartCount } from './cartEvent';
 
 /**
  * إضافة سريعة من بطاقة المنتج.
