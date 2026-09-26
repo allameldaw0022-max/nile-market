@@ -27,9 +27,12 @@ export default async function DashboardLayout({ children }: LayoutProps<'/dashbo
   const membership = actor.stores[0];
 
   const supabase = await createClient();
-  const [{ data: sub }, { data: domain }, { count: unread }] = await Promise.all([
+  const [{ data: sub }, { data: domain }, { count: unread }, { data: storeSettings }] =
+    await Promise.all([
     supabase.from('subscriptions')
-      .select('status, current_period_end, plans(name)')
+      // ★ `is_free` هو ما يفرّق «باقة مدفوعة فعّالة» عن «مجانية دائمة»،
+      //   وهو شرط استقبال الطلبات للمتجر الرقمي.
+      .select('status, current_period_end, plans(name, is_free)')
       .eq('store_id', membership.storeId).neq('status', 'cancelled').maybeSingle(),
     supabase.from('store_domains')
       .select('hostname').eq('store_id', membership.storeId)
@@ -37,6 +40,8 @@ export default async function DashboardLayout({ children }: LayoutProps<'/dashbo
     // RLS ترشّح على المستخدم الحالي — لا تمرير لمعرّفه من الواجهة
     supabase.from('notifications')
       .select('id', { count: 'exact', head: true }).is('read_at', null),
+    supabase.from('store_settings').select('storefront_template')
+      .eq('store_id', membership.storeId).maybeSingle(),
   ]);
 
   // التنقّل يُبنى من الصلاحيات — لكن الإخفاء تحسين تجربة فقط،
@@ -53,6 +58,18 @@ export default async function DashboardLayout({ children }: LayoutProps<'/dashbo
 
   const subStatus = sub?.status ?? 'expired';
   const needsAttention = ['expiring', 'grace', 'expired', 'suspended'].includes(subStatus);
+
+  // ★★ المتجر الرقمي على باقة مجانية: الاشتراك «نشط» فلا يُنبّهه الشريط
+  // أعلاه، ومع ذلك **لا يستقبل طلبات**. فلو صمتنا هنا لظنّ التاجر أنّ
+  // متجره يبيع وهو لا يبيع — وهذا أسوأ فشل ممكن في هذه الميزة.
+  //
+  // والشرط نفسه الذي تفرضه القاعدة (`digital_orders_allowed`): اشتراك
+  // تشغيلي على باقة **غير مجانية**. ولا يُقرأ من دالّة `app.*` هنا
+  // لأنّها ليست مكشوفة عبر PostgREST، فيُحسب من الصفّ نفسه.
+  const isDigital = storeSettings?.storefront_template === 'digital';
+  const operational = ['trialing', 'active', 'expiring', 'grace'].includes(subStatus);
+  const plan = sub?.plans as { name?: string; is_free?: boolean } | null;
+  const ordersBlocked = isDigital && !(operational && plan?.is_free === false);
 
   return (
     <div className="min-h-screen bg-ink-50">
@@ -85,7 +102,32 @@ export default async function DashboardLayout({ children }: LayoutProps<'/dashbo
         </div>
       </header>
 
-      {needsAttention && (
+      {/* ★ شريطٌ منفصل لا توسيعٌ للشريط أعلاه: سببه مختلف (باقة لا
+          تكفي، لا اشتراك منتهٍ)، ورسالته مختلفة، ويظهر للمتجر الرقمي
+          وحده — فالمتجر العادي لا يرى حرفًا منه. */}
+      {ordersBlocked && (
+        <div className="border-b border-gold-500/30 bg-gold-50">
+          <div className="mx-auto flex max-w-[90rem] flex-wrap items-center gap-2
+                          px-4 py-2.5 text-[13px]">
+            <Badge tone="warning">الطلبات متوقّفة</Badge>
+            <span className="text-ink-700">
+              {needsAttention
+                ? 'اشتراك متجرك منتهي، يرجى تجديد الاشتراك لاستقبال طلبات جديدة.'
+                : 'متجرك الرقمي جاهز للتجهيز، لكن استقبال الطلبات يحتاج اشتراكًا'
+                  + ' مدفوعًا فعّالًا. يمكنك مواصلة إضافة المنتجات والباقات'
+                  + ' والتصنيفات والمعاينة الآن.'}
+            </span>
+            {can(membership, 'subscription:manage') && (
+              <Link href="/dashboard/subscription"
+                    className="font-semibold text-teal-700 underline underline-offset-4">
+                فعّل الباقة لاستقبال الطلبات
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
+
+      {needsAttention && !ordersBlocked && (
         <div className="border-b border-gold-500/30 bg-gold-50">
           <div className="mx-auto flex max-w-[90rem] flex-wrap items-center gap-2 px-4 py-2.5 text-[13px]">
             <Badge tone={SUBSCRIPTION_STATUS[subStatus]?.tone ?? 'warning'}>

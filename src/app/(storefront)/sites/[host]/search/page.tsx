@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { Search } from 'lucide-react';
 import { resolveStoreByHost } from '@/lib/tenant/resolve';
 import { ProductBrowser } from '@/components/storefront/ProductBrowser';
+import { storeChrome } from '@/lib/tenant/chrome';
 
 export const metadata: Metadata = {
   title: 'البحث',
@@ -26,6 +27,8 @@ export default async function SearchPage(
   const { host } = await params;
   const store = await resolveStoreByHost(host);
   if (!store) notFound();
+  const chrome = await storeChrome(store.storeId);
+  const skin = chrome.template === 'digital' ? 'digital' : 'classic';
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
@@ -47,7 +50,7 @@ export default async function SearchPage(
         </button>
       </form>
 
-      <ProductBrowser kind="search" host={host}
+      <ProductBrowser kind="search" host={host} skin={skin}
                       initial={{ products: [], total: 0, page: 1, pages: 1 }}
                       emptyTitle="لا نتائج"
                       emptyDescription="جرّب كلمة أخرى أو تصفّح كل المنتجات." />

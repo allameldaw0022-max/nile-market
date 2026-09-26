@@ -399,3 +399,47 @@ export function ProductImagesUploader({ storeId, value, onChange, max = 8 }: {
     </div>
   );
 }
+
+// ── صورة التصنيف ────────────────────────────────────────────────────
+/**
+ * رافع صورة واحدة بغرض محدَّد — يُستعمل لصور التصنيفات.
+ *
+ * ★ نسخة رابعة من الرافع؟ لا: `useUploader` نفسه بلا سطر مكرَّر،
+ * وما يختلف هو أنّه يعيد **معرّف الوسيط** لا رابطه — لأنّ
+ * `categories.image_id` مفتاحٌ خارجي إلى `media_files` لا نصّ رابط.
+ */
+export function SingleImageUploader({
+  storeId, purpose, label = 'ارفع صورة', onUploaded,
+}: {
+  storeId: string;
+  purpose: Purpose;
+  label?: string;
+  onUploaded: (mediaId: string, url: string) => void;
+}) {
+  const { state, error, run, retry } = useUploader(storeId, purpose);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const busy = state === 'compressing' || state === 'uploading' || state === 'finalizing';
+
+  return (
+    <div className="space-y-2">
+      <Button type="button" variant="outline" size="sm" loading={busy}
+              icon={<UploadCloud size={15} />}
+              onClick={() => inputRef.current?.click()}>
+        {label}
+      </Button>
+      <input ref={inputRef} type="file" accept={ACCEPT} className="sr-only"
+             onChange={(e) => {
+               const file = e.target.files?.[0];
+               e.target.value = '';
+               if (!file) return;
+               void run(file).then((r) => { if (r) onUploaded(r.mediaId, r.url); });
+             }} />
+      <Busy state={state} />
+      {state === 'error' && error && (
+        <ErrorLine message={error} onRetry={() => {
+          void retry().then((r) => { if (r) onUploaded(r.mediaId, r.url); });
+        }} />
+      )}
+    </div>
+  );
+}

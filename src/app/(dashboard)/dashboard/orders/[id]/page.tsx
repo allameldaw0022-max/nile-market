@@ -11,6 +11,7 @@ import { Badge, StatusChip } from '@/components/ui/Badge';
 import { OrderStatusActions } from '@/components/dashboard/OrderStatusActions';
 import { RecordPaymentForm } from '@/components/dashboard/RecordPaymentForm';
 import { OrderReceiptPanel } from '@/components/dashboard/OrderReceiptPanel';
+import { DigitalFulfilAction } from '@/components/dashboard/DigitalFulfilAction';
 import { orderReceipts } from '@/lib/payments/receipts';
 import { ORDER_STATUS, PAYMENT_METHOD, PAYMENT_STATUS } from '@/lib/status';
 import { formatDateTime, formatMoney } from '@/lib/money/format';
@@ -90,9 +91,18 @@ export default async function OrderDetailPage(
   // إيصالات تحويل الزبون — تُقرأ بدالة تفرض orders:payment، فمن لا
   // يملكها لا يرى الإيصال أصلًا ولا يظهر له القسم.
   const canPay = can(membership, 'orders:payment');
-  const receipts = canPay
-    ? await orderReceipts({ storeId: membership.storeId, orderId: order.id })
-    : null;
+  const [receipts, { data: storeSettings }, { data: digitalRows }] = await Promise.all([
+    canPay
+      ? orderReceipts({ storeId: membership.storeId, orderId: order.id })
+      : Promise.resolve(null),
+    supabase.from('store_settings').select('storefront_template')
+      .eq('store_id', membership.storeId).maybeSingle(),
+    supabase.from('order_digital_values')
+      .select('field_label, value, sort_order')
+      .eq('order_id', order.id).order('sort_order'),
+  ]);
+  const isDigital = storeSettings?.storefront_template === 'digital';
+  const digitalValues = digitalRows ?? [];
 
   const items = (itemRows ?? []) as unknown as ItemRow[];
   const history = (historyRows ?? []) as unknown as HistoryRow[];
@@ -283,10 +293,38 @@ export default async function OrderDetailPage(
             </div>
           </Card>
 
+          {/* ★ بيانات الشحن الرقمية: ما يُنفَّذ عليه الطلب فعلًا، فيظهر
+              بارزًا وقابلًا للنسخ — لا مدفونًا في ملاحظة. */}
+          {isDigital && digitalValues.length > 0 && (
+            <Card>
+              <CardHeader title="بيانات الشحن من العميل"
+                          description="نُفِّذ الطلب على هذه البيانات كما أدخلها." />
+              <dl className="divide-y divide-ink-200 p-5 pt-0">
+                {digitalValues.map((d, i) => (
+                  <div key={`${d.field_label}-${i}`}
+                       className="flex items-start justify-between gap-3 py-2.5">
+                    <dt className="text-sm text-ink-500">{d.field_label}</dt>
+                    <dd className="min-w-0 break-words text-end font-bold tabular
+                                   text-ink-900" dir="ltr">
+                      {d.value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </Card>
+          )}
+
           <Card>
             <CardHeader title="الإجراءات" />
             <div className="space-y-4 p-5">
-              {can(membership, 'orders:update') ? (
+              {/* ★ القالب الرقمي: زرّ واحد يصل «مكتمل» بضغطة، بدل أربع
+                  خطوات توصيل لا معنى لها لمنتج يُشحَن خارج المنصّة.
+                  وآلة الحالة القائمة هي التي تُنفَّذ خلفه بلا تغيير. */}
+              {isDigital && can(membership, 'orders:update') ? (
+                <DigitalFulfilAction storeId={membership.storeId} orderId={order.id}
+                                     status={order.status}
+                                     paymentStatus={order.payment_status} />
+              ) : can(membership, 'orders:update') ? (
                 <OrderStatusActions storeId={membership.storeId} orderId={order.id}
                                     status={order.status} />
               ) : (

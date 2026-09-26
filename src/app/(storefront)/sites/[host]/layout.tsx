@@ -15,6 +15,7 @@ import { ServiceWorkerRegister } from '@/components/pwa/ServiceWorkerRegister';
 import { InstallPrompt } from '@/components/pwa/InstallPrompt';
 import { SkipLink } from '@/components/ui/SkipLink';
 import { waNumber } from '@/lib/phone';
+import { DigitalChrome } from '@/components/storefront/digital/DigitalChrome';
 
 /**
  * بيانات رأس الصفحة المشتركة لكل صفحات المتجر.
@@ -95,6 +96,25 @@ export default async function StorefrontLayout({
   const branding = { logo_url: chrome.logoUrl, description: chrome.description };
   const navCategories = chrome.categories.slice(0, 8);
   const whatsapp = chrome.whatsapp;
+
+  // ★★ تفريعٌ واحد على القالب، وبلا استعلام إضافي: العلم وصل مع
+  // القشرة المخزَّنة نفسها التي كان التخطيط يطلبها أصلًا.
+  //
+  // ★ والقالب العادي أدناه **لم يُمسّ حرفًا**: قشرة الرقمي مكوّن
+  // منفصل، فما يعمل اليوم يبقى كما هو بالضبط.
+  if (chrome.template === 'digital') {
+    return (
+      <ViewerProvider>
+        <DigitalChrome host={host} storeName={store.name} chrome={chrome}
+                       canCheckout={store.canCheckout}>
+          <GuestCartMerger host={host} />
+          <ServiceWorkerRegister />
+          <InstallPrompt label={`ثبّت ${store.name} على شاشتك`} />
+          {children}
+        </DigitalChrome>
+      </ViewerProvider>
+    );
+  }
 
   return (
     <ViewerProvider>
