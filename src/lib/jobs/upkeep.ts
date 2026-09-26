@@ -15,11 +15,15 @@ import { log } from '@/lib/observability/logger';
  * يترك ١٤٤ مليون صفٍّ قبل أن يعمل؛ وكنسٌ كل ساعة يحدّها بـ٦ ملايين —
  * وهي دون عتبة التنبيه (٢ مليون تُنبِّه، ١٠ ملايين حرجة) بهامش يُرى.
  *
+ * ★ ومعها `store_visits` — الجدول الآخر الذي لا يُحذف منه شيء. كنسُه
+ * محصور بما جُمِّع في `analytics_daily`، فلا يُفقد يومٌ لم يُجمَّع بعد.
+ *
  * ★ ويُقاس مع كل جريان: `record_capacity` تكتب قراءة سعة، فتتكوّن
  * سلسلة ساعية تُظهر **اتجاه** الضغط لا لحظته — وهو ما يسبق الانهيار.
  */
 export async function runUpkeep(): Promise<{
-  ok: boolean; pruned: number; capacity: string | null; error?: string;
+  ok: boolean; pruned: number; visitsPruned: number;
+  capacity: string | null; error?: string;
 }> {
   let supabase: ReturnType<typeof createServiceClient>;
   try {
@@ -27,10 +31,11 @@ export async function runUpkeep(): Promise<{
   } catch (error) {
     const reason = error instanceof Error ? error.message : 'إعداد ناقص';
     log.error('upkeep.misconfigured', { reason });
-    return { ok: false, pruned: 0, capacity: null, error: reason };
+    return { ok: false, pruned: 0, visitsPruned: 0, capacity: null, error: reason };
   }
 
   let pruned = 0;
+  let visitsPruned = 0;
   let capacity: string | null = null;
   let failed: string | undefined;
 
@@ -43,6 +48,15 @@ export async function runUpkeep(): Promise<{
     log.error('upkeep.prune_failed', { reason: pruneError.message });
   } else if (typeof prunedRows === 'number') {
     pruned = prunedRows;
+  }
+
+  const { data: visitRows, error: visitError } =
+    await supabase.rpc('prune_store_visits' as never, {} as never);
+  if (visitError) {
+    failed ??= visitError.message;
+    log.error('upkeep.visits_prune_failed', { reason: visitError.message });
+  } else if (typeof visitRows === 'number') {
+    visitsPruned = visitRows;
   }
 
   const { data: reading, error: capError } =
@@ -63,6 +77,6 @@ export async function runUpkeep(): Promise<{
     }
   }
 
-  log.info('upkeep.done', { pruned, capacity: capacity ?? 'unknown' });
-  return { ok: !failed, pruned, capacity, error: failed };
+  log.info('upkeep.done', { pruned, visitsPruned, capacity: capacity ?? 'unknown' });
+  return { ok: !failed, pruned, visitsPruned, capacity, error: failed };
 }

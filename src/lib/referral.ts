@@ -14,3 +14,11 @@ export const REFERRAL_MAX_AGE = 30 * 24 * 60 * 60; // 30 يومًا (D19)
 export const VISITOR_COOKIE = 'nm_visitor';
 export const VISITOR_MAX_AGE = 365 * 24 * 60 * 60;
 export const CART_COOKIE = 'nm_cart';
+
+/**
+ * تلميح الزائر — بِتّان مقروءتان يكتبهما الـproxy: «سلّة؟» و«جلسة؟».
+ *
+ * ★ غرضه الوحيد تخطّي نداء `/viewer` لمن لا يملك شيئًا شخصيًّا. ليس
+ * مُدخَل ثقة، ولا يحمل بيانًا، ولا يُقرأ في أيّ قرار صلاحية.
+ */
+export const VIEWER_HINT_COOKIE = 'nm_v';

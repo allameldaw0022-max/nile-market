@@ -4,6 +4,28 @@ import {
 } from 'react';
 import { usePathname } from 'next/navigation';
 import { CART_EVENT } from './cartEvent';
+import { VIEWER_HINT_COOKIE } from '@/lib/referral';
+
+/**
+ * ★★ هل يملك هذا المتصفّح شيئًا شخصيًّا أصلًا؟
+ *
+ * الـproxy يكتب `nm_v` ببتّين: «توكن سلّة؟» و«جلسة؟». فإن كانا صفرين
+ * فجواب `/viewer` معروفٌ سلفًا (زائر بلا سلّة ولا حساب) ولا داعي
+ * لرحلة خادم. وهذا يحذف **نداءً لكل عرض صفحة** لأغلب زوّار المتاجر —
+ * وهو ما يصير الكلفة الأصلية الأولى حين تُخدَم الصفحات من الـCDN.
+ *
+ * ★ يفشل نحو **النداء** لا نحو التخطّي: كوكي غائب أو محجوب أو بقيمة
+ *   غير متوقّعة ⇒ نُنادي. فالخطأ يكلّف طلبًا، لا شارةَ سلّة مفقودة.
+ */
+function hasNothingPersonal(): boolean {
+  if (typeof document === 'undefined') return false;
+  try {
+    const m = new RegExp(`(?:^|; )${VIEWER_HINT_COOKIE}=([^;]*)`).exec(document.cookie);
+    return m?.[1] === '00';
+  } catch {
+    return false;
+  }
+}
 
 /**
  * ★★ حالة الزائر على العميل — الثمن الذي دُفع لتخزين صفحة المتجر.
@@ -70,6 +92,12 @@ export function ViewerProvider({ children }: { children: React.ReactNode }) {
   const [tick, setTick] = useState(0);
 
   useEffect(() => {
+    // ★ لا نداء لمن لا يملك سلّة ولا جلسة: جوابه معروف، وهو الحالة
+    //   الابتدائية المعروضة أصلًا — فلا حاجة حتى لضبط حالة (وضبطها
+    //   داخل `useEffect` يرفضه `react-hooks/set-state-in-effect`
+    //   بحقّ: دورة رسم ثانية بلا أيّ تغيير في المعروض).
+    if (hasNothingPersonal()) return;
+
     const ctl = new AbortController();
     const url = slug ? `/viewer?slug=${encodeURIComponent(slug)}` : '/viewer';
     // ★ `no-store`: جواب هذا المسار خاصّ بالزائر، ولا يجوز أن يستقرّ

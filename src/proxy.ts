@@ -4,7 +4,8 @@ import { createServerClient } from '@supabase/ssr';
 import { config as platform, isPlatformHost } from '@/lib/config';
 import { serialFromHost, serialFromPath } from '@/lib/partners/links';
 import {
-  REFERRAL_COOKIE, REFERRAL_MAX_AGE, VISITOR_COOKIE, VISITOR_MAX_AGE,
+  REFERRAL_COOKIE, REFERRAL_MAX_AGE, VIEWER_HINT_COOKIE,
+  VISITOR_COOKIE, VISITOR_MAX_AGE,
 } from '@/lib/referral';
 
 /**
@@ -267,6 +268,38 @@ export async function proxy(request: NextRequest) {
   // يعمل على مضيف المتجر، فيكتب الكوكي عليه لا على المنصّة.
   if (pathname === '/auth' || pathname.startsWith('/auth/')) {
     return withCsp(response);
+  }
+
+  // ★★ تلميح الزائر: بِتّان تُوفّران رحلة خادم كاملة لأغلب الزوّار.
+  //
+  // كل عرض صفحة يُطلق نداء `/viewer` ليعرف عدّاد السلة وحالة الدخول.
+  // والزائر الذي لا يملك سلّة ولا جلسة — وهو الأغلبية الساحقة على
+  // متجر — يتلقّى جوابًا فارغًا بعد ٤.٧ م.ث من عمل الخادم (قياس).
+  // وعند الحمل المستهدَف يصير هذا النداء **الكلفة الأصلية الأولى**
+  // للحركة المخزَّنة: الصفحة تُخدَم من الـCDN بلا أصل، والنداء وحده
+  // يبقى يقرع الخادم — ١٠٠٠٠ عرض/ثانية × ٤.٧ م.ث ≈ ٤٧ نواة.
+  //
+  // فالـproxy يرى الكوكيز أصلًا (يفحص الجلسة فوق)، فيكتب تلميحًا
+  // **مقروءًا** بقيمة من بِتَّين: «هل توكن سلّة؟» و«هل جلسة؟».
+  // فإن كانا صفرين تخطّى العميل النداء كلّه.
+  //
+  // ★ لا يحمل بيانًا شخصيًّا: بِتّان يعرفهما المتصفّح عن نفسه أصلًا.
+  // ★ وليس مُدخَل ثقة في أيّ قرار: غايته الوحيدة «أنادي أم لا».
+  //   تزويرُه إلى `00` يُخفي شارة سلّة صاحبه عنه، وإلى `11` يُضيف
+  //   نداءً — ولا يكشف شيئًا عن أحد.
+  // ★ ولا يُكتب إلا إذا تغيّرت قيمته: كل `Set-Cookie` يُخرج الجواب من
+  //   تخزين الـCDN، فكتابته في كل طلب كانت ستُبطل التخزين الذي نبنيه.
+  const hasCartCookie = request.cookies.getAll()
+    .some((c) => c.name.startsWith('nm_cart_'));
+  const hint = `${hasCartCookie ? '1' : '0'}${hasSession ? '1' : '0'}`;
+  if (request.cookies.get(VIEWER_HINT_COOKIE)?.value !== hint) {
+    response.cookies.set(VIEWER_HINT_COOKIE, hint, {
+      httpOnly: false,           // يقرأه سكربت الصفحة — وهذا غرضه
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: VISITOR_MAX_AGE,
+    });
   }
 
   // ★ توكن الزائر للإحصاءات: عشوائي، HttpOnly، ولا يحمل أي معرّف
