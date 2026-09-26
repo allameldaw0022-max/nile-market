@@ -89,6 +89,49 @@ export async function runHealthChecks(options: { persist?: boolean } = {}) {
     });
   }
 
+  // ★★ السعة: ضغطٌ يتشكّل قبل أن يصير عطلًا.
+  //
+  // كان الفحص يجيب «هل النظام يعمل؟» ولا يجيب «إلى متى؟». وقراءة
+  // السعة (اتصالات، تنازع أقفال، أطول معاملة، إنتاجية، حجم، عدّادات
+  // الحدّ) تُقيَّم في القاعدة بعتبات قابلة للضبط، و`warn` تصل هنا
+  // `degraded` فيعلنها هذا المسار — فمراقبٌ خارجي يرى الضغط مبكّرًا
+  // بلا أن يفتح لوحة.
+  //
+  // ★ القراءة وحدها هنا (`capacity_latest`)، والكتابة في الصيانة
+  //   الساعيّة: فحص صحّة يُنادى من مراقب كل دقيقة لا يجوز أن يكتب
+  //   سلسلةً في كل نداء.
+  const capStarted = Date.now();
+  try {
+    const { data, error } = await supabase.rpc('capacity_latest' as never, {} as never);
+    const rows = (data ?? []) as { metric: string; level: string; value: number }[];
+    if (error) {
+      checks.push({ component: 'capacity', status: 'degraded',
+                    latencyMs: Date.now() - capStarted,
+                    detail: 'تعذّرت قراءة السعة' });
+    } else if (rows.length === 0) {
+      checks.push({ component: 'capacity', status: 'degraded',
+                    latencyMs: Date.now() - capStarted,
+                    detail: 'لا قراءة سعة بعد — الصيانة الساعيّة لم تعمل' });
+    } else {
+      const bad = rows.filter((r) => r.level === 'warn' || r.level === 'critical');
+      const critical = bad.some((r) => r.level === 'critical');
+      checks.push({
+        component: 'capacity',
+        status: critical ? 'down' : bad.length > 0 ? 'degraded' : 'healthy',
+        latencyMs: Date.now() - capStarted,
+        detail: bad.length > 0
+          ? bad.map((r) => `${r.metric}=${r.value} (${r.level})`).join(' · ')
+          : undefined,
+      });
+    }
+  } catch (error) {
+    checks.push({
+      component: 'capacity', status: 'degraded',
+      latencyMs: Date.now() - capStarted,
+      detail: error instanceof Error ? error.message : 'تعذّرت قراءة السعة',
+    });
+  }
+
   // إعداد البريد: مفتاح غائب يعني أن كل الرسائل ستفشل لاحقًا
   checks.push({
     component: 'email_provider',
