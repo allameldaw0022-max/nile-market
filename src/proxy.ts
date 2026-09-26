@@ -289,10 +289,18 @@ export async function proxy(request: NextRequest) {
   //   نداءً — ولا يكشف شيئًا عن أحد.
   // ★ ولا يُكتب إلا إذا تغيّرت قيمته: كل `Set-Cookie` يُخرج الجواب من
   //   تخزين الـCDN، فكتابته في كل طلب كانت ستُبطل التخزين الذي نبنيه.
+  // ★★ ولا يُكتب كوكيٌّ على مسارٍ ليس صفحة.
+  //
+  // `/api/products` يخرج بـ`Cache-Control: public` لأنّ جوابه دالّةٌ في
+  // المضيف والمعاملات وحدها. و`Set-Cookie` على جوابٍ علنيّ خطرٌ مزدوج:
+  // يُخرجه من تخزين الـCDN، **وقد يُسلّم توكن زائرٍ لزائر آخر** من
+  // ذاكرة مشتركة. والمسارات غير الصفحات لا تحتاج توكن زيارة أصلًا.
+  const isPage = !NON_PAGE.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+
   const hasCartCookie = request.cookies.getAll()
     .some((c) => c.name.startsWith('nm_cart_'));
   const hint = `${hasCartCookie ? '1' : '0'}${hasSession ? '1' : '0'}`;
-  if (request.cookies.get(VIEWER_HINT_COOKIE)?.value !== hint) {
+  if (isPage && request.cookies.get(VIEWER_HINT_COOKIE)?.value !== hint) {
     response.cookies.set(VIEWER_HINT_COOKIE, hint, {
       httpOnly: false,           // يقرأه سكربت الصفحة — وهذا غرضه
       secure: process.env.NODE_ENV === 'production',
@@ -306,7 +314,7 @@ export async function proxy(request: NextRequest) {
   // شخصي. غرضه الوحيد أن تُعدّ الزيارة مرّة لا مرّتين — لا تتبّع عبر
   // المتاجر: القيمة نفسها بلا معنى خارج جدول `store_visits`.
   let visitor = request.cookies.get(VISITOR_COOKIE)?.value;
-  if (!visitor || visitor.length < 24) {
+  if (isPage && (!visitor || visitor.length < 24)) {
     visitor = randomBytes(24).toString('hex');
     response.cookies.set(VISITOR_COOKIE, visitor, {
       httpOnly: true,
@@ -333,10 +341,9 @@ export async function proxy(request: NextRequest) {
   // ★ الجلب المسبق ليس زيارة: Next يطلب حمولة الصفحة حين يمرّ
   //   الرابط أمام العين.
   // ★ ولا زيارة لمسارات ليست صفحات: `/viewer` و`sw.js` وبيان PWA.
-  if (visitor
+  if (isPage && visitor
       && request.headers.get('next-router-prefetch') !== '1'
-      && request.headers.get('rsc') !== '1'
-      && !NON_PAGE.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
+      && request.headers.get('rsc') !== '1') {
     const seenPath = pathname.slice(0, 200);
     const token = visitor;
     after(async () => {
@@ -383,13 +390,19 @@ export async function proxy(request: NextRequest) {
  */
 function isCachedStorePath(pathname: string): boolean {
   if (pathname === '/' || pathname === '/contact') return true;
-  // صفحة منتج بعينه فقط — لا `/products` نفسها (لها searchParams)
+  // ★ `/products` و`/categories/<slug>` و`/search` صارت مخزَّنة بعد أن
+  //   نُقلت قراءة `searchParams` منها إلى `ProductBrowser` على العميل.
+  //   والبناء يعلنها `●`، فلو بقيت بالنونس لحملت الصفحة المخزَّنة نونس
+  //   لحظة صناعتها ولم يطابق ترويسة الجواب التالي ⇒ تُحجب سكربتاتها.
+  if (pathname === '/products' || pathname === '/search') return true;
   if (/^\/products\/[^/]+\/?$/.test(pathname)) return true;
+  if (/^\/categories\/[^/]+\/?$/.test(pathname)) return true;
   return pathname.startsWith('/pages/');
 }
 
 /** مسارات ليست صفحات يراها زائر ⇒ لا تُحسب زيارة. */
-const NON_PAGE = ['/viewer', '/manifest.webmanifest', '/robots.txt', '/sitemap.xml'];
+const NON_PAGE = ['/viewer', '/api', '/manifest.webmanifest',
+                  '/robots.txt', '/sitemap.xml'];
 
 /**
  * ترجمة المضيف إلى معرّف المتجر، بذاكرة داخل العملية.

@@ -2,21 +2,30 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { resolveStoreByHost } from '@/lib/tenant/resolve';
-import { ProductShowcase } from '@/components/storefront/ProductShowcase';
 import { ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { listStorefrontProducts, type Sort } from '@/lib/products/storefront';
+import { ProductBrowser } from '@/components/storefront/ProductBrowser';
+import { listStorefrontProducts } from '@/lib/products/storefront';
 import { storeChrome } from '@/lib/tenant/chrome';
 
 export const revalidate = 60;
 
+/**
+ * ★★ هذا ما يفتح التخزين التدريجي (ISR) لمسارٍ ذي معامل ديناميكي —
+ * ومعه **عدمُ قراءة `searchParams` هنا**.
+ *
+ * قياس المرحلة السابقة: ٨٨٪ من كلفة أيّ صفحة متجر ديناميكية هو
+ * تصيير التخطيط (٢٤–٢٧ م.ث) لا جسم الصفحة (٣–٨ م.ث). وقراءة
+ * `searchParams` كانت تُخرج المسار كلّه من التخزين فتُصيَّره لكل طلب.
+ *
+ * فالصفحة الآن تُصيّر النسخة **الافتراضية** (صفحة ١، الأحدث) وتُخزَّن
+ * وتُفهرس، والترقيم والترتيب يقرأهما `ProductBrowser` على العميل
+ * ويجلبهما من `/api/products` — مسارٌ بلا تخطيط وجوابه قابل للتخزين.
+ */
+export async function generateStaticParams() {
+  return [];
+}
+
 const PAGE_SIZE = 24;
-const SORTS: { value: Sort; label: string }[] = [
-  { value: 'newest', label: 'الأحدث' },
-  { value: 'price_asc', label: 'الأرخص' },
-  { value: 'price_desc', label: 'الأغلى' },
-  { value: 'name', label: 'الاسم' },
-];
 
 export async function generateMetadata(
   { params }: PageProps<'/sites/[host]/products'>,
@@ -31,16 +40,11 @@ export async function generateMetadata(
 }
 
 export default async function AllProductsPage(
-  { params, searchParams }: PageProps<'/sites/[host]/products'>,
+  { params }: PageProps<'/sites/[host]/products'>,
 ) {
   const { host } = await params;
   const store = await resolveStoreByHost(host);
   if (!store) notFound();
-
-  const sp = await searchParams;
-  const page = Math.max(1, Number(sp.page ?? 1) || 1);
-  const sortParam = typeof sp.sort === 'string' ? sp.sort : 'newest';
-  const sort = (SORTS.some((s) => s.value === sortParam) ? sortParam : 'newest') as Sort;
 
   // ★ كانت التصنيفات تُجلب ثم تُنتظر ثم تُجلب المنتجات — موجتان
   // متسلسلتان لا تعتمد إحداهما على الأخرى. والتصنيفات نفسها كان
@@ -48,12 +52,10 @@ export default async function AllProductsPage(
   const [chrome, { products, total }] = await Promise.all([
     storeChrome(store.storeId),
     listStorefrontProducts({
-      storeId: store.storeId, sort,
-      from: (page - 1) * PAGE_SIZE, size: PAGE_SIZE,
+      storeId: store.storeId, sort: 'newest', from: 0, size: PAGE_SIZE,
     }),
   ]);
   const categories = chrome.categories;
-  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:py-10">
@@ -62,9 +64,6 @@ export default async function AllProductsPage(
         <h1 className="text-[24px] font-bold leading-tight text-ink-900 sm:text-[28px]">
           كل المنتجات
         </h1>
-        <p className="mt-1.5 text-[13px] text-ink-500 tabular">
-          {total} منتج
-        </p>
       </div>
 
       {/* ═══ التصنيفات: تنقّل ═══
@@ -98,45 +97,15 @@ export default async function AllProductsPage(
         </nav>
       )}
 
-      {/* ═══ الترتيب: تحكّم لا تنقّل ═══
-          شريط خفيف بعنوان صريح وخيارات نصّية متجاورة — لا أقراص
-          ملوّنة تنافس التصنيفات على الانتباه. */}
-      <div className="mt-7 flex flex-wrap items-center gap-x-1 gap-y-2
-                      border-b border-ink-200 pb-3">
-        <span className="me-2 text-[12px] font-semibold text-ink-500">ترتيب حسب</span>
-        {SORTS.map((s) => (
-          <Link key={s.value} href={`/products?sort=${s.value}`}
-                aria-current={sort === s.value ? 'page' : undefined}
-                className={`rounded-md px-2.5 py-1.5 text-[13px] transition-colors ${
-                  sort === s.value
-                    ? 'font-bold text-teal-700 underline underline-offset-[6px]'
-                    : 'font-medium text-ink-600 hover:text-ink-900'}`}>
-            {s.label}
-          </Link>
-        ))}
-      </div>
-
-      <div className="mt-7">
-        <ProductShowcase products={products} host={host}
-                         emptyTitle="لا توجد منتجات متاحة حاليًا"
-                         emptyDescription="تابع المتجر — ستُعرض المنتجات هنا فور إضافتها." />
-      </div>
-
-      {pages > 1 && (
-        <nav className="mt-8 flex items-center justify-center gap-2" aria-label="ترقيم الصفحات">
-          {page > 1 && (
-            <Link href={`/products?sort=${sort}&page=${page - 1}`}>
-              <Button variant="outline" size="sm">السابق</Button>
-            </Link>
-          )}
-          <span className="text-sm text-ink-500 tabular">صفحة {page} من {pages}</span>
-          {page < pages && (
-            <Link href={`/products?sort=${sort}&page=${page + 1}`}>
-              <Button variant="outline" size="sm">التالي</Button>
-            </Link>
-          )}
-        </nav>
-      )}
+      {/* ═══ الترتيب والشبكة والترقيم ═══
+          ★ الثلاثة داخل `ProductBrowser`: الافتراضي منها مُصيَّر
+          خادميًّا (بديل الـSuspense هو المحتوى الحقيقي) فيقرؤه الزاحف،
+          وغير الافتراضي يُجلب من `/api/products` بلا تصيير تخطيط. */}
+      <ProductBrowser kind="all" host={host} sortBarInFallback
+                      initial={{ products, total, page: 1,
+                                 pages: Math.max(1, Math.ceil(total / PAGE_SIZE)) }}
+                      emptyTitle="لا توجد منتجات متاحة حاليًا"
+                      emptyDescription="تابع المتجر — ستُعرض المنتجات هنا فور إضافتها." />
     </div>
   );
 }

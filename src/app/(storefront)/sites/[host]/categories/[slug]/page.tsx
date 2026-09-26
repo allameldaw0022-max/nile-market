@@ -7,12 +7,20 @@ import { decodeSlugParam } from '@/lib/tenant/params';
 import { unstable_cache } from 'next/cache';
 import { createPublicClient } from '@/lib/supabase/public';
 import { storeTag } from '@/lib/tenant/resolve';
-import { ProductShowcase } from '@/components/storefront/ProductShowcase';
-import { Button } from '@/components/ui/Button';
+import { ProductBrowser } from '@/components/storefront/ProductBrowser';
 import { listStorefrontProducts } from '@/lib/products/storefront';
 
 export const revalidate = 60;
 const PAGE_SIZE = 24;
+
+/**
+ * ★ نفس سبب `/products`: لا تُقرأ `searchParams` هنا، فتُخزَّن النسخة
+ * الأساسية للتصنيف (صفحة ١) وتُفهرس، ويأتي الترقيم من `/api/products`
+ * بلا تصيير تخطيط (٨٨٪ من كلفة الطلب المقيسة).
+ */
+export async function generateStaticParams() {
+  return [];
+}
 
 /**
  * ★ عميل بلا كوكيز + تخزين: التصنيف بيانٌ عامّ واحد لكل الزوّار،
@@ -55,21 +63,17 @@ export async function generateMetadata(
 }
 
 export default async function CategoryPage(
-  { params, searchParams }: PageProps<'/sites/[host]/categories/[slug]'>,
+  { params }: PageProps<'/sites/[host]/categories/[slug]'>,
 ) {
   const { host, slug: rawSlug } = await params;
   const slug = decodeSlugParam(rawSlug);
   const found = await loadCategory(host, slug);
   if (!found) notFound();
 
-  const sp = await searchParams;
-  const page = Math.max(1, Number(sp.page ?? 1) || 1);
-
   const { products, total } = await listStorefrontProducts({
     storeId: found.store.storeId, categoryId: found.category.id,
-    from: (page - 1) * PAGE_SIZE, size: PAGE_SIZE,
+    from: 0, size: PAGE_SIZE,
   });
-  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
@@ -80,28 +84,13 @@ export default async function CategoryPage(
       </nav>
 
       <h1 className="mt-4 text-xl font-extrabold text-ink-900">{found.category.name}</h1>
-      <p className="text-sm text-ink-500 tabular">{total} منتج</p>
-
-      <div className="mt-6">
-        <ProductShowcase products={products} host={host} emptyTitle="لا منتجات في هذا التصنيف"
-                     emptyDescription="تصفّح بقية المنتجات." />
-      </div>
-
-      {pages > 1 && (
-        <nav className="mt-8 flex items-center justify-center gap-2" aria-label="ترقيم الصفحات">
-          {page > 1 && (
-            <Link href={`/categories/${slug}?page=${page - 1}`}>
-              <Button variant="outline" size="sm">السابق</Button>
-            </Link>
-          )}
-          <span className="text-sm text-ink-500 tabular">صفحة {page} من {pages}</span>
-          {page < pages && (
-            <Link href={`/categories/${slug}?page=${page + 1}`}>
-              <Button variant="outline" size="sm">التالي</Button>
-            </Link>
-          )}
-        </nav>
-      )}
+      {/* ★ العدد والشبكة والترقيم داخل المتصفّح: الافتراضي مُصيَّر
+          خادميًّا (بديل الـSuspense) وغيره من `/api/products`. */}
+      <ProductBrowser kind="category" host={host} categorySlug={found.category.slug}
+                      initial={{ products, total, page: 1,
+                                 pages: Math.max(1, Math.ceil(total / PAGE_SIZE)) }}
+                      emptyTitle="لا منتجات في هذا التصنيف"
+                      emptyDescription="تصفّح بقية المنتجات." />
     </div>
   );
 }

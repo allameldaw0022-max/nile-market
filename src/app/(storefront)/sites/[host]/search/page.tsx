@@ -2,9 +2,7 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { Search } from 'lucide-react';
 import { resolveStoreByHost } from '@/lib/tenant/resolve';
-import { ProductShowcase } from '@/components/storefront/ProductShowcase';
-import { listStorefrontProducts } from '@/lib/products/storefront';
-import { searchTerm } from '@/lib/search';
+import { ProductBrowser } from '@/components/storefront/ProductBrowser';
 
 export const metadata: Metadata = {
   title: 'البحث',
@@ -12,21 +10,22 @@ export const metadata: Metadata = {
   robots: { index: false, follow: true },
 };
 
+/**
+ * ★★ البحث هو أفضل حالة لهذا النمط: الصفحة `noindex` أصلًا، فلا كلفة
+ * SEO إطلاقًا في نقل النتائج إلى العميل. والقشرة (النموذج والحالة
+ * الفارغة) تُخزَّن، وكل بحث يذهب إلى `/api/products` — معالجٌ بلا
+ * تخطيط (٥ م.ث) بدل تصيير الصفحة كاملة (٣٠ م.ث).
+ */
+export async function generateStaticParams() {
+  return [];
+}
+
 export default async function SearchPage(
-  { params, searchParams }: PageProps<'/sites/[host]/search'>,
+  { params }: PageProps<'/sites/[host]/search'>,
 ) {
   const { host } = await params;
   const store = await resolveStoreByHost(host);
   if (!store) notFound();
-
-  const sp = await searchParams;
-  const term = searchTerm(sp.q);
-
-  const { products, total } = term.length >= 2
-    ? await listStorefrontProducts({
-        storeId: store.storeId, term, from: 0, size: 48,
-      })
-    : { products: [], total: 0 };
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
@@ -35,7 +34,7 @@ export default async function SearchPage(
       <form action="/search" className="mt-4 flex gap-2">
         <div className="relative flex-1">
           <Search size={16} className="absolute start-3 top-1/2 -translate-y-1/2 text-ink-400" />
-          <input name="q" defaultValue={term} maxLength={80}
+          <input name="q" maxLength={80}
                  placeholder="اكتب اسم المنتج" aria-label="كلمة البحث"
                  className="h-12 w-full rounded-md border border-ink-400 bg-white
                             ps-10 pe-3 text-[15px] text-ink-900 placeholder:text-ink-500
@@ -48,21 +47,10 @@ export default async function SearchPage(
         </button>
       </form>
 
-      {term.length >= 2 && (
-        <p className="mt-4 text-sm text-ink-500 tabular">{total} نتيجة لـ «{term}»</p>
-      )}
-
-      <div className="mt-6">
-        {term.length < 2 ? (
-          <p className="rounded-lg border border-dashed border-ink-300 bg-white
-                        px-6 py-12 text-center text-sm text-ink-500">
-            اكتب حرفين على الأقل للبحث.
-          </p>
-        ) : (
-          <ProductShowcase products={products} host={host} emptyTitle="لا نتائج"
-                       emptyDescription="جرّب كلمة أخرى أو تصفّح كل المنتجات." />
-        )}
-      </div>
+      <ProductBrowser kind="search" host={host}
+                      initial={{ products: [], total: 0, page: 1, pages: 1 }}
+                      emptyTitle="لا نتائج"
+                      emptyDescription="جرّب كلمة أخرى أو تصفّح كل المنتجات." />
     </div>
   );
 }

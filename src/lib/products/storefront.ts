@@ -52,7 +52,10 @@ async function queryProducts(input: {
   const { data, count } = await query.range(input.from, input.from + input.size - 1);
   return {
     products: (data ?? []) as unknown as StorefrontProduct[],
-    total: count ?? 0,
+    // ★ `count` يُشتقّ من ترويسة `content-range` فيُحلَّل نصًّا: ترويسة
+    //   غير متوقّعة تُعطي NaN لا null، و`?? 0` لا تصطادها. وNaN هنا
+    //   يسري إلى «NaN منتج» على الصفحة وإلى حساب عدد الصفحات.
+    total: Number.isFinite(count) ? (count as number) : 0,
   };
 }
 
