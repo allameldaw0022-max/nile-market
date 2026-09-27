@@ -664,3 +664,31 @@ test('★★ زرّ «التالي» في خطوة المنتج لا يَعلَ�
   assert.ok(/disabled=\{known === 0\}/.test(F), 'الزرّ ما زال مربوطًا بالعدّ المحلّي وحده');
   assert.ok(!/disabled=\{products\.length === 0\}/.test(F), 'الشرط القديم باقٍ');
 });
+
+test('★★★ نموذج المنتج الرقمي: بلا مخزون ولا وزن ولا SKU — ويُولد متاحًا', () => {
+  const F = code('../src/components/dashboard/ProductForm.tsx');
+  // الحقول الملموسة خلف شرط القالب لا معروضة دائمًا
+  assert.ok(/isDigital \? \([\s\S]{0,400}name="track_inventory" value="off"/.test(F),
+    'المنتج الرقمي لا يُرسل إيقاف تتبّع المخزون صراحةً — يُولد «غير متوفّر»');
+  assert.ok(/\{!isDigital && \([\s\S]{0,200}name="sku"/.test(F),
+    'رمز المستودع (SKU) معروض للرقمي');
+  assert.ok(/name="weight_grams"/.test(F) && /isDigital/.test(F),
+    'الوزن غير مشروط بالقالب');
+  // ولا تُحذف الحقول من المتجر العادي
+  for (const f of ['name="track_inventory"', 'name="quantity"',
+                   'name="low_stock_threshold"', 'name="weight_grams"', 'name="sku"']) {
+    assert.ok(F.includes(f), `الحقل ${f} اختفى من المتجر العادي — انحدار`);
+  }
+});
+
+test('★★★ المنتج الرقمي الجديد يُولد «نشطًا» لا «مسودة»', () => {
+  const N = code('../src/app/(dashboard)/dashboard/products/new/page.tsx');
+  assert.ok(/storefront_template/.test(N), 'صفحة المنتج الجديد لا تقرأ القالب');
+  assert.ok(/isDigital[\s\S]{0,140}status: 'active'[\s\S]{0,60}trackInventory: false/.test(N),
+    'افتراضات المنتج الرقمي ليست: نشط + بلا تتبّع مخزون');
+  assert.ok(/isDigital=\{isDigital\}/.test(N), 'القالب لا يصل النموذج');
+  // والعادي لم يتغيّر: يبقى على EMPTY_PRODUCT
+  assert.ok(/: EMPTY_PRODUCT/.test(N), 'المتجر العادي لم يعد يستعمل الافتراضات القائمة');
+  const E = code('../src/app/(dashboard)/dashboard/products/[id]/edit/page.tsx');
+  assert.ok(/isDigital=\{isDigital\}/.test(E), 'صفحة التعديل لا تمرّر القالب');
+});

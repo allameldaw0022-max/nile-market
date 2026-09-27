@@ -33,11 +33,18 @@ export type ProductFormValues = {
 
 export type CategoryOption = { id: string; name: string };
 
-export function ProductForm({ storeId, initial, categories, canDelete }: {
+export function ProductForm({ storeId, initial, categories, canDelete, isDigital = false }: {
   storeId: string;
   initial: ProductFormValues;
   categories: CategoryOption[];
   canDelete: boolean;
+  /**
+   * ★★ المنتج الرقمي لا مخزون له ولا وزن ولا رمز مستودع: يُسلَّم في
+   * الطلب نفسه. فحقول المخزون والوزن والـSKU لا تُعرض له — وجودها
+   * يُطيل النموذج بما لا يستعمله، و«تتبّع المخزون» تحديدًا كان فخًّا:
+   * يبقى مفعَّلًا بكمية صفر فيصير المنتج «غير متوفّر» فور إنشائه.
+   */
+  isDigital?: boolean;
 }) {
   const router = useRouter();
   const isNew = initial.id === null;
@@ -135,11 +142,13 @@ export function ProductForm({ storeId, initial, categories, canDelete }: {
       </Card>
 
       <Card>
-        <CardHeader title="المخزون والتصنيف" />
+        <CardHeader title={isDigital ? 'التصنيف' : 'المخزون والتصنيف'} />
         <div className="space-y-4 p-5">
           <div className="grid gap-4 sm:grid-cols-2">
-            <Input name="sku" label="رمز المنتج (SKU)" dir="ltr"
-                   defaultValue={initial.sku} hint="فريد داخل متجرك." />
+            {!isDigital && (
+              <Input name="sku" label="رمز المنتج (SKU)" dir="ltr"
+                     defaultValue={initial.sku} hint="فريد داخل متجرك." />
+            )}
             <Select name="category_id" label="التصنيف" defaultValue={initial.categoryId}>
               <option value="">بلا تصنيف</option>
               {cats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -156,25 +165,34 @@ export function ProductForm({ storeId, initial, categories, canDelete }: {
             </Button>
           </div>
 
-          <Switch name="track_inventory" label="تتبّع المخزون"
-                  hint="عند إيقافه يبقى المنتج متاحًا للشراء دائمًا."
-                  defaultChecked={initial.trackInventory} />
+          {isDigital ? (
+            /* ★ لا تتبّع مخزون للمنتج الرقمي — تُرسَل صراحةً لا بالحذف:
+               الفعل يقرأ غياب الحقل «لا تغيير»، فيبقى التتبّع مشتغلًا
+               من الافتراض ويصير المنتج غير متوفّر بكمية صفر. */
+            <input type="hidden" name="track_inventory" value="off" />
+          ) : (
+            <>
+              <Switch name="track_inventory" label="تتبّع المخزون"
+                      hint="عند إيقافه يبقى المنتج متاحًا للشراء دائمًا."
+                      defaultChecked={initial.trackInventory} />
 
-          <div className="grid gap-4 sm:grid-cols-3">
-            {isNew ? (
-              <Input name="quantity" label="الكمية الابتدائية" type="number" min={0} step="1"
-                     inputMode="numeric" dir="ltr" defaultValue={initial.quantity} />
-            ) : (
-              <Input label="الكمية الحالية" dir="ltr" value={initial.quantity} readOnly
-                     disabled hint="التعديل من صفحة المخزون ليُسجَّل كحركة." />
-            )}
-            <Input name="low_stock_threshold" label="حد التنبيه" type="number" min={0}
-                   step="1" inputMode="numeric" dir="ltr"
-                   defaultValue={initial.lowStockThreshold}
-                   hint="ننبّهك عند هبوط المخزون إليه." />
-            <Input name="weight_grams" label="الوزن (جرام)" type="number" min={0} step="1"
-                   inputMode="numeric" dir="ltr" defaultValue={initial.weightGrams} />
-          </div>
+              <div className="grid gap-4 sm:grid-cols-3">
+                {isNew ? (
+                  <Input name="quantity" label="الكمية الابتدائية" type="number" min={0} step="1"
+                         inputMode="numeric" dir="ltr" defaultValue={initial.quantity} />
+                ) : (
+                  <Input label="الكمية الحالية" dir="ltr" value={initial.quantity} readOnly
+                         disabled hint="التعديل من صفحة المخزون ليُسجَّل كحركة." />
+                )}
+                <Input name="low_stock_threshold" label="حد التنبيه" type="number" min={0}
+                       step="1" inputMode="numeric" dir="ltr"
+                       defaultValue={initial.lowStockThreshold}
+                       hint="ننبّهك عند هبوط المخزون إليه." />
+                <Input name="weight_grams" label="الوزن (جرام)" type="number" min={0} step="1"
+                       inputMode="numeric" dir="ltr" defaultValue={initial.weightGrams} />
+              </div>
+            </>
+          )}
         </div>
       </Card>
 
@@ -189,7 +207,7 @@ export function ProductForm({ storeId, initial, categories, canDelete }: {
         <CardHeader title="النشر" />
         <div className="p-5">
           <Select name="status" label="حالة المنتج" defaultValue={initial.status}
-                  hint="المسودة لا تظهر في المتجر.">
+                  hint="«نشط» يظهر للزبائن فورًا · «مسودة» لا تظهر في المتجر.">
             {Object.entries(PRODUCT_STATUS).map(([value, s]) => (
               <option key={value} value={value}>{s.label}</option>
             ))}

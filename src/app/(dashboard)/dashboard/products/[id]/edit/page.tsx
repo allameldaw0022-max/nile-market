@@ -49,7 +49,8 @@ export default async function EditProductPage({ params }: PageProps<'/dashboard/
 
       <ProductForm storeId={membership.storeId} initial={product}
                    categories={categories}
-                   canDelete={can(membership, 'products:delete')} />
+                   canDelete={can(membership, 'products:delete')}
+                   isDigital={isDigital} />
 
       {isDigital && fields?.ok && (
         <DigitalFieldsManager storeId={membership.storeId} productId={id}
