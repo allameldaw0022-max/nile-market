@@ -98,7 +98,7 @@ export function DigitalProductView({
 
           <p className="mt-2 flex flex-wrap items-baseline gap-x-2.5">
             {packages.length > 0 && (
-              <span className="text-[12.5px]" style={{ color: 'var(--d-text-3)' }}>
+              <span className="text-[12.5px]" style={{ color: 'var(--d-text-2)' }}>
                 يبدأ من
               </span>
             )}
@@ -108,7 +108,7 @@ export function DigitalProductView({
             </span>
             {was != null && was > from && (
               <span className="tabular text-[14px] line-through"
-                    style={{ color: 'var(--d-text-3)' }}>
+                    style={{ color: 'var(--d-text-2)' }}>
                 {new Intl.NumberFormat('ar-SD').format(was)} ج.س
               </span>
             )}
@@ -128,11 +128,15 @@ export function DigitalProductView({
               <h2 id="d-packs" className="text-[13px] font-bold">
                 الباقات المتاحة
               </h2>
+              {/* ★ النصّ الأساسي لا الثانوي: الثانوي ‎#667085 على السطح
+                  الثاني ‎#EFF1F3 يعطي ٤.٣٩:١ — دون AA. قاسه axe على ٨٧
+                  عقدة. والسطح الثاني يحمل النصّ الأساسي وحده، وهذا ما
+                  يحرسه اختبار التباين الآن. */}
               <ul className="mt-2 flex flex-wrap gap-1.5 text-[12px]">
                 {packages.map((p) => (
                   <li key={p.id} className="rounded px-2 py-1"
                       style={{ background: 'var(--d-surface-2)',
-                               color: 'var(--d-text-2)' }}>
+                               color: 'var(--d-text)' }}>
                     {p.name} — {new Intl.NumberFormat('ar-SD').format(
                       p.price != null ? Number(p.price) : base)} ج.س
                   </li>
@@ -156,7 +160,7 @@ export function DigitalProductView({
           </div>
 
           <p className="mt-3 text-[12px] leading-relaxed"
-             style={{ color: 'var(--d-text-3)' }}>
+             style={{ color: 'var(--d-text-2)' }}>
             يُنفَّذ الطلب من {storeName} بعد تأكيد الدفع. تُستعمل بيانات
             الشحن لتنفيذ طلبك وحده.
           </p>

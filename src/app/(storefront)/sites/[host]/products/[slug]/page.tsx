@@ -272,7 +272,7 @@ export default async function ProductPage(
               {formatMoney(product.price)}
             </p>
             {hasDiscount && (
-              <p className="text-base text-ink-400 line-through tabular">
+              <p className="text-base text-ink-500 line-through tabular">
                 {formatMoney(product.compare_at_price)}
               </p>
             )}

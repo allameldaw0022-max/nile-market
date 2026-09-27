@@ -47,7 +47,7 @@ export function BottomNav() {
               <Link href={href} aria-current={active ? 'page' : undefined}
                     className="relative flex h-14 flex-col items-center justify-center
                                gap-0.5 text-[11px] font-medium"
-                    style={{ color: active ? 'var(--d-accent)' : 'var(--d-text-3)' }}>
+                    style={{ color: active ? 'var(--d-accent)' : 'var(--d-text-2)' }}>
                 <span className="relative">
                   <Icon size={20} aria-hidden />
                   {badge > 0 && (

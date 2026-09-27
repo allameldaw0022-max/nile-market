@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 
 const read = (p: string) => readFileSync(new URL(p, import.meta.url), 'utf8');
 const code = (p: string) => read(p)
@@ -25,6 +25,12 @@ const code = (p: string) => read(p)
 
 const MIG58 = read('../supabase/migrations/0058_digital_theme.sql');
 const MIG59 = read('../supabase/migrations/0059_digital_orders.sql');
+const MIG60 = read('../supabase/migrations/0060_template_write_path.sql');
+const MIG61 = read('../supabase/migrations/0061_digital_order_ambiguity.sql');
+const MIG62 = read('../supabase/migrations/0062_digital_entitlement_numeric.sql');
+/** كل هجرات القالب الرقمي — الحرّاس العامّة تسري عليها كلّها. */
+const DIGITAL_MIGS = [['0058', MIG58], ['0059', MIG59], ['0060', MIG60],
+                      ['0061', MIG61], ['0062', MIG62]] as const;
 const CHROME = code('../src/lib/tenant/chrome.ts');
 const LAYOUT = code('../src/app/(storefront)/sites/[host]/layout.tsx');
 const DCHROME = code('../src/components/storefront/digital/DigitalChrome.tsx');
@@ -68,7 +74,7 @@ test('★★★ الأهلية الرقمية = اشتراك تشغيلي على
 });
 
 test('★★★ لا رفع لحدود الباقات ولا تغيير أسعار في أيّ migration رقمية', () => {
-  for (const [name, sql] of [['0058', MIG58], ['0059', MIG59]] as const) {
+  for (const [name, sql] of DIGITAL_MIGS) {
     assert.ok(!/update\s+public\.plans\s+set/i.test(sql),
       `${name} يعدّل جدول الباقات`);
     assert.ok(!/update\s+public\.plan_entitlements\s+set/i.test(sql),
@@ -187,7 +193,7 @@ test('★★★ ولم يُرخَ قيد المخزون في أيّ migration ر
 // ═══════════════════════════════════════════════════════════════════
 
 test('★★★ لا migration رقمية تحذف أو تُسقط شيئًا قائمًا', () => {
-  for (const [name, sql] of [['0058', MIG58], ['0059', MIG59]] as const) {
+  for (const [name, sql] of DIGITAL_MIGS) {
     assert.ok(!/drop table/i.test(sql), `${name} يحذف جدولًا`);
     assert.ok(!/drop column/i.test(sql), `${name} يحذف عمودًا`);
     assert.ok(!/drop type/i.test(sql), `${name} يحذف نوعًا`);
@@ -450,4 +456,157 @@ test('★★ إبطال وسم المستأجر عند تغيير القالب �
   const inv = DASH.slice(DASH.indexOf('async function invalidate'));
   assert.ok(inv.slice(0, 400).includes('storeHosts('),
     'الإبطال لا يشمل كل مضيفات المتجر');
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// ٥) لا تبديلَ تلقائيًّا للقالب — التاجر وحده يقرّر
+//
+// ★★★ هذا حارس القاعدة الأولى في المواصفة: «التاجر هو من يختار
+// القالب». وهي قابلة للكسر بسطرٍ واحد حسن النيّة في أيّ مكان —
+// «متجر ألعاب؟ فلنُعطِه القالب الرقمي تلقائيًّا» — ولن يكشفه أيّ
+// اختبار سلوكي لأنّ النتيجة تبدو «ذكيّة» لا معطوبة.
+//
+// فالحارس بنيوي: مسار كتابةٍ واحد، معروف بالاسم، لا مسار غيره.
+// ═══════════════════════════════════════════════════════════════════
+
+const MIGS = readdirSync(new URL('../supabase/migrations/', import.meta.url))
+  .filter((f) => f.endsWith('.sql')).sort();
+const SRC_FILES = (function walk(dir: string): string[] {
+  return readdirSync(new URL(dir, import.meta.url), { withFileTypes: true })
+    .flatMap((e) => e.isDirectory() ? walk(`${dir}${e.name}/`)
+      : /\.(ts|tsx)$/.test(e.name) ? [`${dir}${e.name}`] : []);
+})('../src/');
+
+test('★★★ مسارٌ واحد يكتب `storefront_template` — لا تبديل تلقائي في القاعدة', () => {
+  let writes = 0;
+  for (const f of MIGS) {
+    const sql = read(`../supabase/migrations/${f}`)
+      .replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*--.*$/gm, '');
+    // كل جملة `update public.store_settings` تضبط العمود
+    const stmts = sql.match(
+      /update\s+public\.store_settings[\s\S]{0,600}?storefront_template\s*=/gi) ?? [];
+    for (const s of stmts) {
+      writes += 1;
+      const at = sql.indexOf(s);
+      const fnAt = sql.lastIndexOf('function public.set_storefront_template', at);
+      const end = fnAt < 0 ? -1 : sql.indexOf('$$;', fnAt);
+      assert.ok(fnAt >= 0 && end > at,
+        `كتابةٌ للقالب خارج \`set_storefront_template\` في ${f} — تبديلٌ تلقائي محتمل`);
+    }
+    // ولا إدراجٌ يضبط العمود من قيمةٍ أخرى (نوع النشاط، الباقة، …)
+    const ins = sql.match(
+      /insert\s+into\s+public\.store_settings[\s\S]{0,400}?storefront_template/gi) ?? [];
+    assert.equal(ins.length, 0,
+      `إدراج يضبط القالب في ${f} — القالب يُولد بالافتراض 'classic' وحده`);
+  }
+  assert.equal(writes, 1, 'عدد مسارات الكتابة ليس واحدًا');
+});
+
+test('★★★ ولا مشغّل ولا دالّة أخرى تشتقّ القالب من قيمةٍ أخرى', () => {
+  const HINTS = /business_type|is_free|plan_id|subscription|category|product_count/i;
+  for (const f of MIGS) {
+    const sql = read(`../supabase/migrations/${f}`)
+      .replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*--.*$/gm, '');
+    // كل موضع يُذكر فيه العمود، نتأكّد أنّه ليس اشتقاقًا شرطيًّا
+    const re = /storefront_template/gi;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(sql))) {
+      const around = sql.slice(Math.max(0, m.index - 220), m.index + 220);
+      if (!/\b(case|if)\b/i.test(around)) continue;
+      assert.ok(!HINTS.test(around),
+        `اشتقاقٌ شرطي للقالب من قيمةٍ أخرى في ${f}: ${around.slice(0, 120)}`);
+    }
+  }
+});
+
+test('★★★ ولا الواجهة تكتب القالب إلا بفعل التاجر الصريح', () => {
+  const callers: string[] = [];
+  for (const f of SRC_FILES) {
+    const src = code(f);
+    if (/storefront_template/.test(src)) {
+      // القراءة مسموحة؛ الكتابة المباشرة ممنوعة
+      assert.ok(!/\.update\(\s*\{[^}]*storefront_template/.test(src),
+        `كتابة مباشرة للقالب عبر PostgREST في ${f}`);
+      assert.ok(!/\.upsert\(\s*\{[^}]*storefront_template/.test(src),
+        `upsert للقالب في ${f}`);
+    }
+    if (/'set_storefront_template'/.test(src)) callers.push(f);
+  }
+  // نداءٌ واحد فقط في كل الشفرة: فعل الخادم الذي يستدعيه التاجر من
+  // إعدادات القالب. والتوقيع في `rpc.ts` تعريفٌ لا نداء.
+  assert.deepEqual(callers, ['../src/lib/digital/dashboard.ts'],
+    `مُنادو تبديل القالب: ${callers.join(', ') || 'لا أحد'}`);
+  assert.ok(code('../src/lib/supabase/rpc.ts').includes('set_storefront_template:'),
+    'توقيع التبديل غير معرَّف في جدول الـRPC — النداء غير مُقيَّد بنوع');
+  // ولا نداء داخل تسجيل متجر أو اشتراك أو حفظ منتج
+  for (const f of SRC_FILES) {
+    if (f.includes('/digital/')) continue;
+    const src = code(f);
+    if (/createStore|subscribe|saveProduct|onboard/i.test(src)) {
+      // النداء وحده يُفحَص (نصٌّ مُقتبَس): `rpc.ts` جدول توقيعات لا نداءات
+      assert.ok(!/'set_storefront_template'/.test(src),
+        `تبديل القالب مدسوسٌ في مسار إنشاء/اشتراك/منتج: ${f}`);
+    }
+  }
+});
+
+test('★★★ ومسار الكتابة الوحيد لا يُتخطّى بـPATCH مباشر (0060)', () => {
+  const m = read('../supabase/migrations/0060_template_write_path.sql')
+    .replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*--.*$/gm, '');
+  assert.match(m, /revoke\s+update\s+on\s+public\.store_settings\s+from\s+authenticated/i,
+    'منح `UPDATE` على مستوى الجدول لم يُسحب');
+  const grant = m.slice(m.indexOf('grant update'), m.indexOf('on public.store_settings',
+                                                            m.indexOf('grant update')));
+  assert.ok(!/storefront_template/.test(grant),
+    'القالب ما زال في قائمة الأعمدة الممنوحة — فالتدقيق يُتخطّى');
+  for (const col of ['whatsapp_number', 'theme', 'cod_enabled', 'maintenance_mode',
+                     'seo', 'policies', 'notification_prefs']) {
+    assert.ok(grant.includes(col), `العمود ${col} سقط من إعادة المنح — انحدار في الإعدادات`);
+  }
+});
+
+test('★★★ المفتاح الرقميّ يُقرأ كما ضُبط: منطقيًّا ثم رقمًا ثم القاعدة (0062)', () => {
+  const at = MIG62.indexOf('function app.digital_orders_allowed');
+  const body = MIG62.slice(at, MIG62.indexOf('$$;', at));
+  const bool = body.indexOf('r.bool_value is not null');
+  const num = body.indexOf('r.limit_value is not null');
+  const rule = body.indexOf('return v_paid');
+  assert.ok(bool > 0 && num > bool && rule > num,
+    'ترتيب القراءة ليس: منطقي ← رقمي ← القاعدة القائمة');
+  assert.ok(body.includes('r.limit_value > 0'),
+    'الحدّ الرقميّ لا يُقرأ — فصفرٌ ضبطه الإداريّ لا يمنع شيئًا');
+  // ولا يُخترع منعٌ عند عدم الضبط (D18)
+  assert.ok(/if\s+found\s+and\s+r\.configured/i.test(body),
+    'المفتاح غير المضبوط يُقرأ حكمًا — وهذا منعٌ مخترع');
+  // ولا تُلمس الباقة نفسها
+  assert.ok(!/update\s+public\.(plans|plan_entitlements)/i.test(MIG62),
+    '0062 يكتب في الباقات');
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// ١) وضوح المُختار — «لا تجعل الاختيار مخفيًا داخل إعدادات غامضة»
+// ═══════════════════════════════════════════════════════════════════
+
+test('★★★ مُختار القالب مجموعةُ راديو صريحة تُظهر المفعَّل', () => {
+  const T = code('../src/components/dashboard/ThemeSettings.tsx');
+  // دلالة صحيحة: fieldset + legend + مدخلات radio باسم واحد
+  assert.ok(/<fieldset>/.test(T), 'لا مجموعة اختيار — أزرارٌ متفرّقة');
+  assert.ok(/<legend/.test(T), 'لا عنوان للمجموعة');
+  assert.ok(/type="radio"/.test(T), 'الاختيار ليس مدخلات radio');
+  assert.ok(/name="storefront-template"/.test(T), 'المدخلات ليست مجموعةً واحدة');
+  assert.ok(/checked=\{on\}/.test(T), 'المفعَّل غير معلَّم في المدخل نفسه');
+  assert.ok(/htmlFor=\{id\}/.test(T), 'التسمية غير مرتبطة بالمدخل');
+  // الخيارَان كلاهما معروضٌ دائمًا بوصفٍ نصّي
+  for (const v of ['"classic"', '"digital"']) {
+    assert.ok(T.includes(`value=${v}`), `الخيار ${v} غير معروض`);
+  }
+  assert.ok(/body="[^"]*/.test(T) || /body=\{?"/.test(T), 'لا وصف للخيارات');
+  // القالب الحالي معروض بالاسم في العنوان
+  assert.ok(/القالب المستعمل حاليًا/.test(T), 'لا إعلان للقالب الحالي');
+  assert.ok(/مفعَّل حاليًا/.test(T), 'لا علامة على الخيار المفعَّل');
+  // ونصٌّ صريح ينفي التبديل التلقائي أمام التاجر
+  assert.ok(/لا يتغيّر تلقائيًا/.test(T), 'لا يُطمئن التاجر أنّ القالب لا يتغيّر تلقائيًا');
+  // ولا حذف: الوعد مكتوب حيث يُقرأ القرار
+  assert.ok(/لا يحذف أي\s*\n?\s*منتج|لا يحذف شيئًا/.test(T),
+    'لا توضيح أنّ التبديل لا يحذف شيئًا');
 });

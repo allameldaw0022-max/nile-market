@@ -77,7 +77,7 @@ export function ProductReviews({
                       <BadgeCheck size={13} aria-hidden />
                       شراء موثّق
                     </span>
-                    <span className="ms-auto text-[12px] tabular text-ink-400">
+                    <span className="ms-auto text-[12px] tabular text-ink-500">
                       {formatDate(r.created_at)}
                     </span>
                   </div>

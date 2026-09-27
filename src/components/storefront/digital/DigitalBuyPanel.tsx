@@ -220,7 +220,7 @@ export function DigitalBuyPanel({
                            (v) => ({ ...v, [f.id]: e.target.value }))}
                          aria-describedby={f.hint ? `dh-${f.id}` : undefined}
                          className="mt-1.5 h-11 w-full rounded-md px-3 text-[14.5px]
-                                    outline-none"
+                                    d-field"
                          style={input} />
                   {f.hint && (
                     <p id={`dh-${f.id}`} className="mt-1 text-[12px] leading-relaxed"
@@ -249,7 +249,7 @@ export function DigitalBuyPanel({
                        onChange={(e) => setQty(Math.min(Math.max(
                          Number(e.target.value) || 1, 1), 99))}
                        className="mt-1.5 h-11 w-24 rounded-md px-3 text-[14.5px]
-                                  outline-none"
+                                  d-field"
                        style={input} />
               </div>
             </div>
@@ -315,7 +315,7 @@ export function DigitalBuyPanel({
               <input id="d-ref" type="text" dir="ltr" maxLength={60}
                      value={reference} onChange={(e) => setReference(e.target.value)}
                      className="mt-1.5 h-11 w-full rounded-md px-3 text-[14.5px]
-                                outline-none"
+                                d-field"
                      style={input} />
             </div>
 
@@ -340,9 +340,14 @@ export function DigitalBuyPanel({
         )}
 
         {error && (
+          /* ★ خلفية البطاقة لا السطح الثاني: الأحمر ‎#D92D20 على
+             ‎#EFF1F3 يعطي ٤.٢٧:١ — دون AA. وعلى الأبيض ٤.٨٣:١، والحدّ
+             الأحمر يبقي الدلالة اللونية قائمة. */
           <p role="alert"
              className="mt-3 flex items-start gap-2 rounded-md px-3 py-2 text-[13px]"
-             style={{ background: 'var(--d-surface-2)', color: 'var(--d-danger)' }}>
+             style={{ background: 'var(--d-surface)',
+                      border: '1px solid var(--d-danger)',
+                      color: 'var(--d-danger)' }}>
             <AlertTriangle size={15} className="mt-0.5 shrink-0" aria-hidden />
             {error}
           </p>
@@ -370,15 +375,15 @@ function Steps({ step, hasPackages }: { step: Step; hasPackages: boolean }) {
                            font-bold"
                 style={i <= at
                   ? { background: 'var(--d-accent-surface)', color: 'var(--d-on-accent)' }
-                  : { background: 'var(--d-surface-2)', color: 'var(--d-text-3)' }}>
+                  : { background: 'var(--d-surface-2)', color: 'var(--d-text)' }}>
             {i < at ? <Check size={11} aria-hidden /> : i + 1}
           </span>
           <span className="font-semibold"
-                style={{ color: i <= at ? 'var(--d-text)' : 'var(--d-text-3)' }}>
+                style={{ color: i <= at ? 'var(--d-text)' : 'var(--d-text-2)' }}>
             {s.label}
           </span>
           {i < all.length - 1 && (
-            <ChevronLeft size={13} aria-hidden style={{ color: 'var(--d-text-3)' }} />
+            <ChevronLeft size={13} aria-hidden style={{ color: 'var(--d-text-2)' }} />
           )}
         </li>
       ))}
@@ -437,7 +442,7 @@ function Field({ label, value, onChange, required = false, dir, type = 'text' }:
       </label>
       <input id={id} type={type} dir={dir} required={required} maxLength={120}
              value={value} onChange={(e) => onChange(e.target.value)}
-             className="mt-1.5 h-11 w-full rounded-md px-3 text-[14.5px] outline-none"
+             className="mt-1.5 h-11 w-full rounded-md px-3 text-[14.5px] d-field"
              style={{ background: 'var(--d-surface-2)',
                       border: '1px solid var(--d-border)', color: 'var(--d-text)' }} />
     </div>

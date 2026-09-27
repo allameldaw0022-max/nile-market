@@ -131,7 +131,7 @@ function FeaturedOne({ product, host, saved, signedIn }: {
           ) : (
             <div className="grid h-full place-items-center gap-2 text-ink-300">
               <ImageOff size={34} strokeWidth={1.5} aria-hidden />
-              <span className="text-[12px] font-medium text-ink-400">لا توجد صورة</span>
+              <span className="text-[12px] font-medium text-ink-500">لا توجد صورة</span>
             </div>
           )}
           {hasDiscount && !soldOut && (
@@ -166,7 +166,7 @@ function FeaturedOne({ product, host, saved, signedIn }: {
               {formatMoney(price)}
             </span>
             {hasDiscount && (
-              <span className="text-[15px] tabular text-ink-400 line-through">
+              <span className="text-[15px] tabular text-ink-500 line-through">
                 {formatMoney(was)}
               </span>
             )}

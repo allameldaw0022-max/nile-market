@@ -59,7 +59,7 @@ export function DigitalProductCard({ product, host, priority = false, fromPrice 
         {hasDiscount && (
           <span className="absolute end-2 top-2 rounded px-1.5 py-0.5 text-[11px]
                            font-bold"
-                style={{ background: 'var(--d-danger)', color: '#FFFFFF' }}>
+                style={{ background: 'var(--d-danger-surface)', color: '#FFFFFF' }}>
             −{off}%
           </span>
         )}
@@ -72,7 +72,7 @@ export function DigitalProductCard({ product, host, priority = false, fromPrice 
         </span>
         <span className="mt-auto flex flex-wrap items-baseline gap-x-2">
           {many && (
-            <span className="text-[11px]" style={{ color: 'var(--d-text-3)' }}>
+            <span className="text-[11px]" style={{ color: 'var(--d-text-2)' }}>
               يبدأ من
             </span>
           )}
@@ -82,7 +82,7 @@ export function DigitalProductCard({ product, host, priority = false, fromPrice 
           </span>
           {hasDiscount && (
             <span className="tabular text-[12px] line-through"
-                  style={{ color: 'var(--d-text-3)' }}>
+                  style={{ color: 'var(--d-text-2)' }}>
               {formatMoney(was)}
             </span>
           )}

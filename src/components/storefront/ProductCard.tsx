@@ -91,7 +91,7 @@ export function ProductCard({ product, host, priority = false, saved, signedIn }
                وأيقونة ونصّ — البطاقة تبقى متّسقة مع جاراتها. */
             <div className="grid h-full place-items-center gap-1.5 bg-ink-50 text-ink-300">
               <ImageOff size={26} strokeWidth={1.5} aria-hidden />
-              <span className="text-[11px] font-medium text-ink-400">لا توجد صورة</span>
+              <span className="text-[11px] font-medium text-ink-500">لا توجد صورة</span>
             </div>
           )}
 
@@ -129,7 +129,7 @@ export function ProductCard({ product, host, priority = false, saved, signedIn }
                 {formatMoney(price)}
               </span>
               {hasDiscount && (
-                <span className="text-[12px] tabular text-ink-400 line-through">
+                <span className="text-[12px] tabular text-ink-500 line-through">
                   {formatMoney(was)}
                 </span>
               )}

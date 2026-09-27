@@ -75,33 +75,59 @@ export function ThemeSettings({
 
       {/* ═══ القالب ═══ */}
       <Card>
-        <CardHeader title="قالب المتجر"
-                    description="يحدّد شكل متجرك للزبائن. لا يُحذف ولا يُغيَّر أي
-                                 منتج أو تصنيف أو طلب عند التبديل." />
-        <div className="space-y-2.5 p-5">
-          <TemplateOption
-            on={template === 'classic'} disabled={!canEdit || pending}
-            title="القالب العادي" icon={LayoutTemplate}
-            body="متجر منتجات عام: شبكة منتجات، سلة، دفع عند الاستلام أو تحويل."
-            onPick={() => run(() => switchTemplate({ storeId, template: 'classic' }))} />
-          <TemplateOption
-            on={template === 'digital'} disabled={!canEdit || pending}
-            title="القالب الرقمي" icon={Sparkles}
-            body="متجر منتجات رقمية: باقات لكل منتج، حقول شحن (رقم لاعب مثلًا)،
-                  تنفيذ بعد تأكيد الدفع، ووضع ليلي للزبون."
-            onPick={() => run(() => switchTemplate({ storeId, template: 'digital' }))} />
+        <CardHeader title="مظهر المتجر"
+                    description="أنت تختار القالب. لا يتغيّر تلقائيًا بنوع النشاط
+                                 ولا بالباقة ولا بالاشتراك، والتبديل لا يحذف أي
+                                 منتج أو تصنيف أو طلب." />
+        <div className="p-5">
+          {/* ★★ مجموعة اختيار حقيقية (`radiogroup` بمدخلات `radio`) لا
+              أزرارًا بـ`aria-pressed`: الاختيار بين قالبين حالةٌ واحدة
+              من اثنتين، وهذه دلالته الصحيحة — يقرؤها قارئ الشاشة
+              «١ من ٢»، وتتنقّل الأسهم بينها، ويظهر المفعَّل بوضوح. */}
+          <fieldset>
+            <legend className="text-[13px] font-bold text-ink-700">
+              القالب المستعمل حاليًا:{' '}
+              <span className="text-teal-700">
+                {template === 'digital' ? 'القالب الرقمي' : 'القالب العادي'}
+              </span>
+            </legend>
 
-          {template === 'digital' && (
-            <p className="flex items-start gap-2 rounded-md bg-ink-50 p-3
-                          text-[12.5px] leading-relaxed text-ink-600">
-              <Info size={15} className="mt-0.5 shrink-0" aria-hidden />
-              يمكنك تجهيز متجرك بالكامل الآن. استقبال الطلبات يحتاج اشتراكًا
-              مدفوعًا فعّالًا — وحتى ذلك الحين يتصفّح الزبائن متجرك ولا
-              يستطيعون إنشاء طلب.
+            <div className="mt-3 space-y-2.5">
+              <TemplateOption
+                value="classic" current={template} disabled={!canEdit || pending}
+                title="القالب العادي" icon={LayoutTemplate}
+                body="متجر عام مناسب للمنتجات والخدمات التقليدية: شبكة منتجات،
+                      سلّة، توصيل، ودفع عند الاستلام أو تحويل."
+                onPick={() => run(() => switchTemplate({ storeId, template: 'classic' }))} />
+              <TemplateOption
+                value="digital" current={template} disabled={!canEdit || pending}
+                title="القالب الرقمي" icon={Sparkles}
+                body="متجر متخصّص في المنتجات الرقمية والأكواد والشحن
+                      والاشتراكات: باقات لكل منتج، حقول شحن (رقم لاعب مثلًا)،
+                      تنفيذ بعد تأكيد الدفع، ووضع ليلي للزبون."
+                onPick={() => run(() => switchTemplate({ storeId, template: 'digital' }))} />
+            </div>
+          </fieldset>
+
+          <p className="mt-3 flex items-start gap-2 rounded-md bg-ink-50 p-3
+                        text-[12.5px] leading-relaxed text-ink-600">
+            <Info size={15} className="mt-0.5 shrink-0" aria-hidden />
+            {template === 'digital'
+              ? 'يمكنك تجهيز متجرك بالكامل الآن. استقبال الطلبات يحتاج اشتراكًا'
+                + ' مدفوعًا فعّالًا — وحتى ذلك الحين يتصفّح الزبائن متجرك ولا'
+                + ' يستطيعون إنشاء طلب.'
+              : 'القالب العادي يعمل بقواعد المنصّة الحالية كما هي. اختيار'
+                + ' القالب الرقمي لا يحذف شيئًا، ويمكنك الرجوع في أي وقت.'}
+          </p>
+
+          {!canEdit && (
+            <p className="mt-2 text-[12.5px] text-ink-500">
+              لا تملك صلاحية تغيير إعدادات المتجر.
             </p>
           )}
         </div>
       </Card>
+
 
       {template === 'digital' && (
         <>
@@ -166,29 +192,42 @@ export function ThemeSettings({
   );
 }
 
-function TemplateOption({ on, title, body, icon: Icon, onPick, disabled }: {
-  on: boolean; title: string; body: string; icon: typeof Sparkles;
+function TemplateOption({ value, current, title, body, icon: Icon, onPick, disabled }: {
+  value: 'classic' | 'digital';
+  current: 'classic' | 'digital';
+  title: string; body: string; icon: typeof Sparkles;
   onPick: () => void; disabled: boolean;
 }) {
+  const on = current === value;
+  const id = `tpl-${value}`;
   return (
-    <button type="button" onClick={onPick} disabled={disabled} aria-pressed={on}
-            className={`flex w-full items-start gap-3 rounded-md border p-3.5 text-start
-                        transition-colors disabled:opacity-60 ${
-                          on ? 'border-teal-600 bg-teal-50'
-                             : 'border-ink-200 hover:border-teal-300'}`}>
+    <label htmlFor={id}
+           className={`flex cursor-pointer items-start gap-3 rounded-md border p-3.5
+                       transition-colors ${
+                         on ? 'border-teal-600 bg-teal-50'
+                            : 'border-ink-200 hover:border-teal-300'
+                       } ${disabled ? 'cursor-not-allowed opacity-60' : ''}`}>
+      <input type="radio" id={id} name="storefront-template" value={value}
+             checked={on} disabled={disabled}
+             onChange={() => { if (!on) onPick(); }}
+             className="mt-1 size-4 shrink-0 accent-teal-600" />
       <span className={`mt-0.5 grid size-9 shrink-0 place-items-center rounded-md ${
         on ? 'bg-teal-600 text-white' : 'bg-ink-100 text-ink-500'}`}>
         <Icon size={17} aria-hidden />
       </span>
       <span className="min-w-0">
-        <span className="flex items-center gap-2 text-sm font-bold text-ink-900">
+        <span className="flex flex-wrap items-center gap-2 text-sm font-bold text-ink-900">
           {title}
-          {on && <Check size={14} className="text-teal-700" aria-hidden />}
-          {on && <span className="sr-only">(المستعمل حاليًا)</span>}
+          {on && (
+            <span className="inline-flex items-center gap-1 rounded bg-teal-600 px-1.5
+                             py-0.5 text-[11px] font-semibold text-white">
+              <Check size={11} aria-hidden /> مفعَّل حاليًا
+            </span>
+          )}
         </span>
-        <span className="mt-0.5 block text-xs leading-relaxed text-ink-500">{body}</span>
+        <span className="mt-1 block text-xs leading-relaxed text-ink-500">{body}</span>
       </span>
-    </button>
+    </label>
   );
 }
 

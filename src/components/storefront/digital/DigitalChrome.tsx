@@ -69,12 +69,12 @@ export function DigitalChrome({
               <Search size={16} aria-hidden
                       className="pointer-events-none absolute start-3 top-1/2
                                  -translate-y-1/2"
-                      style={{ color: 'var(--d-text-3)' }} />
+                      style={{ color: 'var(--d-text-2)' }} />
               <label htmlFor="d-search" className="sr-only">ابحث في منتجات المتجر</label>
               <input id="d-search" name="q" type="search" maxLength={80}
                      placeholder="ابحث عن لعبة أو بطاقة أو خدمة"
                      className="h-11 w-full rounded-md ps-10 pe-3 text-[14.5px]
-                                outline-none"
+                                d-field"
                      style={{ background: 'var(--d-surface-2)',
                               border: '1px solid var(--d-border)',
                               color: 'var(--d-text)' }} />
@@ -106,7 +106,7 @@ export function DigitalChrome({
               ))}
               <li className="ms-auto">
                 <Link href="/orders/track" className="flex h-full items-center px-3"
-                      style={{ color: 'var(--d-text-3)' }}>
+                      style={{ color: 'var(--d-text-2)' }}>
                   تتبّع طلبك
                 </Link>
               </li>
@@ -170,7 +170,7 @@ export function DigitalChrome({
           </div>
           <div className="mt-8 flex flex-wrap items-center justify-between gap-2
                           border-t pt-4 text-[11.5px]"
-               style={{ borderColor: 'var(--d-border)', color: 'var(--d-text-3)' }}>
+               style={{ borderColor: 'var(--d-border)', color: 'var(--d-text-2)' }}>
             <p>© {new Date().getFullYear()} {storeName}</p>
             <p>
               مدعوم بواسطة{' '}

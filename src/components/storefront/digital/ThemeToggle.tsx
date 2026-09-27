@@ -84,7 +84,7 @@ export function ThemeToggle() {
                   style={on
                     ? { background: 'var(--d-surface)', color: 'var(--d-accent)',
                         boxShadow: 'var(--d-shadow)' }
-                    : { color: 'var(--d-text-3)' }}>
+                    : { color: 'var(--d-text-2)' }}>
             <Icon size={15} aria-hidden />
             <span className="sr-only">{label}</span>
           </button>

@@ -143,3 +143,166 @@ test('ألوان البريد الحرفية تجتاز AA', () => {
   assert.ok(ratio('#008672', WHITE) >= 4.5, 'رابط البريد');
   assert.ok(ratio(WHITE, '#17191C') >= 4.5, 'ترويسة البريد');
 });
+
+/* =====================================================================
+   القالب الرقمي — تباين الوضعين
+   ---------------------------------------------------------------------
+   ★★ التقرير السابق أقرّ بأنّ التباين لم يُقَس للرموز الجديدة. يُقاس
+   هنا من `globals.css` نفسه، فلا يمرّ تعديلٌ على رمزٍ داكن دون أن
+   يمرّ على هذا الاختبار.
+
+   ★ والرموز الداكنة معرَّفة مرّتين (تفضيل النظام + الطلب الصريح)
+   بقيمٍ متطابقة؛ الاختبار يقرأ الكتلة الصريحة
+   (`[data-nm-digital][data-nm-theme="dark"]`) ويتحقّق أنّ الأخرى
+   تطابقها — فلو انحرفت إحداهما ظهر ذلك.
+   ===================================================================== */
+
+/**
+ * يقرأ رمزًا من كتلة CSS محدَّدة بمُحدِّدها.
+ * ★ يتحمّل الاسم بـ`--` أو بدونها: تمريرها مرّتين كان يبني
+ *   `----d-text` فيفشل البحث — خطأٌ في الأداة يُظهر سقوطًا وهميًّا.
+ */
+function scoped(selector: string, name: string): string {
+  const at = css.indexOf(selector);
+  assert.ok(at >= 0, `المُحدِّد غير موجود: ${selector}`);
+  const block = css.slice(at, css.indexOf('}', at));
+  const bare = name.replace(/^--/, '');
+  const m = block.match(new RegExp(`--${bare}:\\s*(#[0-9A-Fa-f]{6})`));
+  assert.ok(m, `${bare} غير معرَّف في ${selector}`);
+  return m![1].toUpperCase();
+}
+
+const LIGHT = (n: string) => scoped('[data-nm-digital] {', n);
+const DARK  = (n: string) => scoped('[data-nm-digital][data-nm-theme="dark"] {', n);
+
+test('★★★ القالب الرقمي — وضع النهار يجتاز AA لكل زوج مستعمل', () => {
+  const pairs: [string, string, string, number][] = [
+    // [نصّ, خلفية, وصف, الحدّ]
+    ['--d-text',     '--d-bg',        'النصّ الأساسي على الصفحة',   4.5],
+    ['--d-text',     '--d-surface',   'النصّ على البطاقة',          4.5],
+    ['--d-text',     '--d-surface-2', 'النصّ على السطح الثاني',     4.5],
+    ['--d-text-2',   '--d-surface',   'النصّ الثانوي على البطاقة',  4.5],
+    ['--d-text-2',   '--d-bg',        'النصّ الثانوي على الصفحة',   4.5],
+    ['--d-accent',   '--d-surface',   'السعر والرابط على البطاقة',  4.5],
+    ['--d-accent',   '--d-bg',        'الرابط على الصفحة',          4.5],
+    ['--d-accent',   '--d-accent-weak', 'نصّ على سطح التيل الخفيف', 4.5],
+    ['--d-danger',   '--d-surface',   'نصّ الخطأ',                  4.5],
+    ['--d-success',  '--d-surface',   'نصّ النجاح',                 4.5],
+    ['--d-on-accent','--d-accent-surface', 'نصّ زرّ CTA',           4.5],
+    ['--d-invert-text', '--d-invert-bg', 'النصّ على القسم الداكن',  4.5],
+    // حدود عناصر التحكّم: ٣:١ يكفي (WCAG 1.4.11 لغير النصّ) — ويُقاس
+    // على **كلا** السطحين لأنّ الحقول تظهر على البطاقة وعلى الصفحة.
+    ['--d-border-strong', '--d-surface', 'حدّ عنصر تحكّم على البطاقة', 3.0],
+    ['--d-border-strong', '--d-bg',      'حدّ عنصر تحكّم على الصفحة',  3.0],
+  ];
+  const fails: string[] = [];
+  for (const [fg, bg, label, min] of pairs) {
+    const r = ratio(LIGHT(fg), LIGHT(bg));
+    if (r < min) fails.push(`${label}: ${LIGHT(fg)} على ${LIGHT(bg)} = ${r.toFixed(2)}:1 (الحدّ ${min})`);
+  }
+  assert.deepEqual(fails, [], 'أزواج نهار تسقط دون الحدّ');
+});
+
+test('★★★ القالب الرقمي — وضع الليل يجتاز AA لكل زوج مستعمل', () => {
+  const pairs: [string, string, string, number][] = [
+    ['--d-text',     '--d-bg',        'النصّ الأساسي',              4.5],
+    ['--d-text',     '--d-surface',   'النصّ على البطاقة',          4.5],
+    ['--d-text',     '--d-surface-2', 'النصّ على السطح الثاني',     4.5],
+    ['--d-text-2',   '--d-surface',   'النصّ الثانوي على البطاقة',  4.5],
+    ['--d-text-2',   '--d-bg',        'النصّ الثانوي على الصفحة',   4.5],
+    ['--d-accent',   '--d-surface',   'السعر والرابط على البطاقة',  4.5],
+    ['--d-accent',   '--d-bg',        'الرابط على الصفحة',          4.5],
+    ['--d-accent',   '--d-accent-weak', 'نصّ على سطح التيل الخفيف', 4.5],
+    ['--d-danger',   '--d-surface',   'نصّ الخطأ',                  4.5],
+    ['--d-success',  '--d-surface',   'نصّ النجاح',                 4.5],
+    ['--d-on-accent','--d-accent-surface', 'نصّ زرّ CTA',           4.5],
+    ['--d-invert-text', '--d-invert-bg', 'النصّ على القسم الداكن',  4.5],
+    ['--d-border-strong', '--d-surface', 'حدّ عنصر تحكّم على البطاقة', 3.0],
+    ['--d-border-strong', '--d-bg',      'حدّ عنصر تحكّم على الصفحة',  3.0],
+  ];
+  const fails: string[] = [];
+  for (const [fg, bg, label, min] of pairs) {
+    const r = ratio(DARK(fg), DARK(bg));
+    if (r < min) fails.push(`${label}: ${DARK(fg)} على ${DARK(bg)} = ${r.toFixed(2)}:1 (الحدّ ${min})`);
+  }
+  assert.deepEqual(fails, [], 'أزواج ليل تسقط دون الحدّ');
+});
+
+test('★★ كتلتا الليل متطابقتان (تفضيل النظام = الطلب الصريح)', () => {
+  const media = css.slice(css.indexOf('[data-nm-digital]:not([data-nm-theme="light"])'));
+  const mediaBlock = media.slice(0, media.indexOf('}'));
+  const names = [...mediaBlock.matchAll(/--(d-[a-z0-9-]+):\s*(#[0-9A-Fa-f]{6})/g)];
+  assert.ok(names.length >= 15, 'كتلة تفضيل النظام ناقصة');
+  const diffs: string[] = [];
+  for (const [, n, hex] of names) {
+    if (hex.toUpperCase() !== DARK(n)) diffs.push(`${n}: ${hex} ≠ ${DARK(n)}`);
+  }
+  assert.deepEqual(diffs, [], 'كتلتا الليل انحرفتا — زائرٌ يرى ثيمًا مختلفًا بحسب طريق التطبيق');
+});
+
+test('★★★ الحدّ الزخرفي مرئي في الوضعين (١.٥:١ على الأقل)', () => {
+  // WCAG لا يفرض حدًّا للزخرفي، لكن حدًّا لا يُرى أصلًا يفقد وظيفته:
+  // بطاقات متلاصقة بلا فاصل مرئي. القياس يمنع رمزًا «موجودًا ولا يُرى».
+  for (const [mode, T] of [['نهار', LIGHT], ['ليل', DARK]] as const) {
+    const r = ratio(T('--d-border'), T('--d-surface'));
+    assert.ok(r >= 1.15, `${mode}: الحدّ ${T('--d-border')} على ${T('--d-surface')} = ${r.toFixed(2)}:1`);
+  }
+});
+
+test('★★★ رموز القالب الرقمي لا تُعرَّف على :root ولا html/body', () => {
+  const clean = css.replace(/\/\*[\s\S]*?\*\//g, '');
+  // كل تعريف لرمز `--d-` يجب أن يكون داخل كتلة محدِّدها يحمل
+  // `[data-nm-digital]` — وإلا تسرّب إلى لوحة التحكّم والإدارة.
+  const leaks: string[] = [];
+  const blocks = [...clean.matchAll(/([^{}]+)\{([^{}]*)\}/g)];
+  for (const [, sel, body] of blocks) {
+    if (!/--d-[a-z0-9-]+:/.test(body)) continue;
+    if (!sel.includes('[data-nm-digital]')) leaks.push(sel.trim().slice(0, 80));
+  }
+  assert.deepEqual(leaks, [], 'رموز رقمية معرَّفة خارج شجرة القالب الرقمي');
+});
+
+test('★★★ لا رمز نصّ ثالث في القالب الرقمي', () => {
+  // ★ جُرِّب ورُفض: `--d-text-3` كان ‎#8F9093 ⇒ ٣.١٩:١ على أبيض — دون
+  // AA للنصّ العادي. واللوحة لا تحتمل ثلاث درجات نصّ تجتاز ٤.٥:١ على
+  // أبيض، فالنظام درجتان: أساسي وثانوي. وهذا الحارس يمنع عودة الثالثة.
+  assert.ok(!/--d-text-3/.test(css), 'عاد رمز نصّ ثالث دون AA');
+  const clean = css.replace(/\/\*[\s\S]*?\*\//g, '');
+  assert.ok(!/var\(--d-text-3\)/.test(clean), 'استعمالٌ لرمز محذوف');
+});
+
+/**
+ * ★★★ حارس بنيويّ: السطح الثاني يحمل النصّ الأساسي وحده.
+ *
+ * ثغرةٌ في المواصفة لا في اللوحة: قائمة الأزواج أعلاه لم تجمع
+ * `--d-text-2` ولا `--d-danger` مع `--d-surface-2`، فمرّ زوجان دون AA
+ * (٤.٣٩:١ و٤.٢٧:١) حتى قاسهما axe على ٨٧ عقدة. فبعد إصلاحهما يُحرَس
+ * المنعُ بنيويًّا: أيّ زوج جديد على السطح الثاني يجب أن يُقاس أو يُمنع.
+ */
+test('★★★ لا نصّ ثانوي ولا أحمر على السطح الثاني (دون AA في النهار)', () => {
+  const files = [
+    'DigitalProductView', 'DigitalProductCard', 'DigitalBuyPanel',
+    'DigitalChrome', 'CategoryTiles', 'ThemeToggle',
+  ];
+  const bad: string[] = [];
+  for (const f of files) {
+    const src = readFileSync(
+      new URL(`../src/components/storefront/digital/${f}.tsx`, import.meta.url), 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '');
+    // كل كائن نمط يجمع السطح الثاني مع لون نصّ
+    for (const m of src.matchAll(/var\(--d-surface-2\)[^}]{0,160}/g)) {
+      const chunk = m[0];
+      for (const t of ['--d-text-2', '--d-danger', '--d-success']) {
+        if (chunk.includes(`var(${t})`)) bad.push(`${f}: ${t} على السطح الثاني`);
+      }
+    }
+  }
+  assert.deepEqual([...new Set(bad)], [], 'زوجٌ دون AA على السطح الثاني');
+});
+
+test('★★★ وكل زوج قياس يشمل السطح الثاني صراحةً', () => {
+  // يمنع عودة الثغرة نفسها: المواصفة يجب أن تقيس السطح الثاني.
+  const spec = readFileSync(new URL('./contrast.test.ts', import.meta.url), 'utf8');
+  assert.ok(spec.includes("'--d-text',     '--d-surface-2'"),
+    'قائمة الأزواج لا تقيس النصّ على السطح الثاني');
+});

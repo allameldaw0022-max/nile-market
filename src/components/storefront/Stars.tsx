@@ -48,8 +48,11 @@ export function RatingSummary({ avg, count, size = 14, showCount = true }: {
       <span className="text-[12px] font-semibold tabular text-ink-700">
         {Number(avg).toFixed(1)}
       </span>
+      {/* ★ ink-500 لا ink-400: الأخير لونُ **حدود** (٣.١٩:١ على أبيض)
+          وكان مستعمَلًا هنا نصًّا ⇒ دون AA. قاسه axe على ٦١ عقدة في
+          المتجر العادي — عطبٌ قائم قبل القالب الرقمي. وink-500 ٤.٩٧:١. */}
       {showCount && (
-        <span className="text-[12px] tabular text-ink-400">({count})</span>
+        <span className="text-[12px] tabular text-ink-500">({count})</span>
       )}
       <span className="sr-only">
         متوسّط التقييم {Number(avg).toFixed(1)} من ٥ بناءً على {count} تقييمًا

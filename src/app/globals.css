@@ -189,16 +189,20 @@
   --d-surface:   #FFFFFF;
   --d-surface-2: #EFF1F3;
   --d-border:    #E5E7EB;
-  --d-border-strong: #C6C9CE;
+  --d-border-strong: #8F9093;   /* حدّ عنصر تحكّم: ٣.١٩:١ على أبيض */
   --d-text:      #111315;
   --d-text-2:    #667085;
-  --d-text-3:    #8F9093;
   --d-accent:    #00816E;   /* نصًّا وحدودًا: ٤.٨١:١ على أبيض */
   --d-accent-surface: #008672;
   --d-accent-weak: #F0FAF8;
   --d-on-accent: #FFFFFF;
   --d-gold:      #C9A24A;
   --d-danger:    #D92D20;
+  /* ★ سطحٌ أحمر تحت نصّ أبيض — منفصل عن لون النصّ الأحمر. الأخير
+     يُفتَّح في الليل ليُقرأ على سطح داكن، فاستعماله سطحًا تحت أبيض
+     أعطى ٢.٣٤:١ (قاسه axe على ٢٠ عقدة). والسطح ثابت في الوضعين
+     لأنّ تباينه مع الأبيض لا يتغيّر بتغيّر الوضع: ٤.٨٣:١. */
+  --d-danger-surface: #D92D20;
   --d-success:   #0D834C;
   --d-invert-bg: #17191C;   /* Charcoal — أقسام داكنة في وضع النهار */
   --d-invert-text: #FFFFFF;
@@ -212,16 +216,16 @@
     --d-surface:   #17191C;   /* Charcoal — سطح البطاقات في الليل */
     --d-surface-2: #22262A;
     --d-border:    #2B2F34;
-    --d-border-strong: #444A52;
+    --d-border-strong: #636A75;   /* ٣.٢٣:١ على سطح الليل */
     --d-text:      #F3F4F5;
     --d-text-2:    #A7AEB8;   /* ٧.٠:١ على #0E1012 */
-    --d-text-3:    #8F9093;
     --d-accent:    #26B9A2;   /* تيل أفتح: ٧.٢:١ على #0E1012 */
     --d-accent-surface: #00816E;
     --d-accent-weak: #13322D;
     --d-on-accent: #FFFFFF;
     --d-gold:      #E3CC93;
     --d-danger:    #F58C85;
+    --d-danger-surface: #D92D20;
     --d-success:   #5BD99B;
     --d-invert-bg: #22262A;
     --d-invert-text: #F3F4F5;
@@ -235,16 +239,16 @@
   --d-surface:   #17191C;
   --d-surface-2: #22262A;
   --d-border:    #2B2F34;
-  --d-border-strong: #444A52;
+  --d-border-strong: #636A75;   /* ٣.٢٣:١ على سطح الليل */
   --d-text:      #F3F4F5;
   --d-text-2:    #A7AEB8;
-  --d-text-3:    #8F9093;
   --d-accent:    #26B9A2;
   --d-accent-surface: #00816E;
   --d-accent-weak: #13322D;
   --d-on-accent: #FFFFFF;
   --d-gold:      #E3CC93;
   --d-danger:    #F58C85;
+  --d-danger-surface: #D92D20;
   --d-success:   #5BD99B;
   --d-invert-bg: #22262A;
   --d-invert-text: #F3F4F5;
@@ -277,4 +281,19 @@
 }
 @media (min-width: 640px) {
   [data-nm-digital] .d-wa { bottom: 1rem; }
+}
+
+/* ── حلقة التركيز في القالب الرقمي ──────────────────────────────────
+   ★★ حقول القالب كانت بـ`outline-none` فتُلغي الحلقة العامّة
+   (`:focus-visible` في globals) ⇒ مؤشّر التركيز يختفي، وهو خرق
+   WCAG 2.4.7 قاسه فحص لوحة المفاتيح على كل حقل.
+
+   والحلقة هنا برموز القالب لا بلون ثابت، فتُرى في الوضعين: التيل
+   الفاتح على الليل والداكن على النهار. و`:focus:not(:focus-visible)`
+   تُبقي النقر بالفأرة بلا حلقة، كما في بقيّة المنصّة. */
+[data-nm-digital] .d-field { outline: none; }
+[data-nm-digital] .d-field:focus-visible {
+  outline: 2px solid var(--d-accent);
+  outline-offset: 2px;
+  border-color: var(--d-accent);
 }

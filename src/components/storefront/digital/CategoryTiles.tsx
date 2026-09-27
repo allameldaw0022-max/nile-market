@@ -71,7 +71,7 @@ export function CategoryTiles({ categories }: {
                   {c.name}
                 </span>
                 <span className="block text-center text-[11px]"
-                      style={{ color: 'var(--d-text-3)' }}>
+                      style={{ color: 'var(--d-text-2)' }}>
                   {c.productCount} منتج
                 </span>
               </Link>
