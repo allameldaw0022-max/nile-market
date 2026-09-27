@@ -692,3 +692,28 @@ test('★★★ المنتج الرقمي الجديد يُولد «نشطًا»
   const E = code('../src/app/(dashboard)/dashboard/products/[id]/edit/page.tsx');
   assert.ok(/isDigital=\{isDigital\}/.test(E), 'صفحة التعديل لا تمرّر القالب');
 });
+
+test('★★★ لا بطاقات تسويقية في رئيسية المتجر الرقمي', () => {
+  // ★ الشفرة مجرَّدةً من التعليقات: رأس الملف يذكر أسماء البطاقات
+  //   ليشرح **حذفها**، فالبحث في النصّ الخام يُطابق الشرح لا الشفرة.
+  const H = code('../src/components/storefront/digital/DigitalHome.tsx');
+  for (const gone of ['تنفيذ سريع', 'بياناتك محفوظة', 'طرق دفع واضحة',
+                      'لماذا تشتري', 'function Trust', 'payWays']) {
+    assert.ok(!H.includes(gone), `«${gone}» ما زالت في رئيسية المتجر الرقمي`);
+  }
+  // والترتيب الثابت باقٍ: لافتة ← بنر ← تصنيفات ← منتجات ← عروض
+  // ★ داخل جسم المكوّن وحده: أسماء المكوّنات ترد في الاستيراد أعلى
+  //   الملف، فالبحث في الملف كلّه يقيس ترتيب الاستيراد لا ترتيب العرض.
+  const body = H.slice(H.indexOf('export function DigitalHome'));
+  const order = ['HeroCarousel', 'عرض ترويجي', 'CategoryTiles', 'd-featured', 'd-offers'];
+  let at = -1;
+  for (const marker of order) {
+    const i = body.indexOf(marker);
+    assert.ok(i > at, `ترتيب الأقسام اختلّ عند «${marker}»`);
+    at = i;
+  }
+  // وحالة الفراغ: واحدة، نظيفة، مشروطة بالمنتجات وحدها
+  assert.ok(H.includes('لا توجد منتجات'), 'لا حالة فراغ نظيفة');
+  assert.ok(/featured\.length === 0 && offers\.length === 0/.test(H),
+    'حالة الفراغ ليست مشروطة بالمنتجات وحدها');
+});

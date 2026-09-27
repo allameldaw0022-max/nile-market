@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { ShieldCheck, Wallet, Zap } from 'lucide-react';
 import type { StoreChrome } from '@/lib/tenant/chrome';
 import type { HomeProducts } from '@/lib/products/home';
 import { HeroCarousel } from './HeroCarousel';
@@ -9,10 +8,14 @@ import { DigitalGrid } from './DigitalGrid';
 /**
  * الصفحة الرئيسية للمتجر الرقمي.
  *
- * ★★ ترتيب الأقسام **ثابت في هذا المكوّن** ولا يملكه التاجر: ترويسة
- * ثم بحث (في القشرة) ثم لافتة ثم بنر ترويجي ثم تصنيفات ثم منتجات
- * مميّزة ثم عروض ثم شريط الثقة. وما يملكه التاجر إظهار القسم أو
- * إخفاؤه — وهو `sections` من القشرة، لا `order`.
+ * ★★ ترتيب الأقسام **ثابت في هذا المكوّن** ولا يملكه التاجر:
+ *   ترويسة ← بحث (كلاهما في القشرة) ← لافتة ← بنر ترويجي ←
+ *   تصنيفات ← منتجات ← عروض ← واتساب وتذييل (في القشرة).
+ * وما يملكه التاجر إظهار القسم أو إخفاؤه — `sections` لا `order`.
+ *
+ * ★★ ولا بطاقات تسويقية من عندنا: «تنفيذ سريع» و«بياناتك محفوظة»
+ * و«طرق دفع واضحة» حُذفت. المتجر يعرض ما يبيعه التاجر، ولا يملأ
+ * فراغه بوعودٍ تكتبها المنصّة نيابةً عنه.
  *
  * ★ ولا قسم يُرسَم فارغًا: التصنيف بلا منتجات يُرشَّح، والعروض لا
  * تظهر إن لم يكن هناك خصمٌ فعلي، واللافتة لا تظهر بلا بنر. فلا
@@ -104,70 +107,20 @@ export function DigitalHome({ host, storeName, chrome, products }: {
         </section>
       )}
 
-      {/* ٨: شريط الثقة — نصّه من إعدادات التاجر الحقيقية لا من قائمة
-          ثابتة: متجرٌ لا يقبل التحويل لا يجوز أن تَعِد صفحته به. */}
-      <section aria-label="لماذا تشتري من هنا" className="pt-9 sm:pt-11">
-        <ul className="grid gap-2.5 sm:grid-cols-3">
-          <Trust icon={Zap} title="تنفيذ سريع"
-                 body="يُنفَّذ طلبك بعد تأكيد الدفع مباشرة." />
-          <Trust icon={ShieldCheck} title="بياناتك محفوظة"
-                 body="تُستعمل بيانات الشحن لتنفيذ طلبك وحده." />
-          <Trust icon={Wallet} title={payTitle(chrome)} body={payBody(chrome)} />
-        </ul>
-      </section>
-
-      {featured.length === 0 && chrome.categories.length === 0 && (
+      {/* ٨: لا منتجات — حالةٌ واحدة نظيفة، بلا بطاقات تسويقية.
+          ★ الشرط على المنتجات وحدها: التصنيف بلا منتجات مُرشَّح أصلًا
+            في `CategoryTiles`، فوجود تصنيفات لا يعني أنّ للزائر ما
+            يشتريه. */}
+      {featured.length === 0 && offers.length === 0 && (
         <div className="mt-10 rounded-lg p-8 text-center"
              style={{ background: 'var(--d-surface)',
                       border: '1px solid var(--d-border)' }}>
-          <p className="text-[15px] font-bold">لا منتجات متاحة حاليًا</p>
+          <p className="text-[15px] font-bold">لا توجد منتجات</p>
           <p className="mt-1 text-[13px]" style={{ color: 'var(--d-text-2)' }}>
             تابع المتجر — ستُعرض المنتجات هنا فور إضافتها.
           </p>
         </div>
       )}
     </div>
-  );
-}
-
-function payTitle(chrome: StoreChrome): string {
-  const ways = payWays(chrome);
-  return ways.length > 0 ? 'طرق دفع واضحة' : 'الدفع';
-}
-
-function payBody(chrome: StoreChrome): string {
-  const ways = payWays(chrome);
-  return ways.length > 0
-    ? `${ways.join(' · ')} — تختار عند إتمام الطلب.`
-    : 'طرق الدفع المتاحة تظهر عند إتمام الطلب.';
-}
-
-function payWays(chrome: StoreChrome): string[] {
-  return [
-    chrome.codEnabled && 'عند الاستلام',
-    chrome.bankTransferEnabled && 'تحويل بنكي',
-    chrome.bankakEnabled && 'بنكك',
-  ].filter(Boolean) as string[];
-}
-
-function Trust({ icon: Icon, title, body }: {
-  icon: typeof Zap; title: string; body: string;
-}) {
-  return (
-    <li className="flex items-start gap-3 rounded-lg p-3.5"
-        style={{ background: 'var(--d-surface)',
-                 border: '1px solid var(--d-border)' }}>
-      <span className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-md"
-            style={{ background: 'var(--d-accent-weak)', color: 'var(--d-accent)' }}>
-        <Icon size={17} aria-hidden />
-      </span>
-      <span className="min-w-0">
-        <span className="block text-[13.5px] font-bold">{title}</span>
-        <span className="mt-0.5 block text-[12.5px] leading-relaxed"
-              style={{ color: 'var(--d-text-2)' }}>
-          {body}
-        </span>
-      </span>
-    </li>
   );
 }
