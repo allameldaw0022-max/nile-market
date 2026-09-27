@@ -21,9 +21,11 @@ export type WizardInitial = {
   whatsapp: string; contactPhone: string;
   codEnabled: boolean; bankTransferEnabled: boolean; bankakEnabled: boolean;
   productCount: number; zoneCount: number;
+  /** قالب المتجر — يحدّد خطوات الإنشاء المعروضة. */
+  template: 'classic' | 'digital';
 };
 
-const STEPS = [
+const ALL_STEPS = [
   { key: 'store-info', label: 'معلومات المتجر', icon: Store },
   { key: 'logo',       label: 'الشعار',         icon: ImageIcon },
   { key: 'whatsapp',   label: 'واتساب',         icon: MessageCircle },
@@ -38,13 +40,35 @@ const BUSINESS_TYPES = [
   'أثاث ومنزل', 'كتب وقرطاسية', 'رياضة', 'هدايا', 'أخرى',
 ];
 
+/**
+ * خطوات الإنشاء حسب القالب.
+ *
+ * ★★ المتجر الرقمي **لا تُعرض له خطوة مناطق التوصيل**: هو لا يوصّل
+ * شيئًا (`create_digital_order` بلا منطقة وبلا عنوان)، و`publish_store`
+ * لم يعد يشترطها عليه (0063). وعرضها كانت تُوقف الإنشاء عند زرّ
+ * «التالي» معطَّلًا في خطوةٍ لا معنى لها في متجره — طريقٌ مسدود.
+ */
+function stepsFor(template: 'classic' | 'digital') {
+  return template === 'digital'
+    ? ALL_STEPS.filter((s) => s.key !== 'delivery')
+    : ALL_STEPS;
+}
+
 export function OnboardingWizard({ initial }: { initial: WizardInitial | null }) {
   const router = useRouter();
   const [store, setStore] = useState<WizardInitial | null>(initial);
+  // ★ ترشيحُ سبع خطوات أرخص من حفظه، ولا يُحفظ حتى لا يتعارض حفظان
+  //   متداخلان (المترجم يرفض اعتماد محفوظٍ على محفوظ).
+  const template = store?.template ?? 'classic';
+  const STEPS = stepsFor(template);
   const stepIndex = useMemo(() => {
-    const i = STEPS.findIndex((s) => s.key === (store?.step ?? 'store-info'));
+    // ★ متجرٌ رقميّ حُفظت خطوته `delivery` قبل هذا الإصلاح لا يُعاد
+    //   إلى البداية: يُنقل إلى الخطوة التالية في مساره.
+    const saved = store?.step === 'delivery' && template === 'digital'
+      ? 'payment' : (store?.step ?? 'store-info');
+    const i = stepsFor(template).findIndex((s) => s.key === saved);
     return i === -1 ? 0 : i;
-  }, [store?.step]);
+  }, [store?.step, template]);
 
   if (!store) return <CreateStoreStep onCreated={setStore} />;
 
@@ -88,7 +112,8 @@ export function OnboardingWizard({ initial }: { initial: WizardInitial | null })
         {current.key === 'whatsapp'   && <WhatsappStep store={store} setStore={setStore} onNext={() => goto('product')} />}
         {current.key === 'product'    && <FirstProductStep storeId={store.storeId} count={store.productCount}
                                              onChange={(n) => setStore({ ...store, productCount: n })}
-                                             onNext={() => goto('delivery')} />}
+                                             onNext={() => goto(store.template === 'digital'
+                                               ? 'payment' : 'delivery')} />}
         {current.key === 'delivery'   && <DeliveryZonesStep storeId={store.storeId} count={store.zoneCount}
                                              onChange={(n) => setStore({ ...store, zoneCount: n })}
                                              onNext={() => goto('payment')} />}
@@ -143,6 +168,9 @@ function CreateStoreStep({ onCreated }: { onCreated: (s: WizardInitial) => void 
             whatsapp: '', contactPhone: '', codEnabled: false,
             bankTransferEnabled: true, bankakEnabled: false,
             productCount: 0, zoneCount: 0,
+            // ★ القالب المختار للتوّ يحكم خطوات الإنشاء فورًا:
+            //   من أنشأ متجرًا رقميًّا لا تُعرض له خطوة التوصيل أصلًا.
+            template,
           });
         })}
       >

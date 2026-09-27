@@ -631,3 +631,36 @@ test('★★★ مُختار القالب مجموعةُ راديو صريحة �
   assert.ok(/لا يحذف أي\s*\n?\s*منتج|لا يحذف شيئًا/.test(T),
     'لا توضيح أنّ التبديل لا يحذف شيئًا');
 });
+
+// ═══════════════════════════════════════════════════════════════════
+// إنشاء المتجر: لا يُسأل الرقميّ عمّا لا يفعله
+// ═══════════════════════════════════════════════════════════════════
+
+test('★★★ خطوة مناطق التوصيل لا تُعرض للمتجر الرقمي في الإنشاء', () => {
+  const W = code('../src/app/(platform)/onboarding/OnboardingWizard.tsx');
+  // الخطوات تُبنى على القالب لا ثابتة
+  assert.ok(/function stepsFor\(/.test(W), 'الخطوات ليست دالّة في القالب');
+  assert.ok(/template === 'digital'[\s\S]{0,120}filter\([\s\S]{0,60}!== 'delivery'/.test(W),
+    'خطوة التوصيل لا تُحذف من مسار المتجر الرقمي');
+  // و«التالي» من المنتج يقفز إلى الدفع مباشرةً في الرقمي
+  assert.ok(/store\.template === 'digital'[\s\S]{0,60}'payment'[\s\S]{0,30}'delivery'/.test(W),
+    'زرّ «التالي» في خطوة المنتج ما زال يقود الرقمي إلى التوصيل');
+  // ومن حُفظت خطوته `delivery` قبل الإصلاح لا يعود إلى البداية
+  assert.ok(/'delivery'[\s\S]{0,80}'payment'[\s\S]{0,40}store\?\.step/.test(W)
+            || /saved[\s\S]{0,200}'payment'/.test(W),
+    'الخطوة المحفوظة `delivery` لا تُعالَج للرقمي');
+  // والقالب يصل من الصفحة ومن الإنشاء معًا
+  const P = code('../src/app/(platform)/onboarding/page.tsx');
+  assert.ok(/storefront_template/.test(P), 'الصفحة لا تقرأ القالب');
+  assert.ok(/template:\s*settings\?\.storefront_template === 'digital'/.test(P),
+    'القالب لا يُمرَّر إلى الـwizard');
+});
+
+test('★★ زرّ «التالي» في خطوة المنتج لا يَعلَق على عدٍّ محلّي وحده', () => {
+  const F = code('../src/app/(platform)/onboarding/FirstProductStep.tsx');
+  // العدّ الخادمي احتياطٌ قبل التحميل وعند فشله — نفس نمط خطوة التوصيل
+  assert.ok(/const known = loading \|\| error \? count : products\.length/.test(F),
+    'لا احتياط بالعدّ الخادمي: الزرّ يَعلَق معطَّلًا إن فشل نداء القائمة');
+  assert.ok(/disabled=\{known === 0\}/.test(F), 'الزرّ ما زال مربوطًا بالعدّ المحلّي وحده');
+  assert.ok(!/disabled=\{products\.length === 0\}/.test(F), 'الشرط القديم باقٍ');
+});

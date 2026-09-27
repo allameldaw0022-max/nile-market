@@ -65,6 +65,16 @@ export function FirstProductStep({ storeId, count, onChange, onNext }: {
     refresh();
   });
 
+  // ★★ العدّ الخادمي احتياطٌ للعدّ المحلّي — وهو نفس ما تفعله خطوة
+  //    التوصيل. بدونه كان زرّ «التالي» يبقى معطَّلًا في حالتين:
+  //    · قبل أن يعود نداء القائمة (كل دخول للخطوة)، ولو كان للمتجر
+  //      منتجاتٌ فعلًا.
+  //    · وإذا فشل النداء (خطأ شبكة أو خادم) فـ`products` يبقى فارغًا
+  //      **إلى الأبد**، فيَعلَق التاجر في خطوةٍ استوفى شرطها.
+  //    والعدّ الخادمي يأتي مع الصفحة من القاعدة، وهو نفسه الشرط الذي
+  //    يفحصه `publish_store` (منتج واحد غير محذوف).
+  const known = loading || error ? count : products.length;
+
   return (
     <Card>
       <div className="border-b border-ink-200 px-5 py-4">
@@ -168,7 +178,7 @@ export function FirstProductStep({ storeId, count, onChange, onNext }: {
       </div>
 
       <div className="flex items-center justify-end border-t border-ink-200 px-5 py-4">
-        <Button onClick={onNext} disabled={products.length === 0}
+        <Button onClick={onNext} disabled={known === 0}
                 icon={<ChevronLeft size={16} className="flip-rtl" />}>
           التالي
         </Button>
