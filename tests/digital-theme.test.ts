@@ -532,20 +532,41 @@ test('★★★ ولا الواجهة تكتب القالب إلا بفعل ال
     }
     if (/'set_storefront_template'/.test(src)) callers.push(f);
   }
-  // نداءٌ واحد فقط في كل الشفرة: فعل الخادم الذي يستدعيه التاجر من
-  // إعدادات القالب. والتوقيع في `rpc.ts` تعريفٌ لا نداء.
-  assert.deepEqual(callers, ['../src/lib/digital/dashboard.ts'],
+  // ★★ موضعان اثنان لا غير، وكلاهما **اختيار تاجرٍ صريح**:
+  //   · `digital/dashboard.ts` — مُختار القالب في الإعدادات.
+  //   · `onboarding/actions.ts` — مُختار القالب عند إنشاء المتجر.
+  // والقاعدة المحميّة ليست «موضع واحد» بل «لا اشتقاق تلقائي»: أيّ
+  // موضع ثالث، أو اشتقاقٌ من نوع النشاط أو الباقة في هذين، يُفشل.
+  assert.deepEqual(callers.sort(), ['../src/app/(platform)/onboarding/actions.ts',
+                                    '../src/lib/digital/dashboard.ts'],
     `مُنادو تبديل القالب: ${callers.join(', ') || 'لا أحد'}`);
   assert.ok(code('../src/lib/supabase/rpc.ts').includes('set_storefront_template:'),
     'توقيع التبديل غير معرَّف في جدول الـRPC — النداء غير مُقيَّد بنوع');
-  // ولا نداء داخل تسجيل متجر أو اشتراك أو حفظ منتج
+
+  // ★★★ ونداء الإنشاء مشروطٌ بحقلٍ صريح في النموذج، وافتراضه `classic`:
+  //     فلا يصير متجرٌ رقميًّا بغياب الحقل ولا بقيمة مشوَّهة.
+  const ONB = code('../src/app/(platform)/onboarding/actions.ts');
+  assert.ok(/formData\.get\('storefront_template'\)/.test(ONB),
+    'القالب عند الإنشاء لا يُقرأ من حقل صريح في النموذج');
+  assert.ok(/=== 'digital'[\s\S]{0,80}'classic'/.test(ONB),
+    'الافتراضي عند الإنشاء ليس `classic` صراحةً');
+  // ★ يُفحص **تعبير الإسناد نفسه** لا مدًى نصّيّ حوله: `createStore`
+  //   تقرأ `business_type` في سطرٍ قريب لغرضٍ آخر تمامًا، ومدًى نصّيّ
+  //   يلتقطه فيتّهم شفرةً سليمة (وقع هذا فعلًا وأُصلحت الأداة).
+  const assign = /const\s+template\s*=([\s\S]*?);/.exec(ONB)?.[1] ?? '';
+  assert.ok(assign.includes("formData.get('storefront_template')"),
+    'قيمة القالب لا تأتي من حقل النموذج');
+  assert.ok(!/business_type|businessType|plan|subscription|is_free|category/i.test(assign),
+    'قيمة القالب مشتقّة من نوع النشاط أو الباقة — وهذا تبديل تلقائي');
+
+  // ولا نداء داخل اشتراك أو حفظ منتج (الإنشاء استُثني أعلاه بشرطه)
   for (const f of SRC_FILES) {
-    if (f.includes('/digital/')) continue;
+    if (f.includes('/digital/') || f.endsWith('/onboarding/actions.ts')) continue;
     const src = code(f);
-    if (/createStore|subscribe|saveProduct|onboard/i.test(src)) {
+    if (/subscribe|saveProduct/i.test(src)) {
       // النداء وحده يُفحَص (نصٌّ مُقتبَس): `rpc.ts` جدول توقيعات لا نداءات
       assert.ok(!/'set_storefront_template'/.test(src),
-        `تبديل القالب مدسوسٌ في مسار إنشاء/اشتراك/منتج: ${f}`);
+        `تبديل القالب مدسوسٌ في مسار اشتراك/منتج: ${f}`);
     }
   }
 });

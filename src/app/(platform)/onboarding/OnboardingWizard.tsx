@@ -104,6 +104,8 @@ function CreateStoreStep({ onCreated }: { onCreated: (s: WizardInitial) => void 
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
   const [businessType, setBusinessType] = useState('');
+  // ★ العادي هو الافتراضي — ولا يُشتقّ من نوع النشاط ولا من أي قيمة.
+  const [template, setTemplate] = useState<'classic' | 'digital'>('classic');
   // ★ `error` حالة مستقلّة عن `taken`: فشل الفحص ليس حجزًا.
   // دمجهما كان يجعل الواجهة تخبر التاجر أن رابطًا متاحًا «محجوز»،
   // وتمنعه من المتابعة بناءً على خبر لم يحدث.
@@ -219,6 +221,40 @@ function CreateStoreStep({ onCreated }: { onCreated: (s: WizardInitial) => void 
             {BUSINESS_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
           </select>
         </div>
+
+        {/* ★★ قالب المتجر: اختيارٌ صريح من اثنين لا حقلٌ مخفيّ.
+            مجموعة راديو حقيقية بنفس دلالة مُختار الإعدادات، والعادي
+            محدَّد ابتداءً. ولا يتغيّر بنوع النشاط ولا بأي قيمة أخرى،
+            ويمكن تبديله لاحقًا من الإعدادات بلا فقدان شيء. */}
+        <fieldset className="space-y-1.5">
+          <legend className="text-[13px] font-bold text-ink-700">قالب المتجر</legend>
+          <div className="space-y-2">
+            {([
+              { value: 'classic' as const, title: 'متجر كلاسيكي',
+                body: 'منتجات تُشحن وتُوصَّل: شبكة منتجات وسلّة ومناطق توصيل.' },
+              { value: 'digital' as const, title: 'متجر رقمي',
+                body: 'أكواد وشحن واشتراكات: باقات لكل منتج، وبيانات شحن، وبلا توصيل.' },
+            ]).map((opt) => (
+              <label key={opt.value} htmlFor={`tpl-${opt.value}`}
+                     className={`flex cursor-pointer items-start gap-2.5 rounded-md border p-3
+                                 ${template === opt.value
+                                   ? 'border-teal-600 bg-teal-50/50'
+                                   : 'border-ink-300 hover:border-ink-400'}`}>
+                <input type="radio" id={`tpl-${opt.value}`} name="storefront_template"
+                       value={opt.value} checked={template === opt.value}
+                       onChange={() => setTemplate(opt.value)}
+                       className="mt-0.5 size-4 shrink-0 accent-teal-600" />
+                <span className="min-w-0">
+                  <span className="block text-[14px] font-bold text-ink-900">{opt.title}</span>
+                  <span className="block text-[12.5px] leading-relaxed text-ink-600">
+                    {opt.body}
+                  </span>
+                </span>
+              </label>
+            ))}
+          </div>
+          <p className="text-[12px] text-ink-500">يمكنك تغييره لاحقًا من الإعدادات.</p>
+        </fieldset>
 
         <Button type="submit" className="w-full" size="lg" loading={pending}
                 disabled={slugState === 'taken' || slugState === 'checking'}>

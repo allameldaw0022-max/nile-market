@@ -1343,3 +1343,51 @@ select t.empty('select * from public.order_digital_values where order_id = '
 rollback;
 
 \echo '✓ 117 e2e'
+
+-- =====================================================================
+-- ★★★ النشر: المتجر الرقمي لا يُشترط عليه ما لا يفعله (0063)
+--
+-- عطبٌ كشفه استعمالٌ فعليّ: التبديل ينجح، والمحتوى يُزرع، ثم لا يظهر
+-- القالب — لأنّ المتجر **لم يُنشر**، و`publish_store` كان يشترط منطقة
+-- توصيل على متجرٍ لا يوصّل شيئًا. فكان الرقمي غير قابل للنشر أصلًا.
+-- =====================================================================
+\echo '── ★★★ نشر المتجر الرقمي: بلا منطقة توصيل ──'
+begin;
+select t.reset();
+-- متجر مستوفٍ كل الشروط إلا التوصيل
+update public.stores set logo_url = 'https://cdn.test/logo.png' where id = :'A';
+update public.store_settings
+   set whatsapp_number = '249912345678', cod_enabled = true
+ where store_id = :'A';
+update public.delivery_zones set is_active = false where store_id = :'A';
+update public.stores set status = 'draft' where id = :'A';
+
+select t.login(:'ownerA');
+-- ★ عاديّ + بلا منطقة توصيل ⇒ النشر يُرفض ويُسمّي الناقص (لم يتغيّر)
+select t.ok((select not ok from public.publish_store(:'A')),
+            '★★ العادي بلا منطقة توصيل لا يُنشر');
+select t.ok((select 'منطقة توصيل واحدة على الأقل' = any(missing)
+               from public.publish_store(:'A')),
+            '★★★ والشرط ما زال قائمًا على العادي حرفيًّا');
+
+-- ★ ورقميّ + بلا منطقة توصيل ⇒ يُنشر
+select t.reset();
+select t.ok(public.set_storefront_template(:'A','digital') = 'digital', 'صار رقميًّا')
+  from (select 1) _ where t.login(:'ownerA') is not null;
+select t.ok((select ok from public.publish_store(:'A')),
+            '★★★ والرقمي يُنشر بلا منطقة توصيل');
+select t.reset();
+select t.ok((select status from public.stores where id = :'A')::text = 'active',
+            '★★★ والمتجر صار نشطًا فعلًا');
+
+-- ★ وبقيّة الشروط لم تُرخَ للرقمي: ناقص الشعار يُرفض
+select t.reset();
+update public.stores set status = 'draft', logo_url = null where id = :'A';
+select t.login(:'ownerA');
+select t.ok((select not ok from public.publish_store(:'A')),
+            '★★★ والرقمي بلا شعار لا يُنشر — لا تخفيف للشروط الأخرى');
+select t.ok((select 'شعار المتجر' = any(missing) from public.publish_store(:'A')),
+            '★★ والسبب مُسمّى');
+rollback;
+
+\echo '✓ 117 publish digital'
