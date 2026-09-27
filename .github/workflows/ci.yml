@@ -12,6 +12,19 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: '22', cache: 'npm' }
       - run: npm ci
+      # ★★ أنواع Next.js المولَّدة قبل أي فحص أنواع.
+      #
+      # `PageProps` و`LayoutProps` و`RouteContext` ليست أنواعًا نكتبها:
+      # يولّدها Next 16 في `.next/types` (و`next-env.d.ts` لأنواع
+      # الصور)، وكلاهما في `.gitignore` فلا وجود لهما في checkout نظيف.
+      # فكان `tsc` يفشل في CI بـ٥٨ خطأ TS2304/TS2307 بينما يمرّ محليًّا
+      # وينجح بناء Vercel — لأنّ البناء يولّدهما أولًا.
+      #
+      # `next typegen` يولّدهما بلا بناء كامل (ثوانٍ لا دقائق)، وهو
+      # الأمر الذي وثّقته Next لهذا الغرض بالضبط. ولا يحتاج متغيّرات
+      # بيئة: `next.config.ts` يحرس قراءتها.
+      - name: توليد أنواع المسارات (Next 16)
+        run: npx next typegen
       - name: فحص الأنواع
         run: npm run typecheck
       - name: فحص الكود
