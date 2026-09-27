@@ -53,7 +53,11 @@ export function CartView({ host, lines, quote, canCheckout }: {
 
   return (
     <div className="grid gap-5 lg:grid-cols-[1fr_320px]">
-      <div className="space-y-3">
+      {/* ★ `min-w-0` على عنصر الشبكة: عرضه الأدنى `auto`، فمحتوى أعرض
+          من المسار (صورة ٨٠px + فجوة + نصّ) كان يوسّعه فوق عرض الشاشة
+          ويُنشئ تمريرًا أفقيًّا للصفحة كلّها — قيس ٣٣٦px داخل ٣٢٠px.
+          وهو الدرس نفسه المكتوب في تذييل تخطيط المتجر. */}
+      <div className="min-w-0 space-y-3">
         {error && (
           <div role="alert" className="flex items-start gap-2 rounded-md border
                           border-danger/30 bg-danger-bg p-3
