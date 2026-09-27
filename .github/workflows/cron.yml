@@ -17,6 +17,7 @@ on:
   schedule:
     - cron: '*/10 * * * *'   # طابور البريد
     - cron: '20 * * * *'     # الدومينات المنتظرة
+    - cron: '5 * * * *'      # الصيانة الساعيّة (السعة وكنس العدّادات)
   workflow_dispatch:
 
 concurrency:
@@ -40,3 +41,14 @@ jobs:
           curl --fail-with-body -sS -m 60 \
             -H "authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             "${{ secrets.CRON_BASE_URL }}/api/v1/cron/domains"
+
+      # ★ الصيانة الساعيّة هنا لا في vercel.json: الخطة المجانية تسمح
+      #   بمهمة يومية واحدة لكل مسار، وجدولة ساعيّة فيها **ترفض النشر**
+      #   من أصله (حدث مع `*/10 * * * *` سابقًا). فتبقى في vercel.json
+      #   شبكة أمان يوميّة، ويتولّى هذا الـworkflow الساعيّة.
+      - name: الصيانة الساعيّة
+        if: github.event.schedule == '5 * * * *' || github.event_name == 'workflow_dispatch'
+        run: |
+          curl --fail-with-body -sS -m 60 \
+            -H "authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ secrets.CRON_BASE_URL }}/api/v1/cron/upkeep"
