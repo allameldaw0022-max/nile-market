@@ -112,6 +112,7 @@ export function OnboardingWizard({ initial }: { initial: WizardInitial | null })
         {current.key === 'whatsapp'   && <WhatsappStep store={store} setStore={setStore} onNext={() => goto('product')} />}
         {current.key === 'product'    && <FirstProductStep storeId={store.storeId} count={store.productCount}
                                              onChange={(n) => setStore({ ...store, productCount: n })}
+                                             isDigital={store.template === 'digital'}
                                              onNext={() => goto(store.template === 'digital'
                                                ? 'payment' : 'delivery')} />}
         {current.key === 'delivery'   && <DeliveryZonesStep storeId={store.storeId} count={store.zoneCount}

@@ -1391,3 +1391,28 @@ select t.ok((select 'شعار المتجر' = any(missing) from public.publish_s
 rollback;
 
 \echo '✓ 117 publish digital'
+
+-- =====================================================================
+-- ★★ أول منتج في المتجر الرقمي يُحفظ منشورًا (الواجهة ترسل `active`)
+-- =====================================================================
+\echo '── ★★ حالة أول منتج رقمي ──'
+begin;
+select t.login(:'ownerA');
+select t.ok(public.set_storefront_template(:'A','digital') = 'digital', 'رقمي');
+select product_id as np from public.save_product(
+  :'A', 'كرت شحن', 5000, null, null, null, null, null, null, null,
+  'active'::public.product_status, false) \gset
+select t.reset();
+select t.ok((select status from public.products where id = :'np'::uuid)::text = 'active',
+            '★★★ المنتج يُحفظ «منشورًا» كما أرسلته خطوة الإنشاء');
+select t.ok((select published_at from public.products where id = :'np'::uuid) is not null,
+            '★★ ووقت النشر مختوم');
+select t.ok((select track_inventory from public.products where id = :'np'::uuid) = false,
+            '★★ وبلا تتبّع مخزون — فلا «نفاد» لمنتج رقمي');
+-- ★ ويظهر في مصدر الواجهة العامّة (الشرط `status = active`)
+select t.ok((select count(*) from public.products
+              where store_id = :'A' and status = 'active' and deleted_at is null) >= 1,
+            '★★★ فيقع ضمن ما تقرأه الرئيسية');
+rollback;
+
+\echo '✓ 117 onboarding product status'

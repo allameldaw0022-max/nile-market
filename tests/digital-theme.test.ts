@@ -717,3 +717,19 @@ test('★★★ لا بطاقات تسويقية في رئيسية المتجر 
   assert.ok(/featured\.length === 0 && offers\.length === 0/.test(H),
     'حالة الفراغ ليست مشروطة بالمنتجات وحدها');
 });
+
+test('★★★ أول منتج في إنشاء المتجر الرقمي يُحفظ «منشورًا» لا مسودة', () => {
+  const F = code('../src/app/(platform)/onboarding/FirstProductStep.tsx');
+  // القيمة محسومة في حقل مخفيّ — لا قائمة اختيار تُستعاد قيمتها
+  assert.ok(/<input type="hidden" name="status"\s+value=\{isDigital \? 'active' : 'draft'\}/
+    .test(F.replace(/\s+/g, ' ').replace(/ value=/g, '\n value=').replace(/\n/g, ' '))
+    || /name="status"[\s\S]{0,80}isDigital \? 'active' : 'draft'/.test(F),
+    'حالة أول منتج ليست محسومة بالقالب');
+  assert.ok(!/name="status" value="draft"/.test(F), 'القيمة الثابتة «مسودة» باقية للجميع');
+  // ولا قائمة اختيار حالة في خطوة الإنشاء (فلا حالة نموذج تُستعاد)
+  assert.ok(!/name="status"[\s\S]{0,40}<option/.test(F), 'أُضيفت قائمة اختيار للحالة');
+
+  const W = code('../src/app/(platform)/onboarding/OnboardingWizard.tsx');
+  assert.ok(/isDigital=\{store\.template === 'digital'\}/.test(W),
+    'الـwizard لا يمرّر القالب إلى خطوة أول منتج');
+});
