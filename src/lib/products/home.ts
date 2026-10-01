@@ -34,14 +34,6 @@ import type { StorefrontProduct } from '@/components/storefront/ProductCard';
 export type HomeProducts = {
   latest: StorefrontProduct[];
   onSale: StorefrontProduct[];
-  /**
-   * ★ أدنى سعر باقة لكل منتج — للقالب الرقمي («يبدأ من»).
-   *
-   * يُشتقّ من **نفس** الاستعلام: الباقات علاقة مضمَّنة، فلا استعلام
-   * ثانٍ ولا استعلامٌ لكل بطاقة. والمتجر العادي لا يقرأ هذا الحقل
-   * فلا يتغيّر عنده شيء.
-   */
-  fromPrices: Record<string, number>;
 };
 
 const POOL = 24;
@@ -55,33 +47,18 @@ async function query(storeId: string): Promise<HomeProducts> {
   const { data } = await supabase
     .from('products')
     .select(
-      'id, name, slug, price, compare_at_price, rating_avg, rating_count, has_variants, track_inventory, inventory(quantity, reserved), product_images(media_file_id, is_primary, media_files(path, bucket, blur_data_url)), product_variants(price, is_active, deleted_at)')
+      'id, name, slug, price, compare_at_price, rating_avg, rating_count, has_variants, track_inventory, inventory(quantity, reserved), product_images(media_file_id, is_primary, media_files(path, bucket, blur_data_url))')
     .eq('store_id', storeId).eq('status', 'active').is('deleted_at', null)
     .order('created_at', { ascending: false })
     .limit(POOL);
 
-  type WithVariants = StorefrontProduct & {
-    product_variants?: { price: number | null; is_active: boolean;
-                         deleted_at: string | null }[] | null;
-  };
-  const rows = (data ?? []) as unknown as WithVariants[];
-
-  const fromPrices: Record<string, number> = {};
-  for (const p of rows) {
-    const prices = (p.product_variants ?? [])
-      .filter((v) => v.is_active && v.deleted_at == null && v.price != null)
-      .map((v) => Number(v.price))
-      .filter((n) => Number.isFinite(n));
-    if (prices.length > 0) fromPrices[p.id] = Math.min(...prices);
-  }
-
+  const rows = (data ?? []) as unknown as StorefrontProduct[];
   return {
     latest: rows.slice(0, LATEST),
     onSale: rows
       .filter((p) => p.compare_at_price != null
         && Number(p.compare_at_price) > Number(p.price))
       .slice(0, DEALS),
-    fromPrices,
   };
 }
 
@@ -92,5 +69,5 @@ export async function homeProducts(storeId: string): Promise<HomeProducts> {
   });
   // يفشل مفتوحًا: رئيسيةٌ بلا منتجات أهون من متجر لا يُفتح
   try { return await load(); }
-  catch { return { latest: [], onSale: [], fromPrices: {} }; }
+  catch { return { latest: [], onSale: [] }; }
 }

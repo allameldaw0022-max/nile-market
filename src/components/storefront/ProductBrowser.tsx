@@ -6,7 +6,6 @@ import { ProductShowcaseView } from './ProductShowcase';
 import { EmptyState } from '@/components/ui/States';
 import { Package } from 'lucide-react';
 import type { StorefrontProduct } from './ProductCard';
-import { DigitalGrid } from './digital/DigitalGrid';
 
 /**
  * ★★ تصفّح المنتجات — الافتراضي خادميّ مخزَّن، والتفاعل خفيف.
@@ -33,15 +32,6 @@ import { DigitalGrid } from './digital/DigitalGrid';
  */
 export type BrowseKind = 'all' | 'category' | 'search';
 
-/**
- * ★ نمط العرض: بطاقات المتجر العادي أو بطاقات القالب الرقمي.
- *
- * التبديل هنا لا في نسخةٍ ثانية من المتصفّح: منطق الترقيم والترتيب
- * والبحث و`/api/products` والحفاظ على الرابط — كلّه واحد، وما يختلف
- * هو رسم البطاقة وحده.
- */
-export type BrowseSkin = 'classic' | 'digital';
-
 type Payload = {
   products: StorefrontProduct[]; total: number; page: number; pages: number;
 };
@@ -56,41 +46,29 @@ export const SORTS: { value: string; label: string }[] = [
 ];
 
 /** الشبكة الافتراضية — تُستعمل بديلًا للـSuspense فتدخل الـHTML. */
-export function DefaultGrid({
-  products, host, total, emptyTitle, emptyDescription, skin = 'classic',
-}: {
+export function DefaultGrid({ products, host, total, emptyTitle, emptyDescription }: {
   products: StorefrontProduct[]; host: string; total: number;
-  emptyTitle: string; emptyDescription?: string; skin?: BrowseSkin;
+  emptyTitle: string; emptyDescription?: string;
 }) {
   return (
     <BrowseShell total={total} pages={Math.max(1, Math.ceil(total / BROWSE_PAGE_SIZE))}
-                 page={1} sort="newest" showSort={false} onGo={null} skin={skin}>
+                 page={1} sort="newest" showSort={false} onGo={null}>
       {products.length === 0
         ? <EmptyState icon={<Package size={36} strokeWidth={1.5} />}
                       title={emptyTitle} description={emptyDescription} />
-        : <Cards products={products} host={host} skin={skin} />}
+        : <ProductShowcaseView products={products} host={host} />}
     </BrowseShell>
   );
 }
 
-/** رسم البطاقات حسب النمط — نقطة التبديل الوحيدة بين القالبين. */
-function Cards({ products, host, skin }: {
-  products: StorefrontProduct[]; host: string; skin: BrowseSkin;
-}) {
-  if (skin === 'digital') return <DigitalGrid products={products} host={host} />;
-  return <ProductShowcaseView products={products} host={host} />;
-}
-
-function BrowseShell({ total, pages, page, children, onGo, skin = 'classic' }: {
+function BrowseShell({ total, pages, page, children, onGo }: {
   total: number; pages: number; page: number; sort: string; showSort: boolean;
   onGo: ((next: Record<string, string>) => void) | null;
-  children: React.ReactNode; skin?: BrowseSkin;
+  children: React.ReactNode;
 }) {
   return (
     <>
-      <p className={`text-[13px] tabular ${skin === 'digital' ? '' : 'text-ink-500'}`}
-         style={skin === 'digital' ? { color: 'var(--d-text-2)' } : undefined}
-         data-total>{total} منتج</p>
+      <p className="text-[13px] text-ink-500 tabular" data-total>{total} منتج</p>
       <div className="mt-6">{children}</div>
       {pages > 1 && (
         <nav className="mt-8 flex items-center justify-center gap-2"
@@ -110,11 +88,9 @@ function BrowseShell({ total, pages, page, children, onGo, skin = 'classic' }: {
   );
 }
 
-function Browser({ kind, host, initial, categorySlug, emptyTitle, emptyDescription,
-                  skin = 'classic' }: {
+function Browser({ kind, host, initial, categorySlug, emptyTitle, emptyDescription }: {
   kind: BrowseKind; host: string; initial: Payload;
   categorySlug?: string; emptyTitle: string; emptyDescription?: string;
-  skin?: BrowseSkin;
 }) {
   const params = useSearchParams();
   const router = useRouter();
@@ -175,63 +151,35 @@ function Browser({ kind, host, initial, categorySlug, emptyTitle, emptyDescripti
   return (
     <>
       {showSort && (
-        <div className={`mt-7 flex flex-wrap items-center gap-x-1 gap-y-2 pb-3
-                         ${skin === 'digital' ? 'border-b' : 'border-b border-ink-200'}`}
-             style={skin === 'digital' ? { borderColor: 'var(--d-border)' } : undefined}>
-          <span className="me-2 text-[12px] font-semibold"
-                style={skin === 'digital'
-                  ? { color: 'var(--d-text-2)' } : { color: 'var(--color-ink-500)' }}>
-            ترتيب حسب
-          </span>
-          {SORTS.map((s) => {
-            const on = sort === s.value;
-            if (skin === 'digital') {
-              return (
-                <button key={s.value} type="button"
-                        onClick={() => go({ sort: s.value, page: '' })}
-                        aria-current={on ? 'page' : undefined}
-                        className="rounded-md px-2.5 py-1.5 text-[13px] transition-colors"
-                        style={on
-                          ? { color: 'var(--d-accent)', fontWeight: 700,
-                              textDecoration: 'underline',
-                              textUnderlineOffset: '6px' }
-                          : { color: 'var(--d-text-2)', fontWeight: 500 }}>
-                  {s.label}
-                </button>
-              );
-            }
-            return (
-              <button key={s.value} type="button"
-                      onClick={() => go({ sort: s.value, page: '' })}
-                      aria-current={on ? 'page' : undefined}
-                      className={`rounded-md px-2.5 py-1.5 text-[13px] transition-colors ${
-                        on
-                          ? 'font-bold text-teal-700 underline underline-offset-[6px]'
-                          : 'font-medium text-ink-600 hover:text-ink-900'}`}>
-                {s.label}
-              </button>
-            );
-          })}
+        <div className="mt-7 flex flex-wrap items-center gap-x-1 gap-y-2
+                        border-b border-ink-200 pb-3">
+          <span className="me-2 text-[12px] font-semibold text-ink-500">ترتيب حسب</span>
+          {SORTS.map((s) => (
+            <button key={s.value} type="button"
+                    onClick={() => go({ sort: s.value, page: '' })}
+                    aria-current={sort === s.value ? 'page' : undefined}
+                    className={`rounded-md px-2.5 py-1.5 text-[13px] transition-colors ${
+                      sort === s.value
+                        ? 'font-bold text-teal-700 underline underline-offset-[6px]'
+                        : 'font-medium text-ink-600 hover:text-ink-900'}`}>
+              {s.label}
+            </button>
+          ))}
         </div>
       )}
       <div>
         {empty ? (
-          <p className={`mt-6 rounded-lg border border-dashed px-6 py-12 text-center
-                         text-sm ${skin === 'digital'
-                           ? '' : 'border-ink-300 bg-white text-ink-500'}`}
-             style={skin === 'digital'
-               ? { borderColor: 'var(--d-border-strong)',
-                   background: 'var(--d-surface)', color: 'var(--d-text-2)' }
-               : undefined}>
+          <p className="mt-6 rounded-lg border border-dashed border-ink-300 bg-white
+                        px-6 py-12 text-center text-sm text-ink-500">
             اكتب حرفين على الأقل للبحث.
           </p>
         ) : (
           <BrowseShell total={data.total} pages={data.pages} page={data.page}
-                       sort={sort} showSort={false} onGo={go} skin={skin}>
+                       sort={sort} showSort={false} onGo={go}>
             {data.products.length === 0
               ? <EmptyState icon={<Package size={36} strokeWidth={1.5} />}
                             title={emptyTitle} description={emptyDescription} />
-              : <Cards products={data.products} host={host} skin={skin} />}
+              : <ProductShowcaseView products={data.products} host={host} />}
           </BrowseShell>
         )}
       </div>
@@ -247,17 +195,15 @@ function Browser({ kind, host, initial, categorySlug, emptyTitle, emptyDescripti
 export function ProductBrowser(props: {
   kind: BrowseKind; host: string; initial: Payload; categorySlug?: string;
   emptyTitle: string; emptyDescription?: string; sortBarInFallback?: boolean;
-  skin?: BrowseSkin;
 }) {
   return (
     <Suspense fallback={
       <>
-        {props.sortBarInFallback && <SortBarStatic skin={props.skin ?? 'classic'} />}
+        {props.sortBarInFallback && <SortBarStatic />}
         <DefaultGrid products={props.initial.products} host={props.host}
                      total={props.initial.total}
                      emptyTitle={props.emptyTitle}
-                     emptyDescription={props.emptyDescription}
-                     skin={props.skin ?? 'classic'} />
+                     emptyDescription={props.emptyDescription} />
       </>
     }>
       <Browser {...props} />
@@ -266,16 +212,11 @@ export function ProductBrowser(props: {
 }
 
 /** شريط الترتيب في الـHTML المُصيَّر مسبقًا — روابط حقيقية للزاحف. */
-function SortBarStatic({ skin = 'classic' }: { skin?: BrowseSkin }) {
-  const d = skin === 'digital';
+function SortBarStatic() {
   return (
-    <div className={`mt-7 flex flex-wrap items-center gap-x-1 gap-y-2 pb-3
-                     ${d ? 'border-b' : 'border-b border-ink-200'}`}
-         style={d ? { borderColor: 'var(--d-border)' } : undefined}>
-      <span className="me-2 text-[12px] font-semibold"
-            style={d ? { color: 'var(--d-text-2)' } : { color: 'var(--color-ink-500)' }}>
-        ترتيب حسب
-      </span>
+    <div className="mt-7 flex flex-wrap items-center gap-x-1 gap-y-2
+                    border-b border-ink-200 pb-3">
+      <span className="me-2 text-[12px] font-semibold text-ink-500">ترتيب حسب</span>
       {SORTS.map((s) => (
         <span key={s.value}
               aria-current={s.value === 'newest' ? 'page' : undefined}

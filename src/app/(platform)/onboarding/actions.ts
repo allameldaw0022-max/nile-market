@@ -41,11 +41,6 @@ export async function createStore(formData: FormData): Promise<ActionResult<{ st
     const name = String(formData.get('name') ?? '').trim();
     const slug = slugify(String(formData.get('slug') ?? '') || name);
     const businessType = String(formData.get('business_type') ?? '').trim();
-    // ★ قالب المتجر اختيارٌ صريح عند الإنشاء، والافتراضي `classic`:
-    //   أيّ قيمة غير `digital` تُقرأ عاديًّا، فلا يصير متجر رقميًّا
-    //   بحقلٍ مشوَّه أو غائب.
-    const template = String(formData.get('storefront_template') ?? '') === 'digital'
-      ? 'digital' as const : 'classic' as const;
 
     if (name.length < 2) throw errors.validation('اسم المتجر مطلوب', 'name');
     if (slug.length < 3) throw errors.validation('رابط المتجر مطلوب', 'slug');
@@ -64,22 +59,6 @@ export async function createStore(formData: FormData): Promise<ActionResult<{ st
     if (error) throw fromPostgres(error);
     const row = firstRow(data);
     if (!row) throw errors.internal();
-
-    // ★ العمود يولد `classic` افتراضًا في القاعدة، فلا نناديها إلا
-    //   لمن اختار الرقمي — وبالمسار المدقَّق نفسه الذي يستعمله
-    //   التاجر لاحقًا من إعدادات القالب، لا بكتابة مباشرة.
-    if (template === 'digital') {
-      const { error: tplError } = await rpc(supabase, 'set_storefront_template', {
-        p_store_id: row.store_id, p_template: 'digital',
-      });
-      // ★ فشل التبديل لا يُلغي متجرًا أُنشئ فعلًا: المتجر يبقى عاديًّا
-      //   والتاجر يبدّله من إعداداته. والخطأ يُسجَّل للتشخيص.
-      if (tplError) {
-        console.error('[onboarding] تعذّر ضبط القالب الرقمي عند الإنشاء', {
-          storeId: row.store_id, error: tplError.message,
-        });
-      }
-    }
 
     return ok({ storeId: row.store_id });
   } catch (err) {

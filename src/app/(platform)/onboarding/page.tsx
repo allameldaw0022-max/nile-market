@@ -24,7 +24,7 @@ export default async function OnboardingPage() {
         .select('id, name, slug, business_type, description, logo_url, status, onboarding_step')
         .eq('id', existing.storeId).single(),
       supabase.from('store_settings')
-        .select('whatsapp_number, contact_phone, cod_enabled, bank_transfer_enabled, bankak_enabled, storefront_template')
+        .select('whatsapp_number, contact_phone, cod_enabled, bank_transfer_enabled, bankak_enabled')
         .eq('store_id', existing.storeId).maybeSingle(),
       supabase.from('products').select('id', { count: 'exact', head: true })
         .eq('store_id', existing.storeId).is('deleted_at', null),
@@ -52,9 +52,6 @@ export default async function OnboardingPage() {
         bankakEnabled: settings?.bankak_enabled ?? false,
         productCount: productCount ?? 0,
         zoneCount: zoneCount ?? 0,
-        // ★ القالب يحدّد خطوات الإنشاء: المتجر الرقمي لا يوصّل شيئًا،
-        //   فخطوة مناطق التوصيل لا تُعرض له أصلًا.
-        template: settings?.storefront_template === 'digital' ? 'digital' : 'classic',
       }}
     />
   );

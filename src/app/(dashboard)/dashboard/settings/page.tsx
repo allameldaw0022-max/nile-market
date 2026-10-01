@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
-import { FileText, Globe, LayoutTemplate, Tags, Truck, Users } from 'lucide-react';
+import { FileText, Globe, Truck, Users } from 'lucide-react';
 import { getActor } from '@/lib/auth/actor';
 import { can, requireStoreAccess } from '@/lib/authz/guards';
 import { createClient } from '@/lib/supabase/server';
@@ -15,10 +15,6 @@ import type { BankAccount } from '@/lib/settings/actions';
 export const metadata: Metadata = { title: 'الإعدادات' };
 
 const LINKS = [
-  { href: '/dashboard/settings/theme', label: 'قالب المتجر',
-    hint: 'العادي أو الرقمي، والأقسام والبنرات', icon: LayoutTemplate },
-  { href: '/dashboard/categories', label: 'التصنيفات',
-    hint: 'أسماء التصنيفات وصورها', icon: Tags },
   { href: '/dashboard/settings/delivery', label: 'مناطق التوصيل',
     hint: 'المدن وأجور التوصيل', icon: Truck },
   { href: '/dashboard/settings/policies', label: 'سياسات المتجر',

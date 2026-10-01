@@ -12,8 +12,6 @@ import { StatusChip } from '@/components/ui/Badge';
 import { ORDER_STATUS, PAYMENT_STATUS } from '@/lib/status';
 import { formatDateTime, formatMoney, formatNumber } from '@/lib/money/format';
 import { searchTerm, ilikeAny } from '@/lib/search';
-import { can } from '@/lib/authz/guards';
-import { DigitalOrderCard } from '@/components/dashboard/DigitalOrderCard';
 
 export const metadata: Metadata = { title: 'الطلبات' };
 
@@ -58,46 +56,16 @@ export default async function OrdersPage({ searchParams }: PageProps<'/dashboard
     query = query.or(search);
   }
 
-  const [{ data: orderRows, count }, { data: openRows }, { data: settings }] =
-    await Promise.all([
+  const [{ data: orderRows, count }, { data: openRows }] = await Promise.all([
     query.order('created_at', { ascending: false }).range(from, from + PAGE_SIZE - 1),
     // عدّادات الحالات المفتوحة — استعلام خفيف بلا صفوف
     supabase.from('orders').select('status, payment_status, total')
       .eq('store_id', membership.storeId)
       .in('status', ['new', 'confirmed', 'preparing', 'shipped'])
       .limit(500),
-    supabase.from('store_settings').select('storefront_template')
-      .eq('store_id', membership.storeId).maybeSingle(),
   ]);
 
   const orders = (orderRows ?? []) as unknown as OrderRow[];
-
-  // ★★ القالب الرقمي: بطاقة الطلب تعرض اللعبة والباقة وبيانات الشحن
-  //    مباشرةً. والبيانات تُجلب في **استعلامين لهذه الصفحة وحدها** لا
-  //    استعلام لكل صفّ، ولا شيء منها يُجلب في القالب العادي.
-  const isDigital = settings?.storefront_template === 'digital';
-  const ids = orders.map((o) => o.id);
-  let itemByOrder = new Map<string, { product: string | null; variant: string | null }>();
-  let valuesByOrder = new Map<string, { label: string; value: string }[]>();
-
-  if (isDigital && ids.length > 0) {
-    const [{ data: items }, { data: values }] = await Promise.all([
-      supabase.from('order_items')
-        .select('order_id, product_name, variant_name').in('order_id', ids),
-      supabase.from('order_digital_values')
-        .select('order_id, field_label, value, sort_order')
-        .in('order_id', ids).order('sort_order'),
-    ]);
-    itemByOrder = new Map((items ?? []).map((r) => [r.order_id,
-      { product: r.product_name, variant: r.variant_name }]));
-    valuesByOrder = new Map();
-    for (const v of values ?? []) {
-      const list = valuesByOrder.get(v.order_id) ?? [];
-      list.push({ label: v.field_label, value: v.value });
-      valuesByOrder.set(v.order_id, list);
-    }
-  }
-
   const total = count ?? 0;
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const open = openRows ?? [];
@@ -164,23 +132,7 @@ export default async function OrdersPage({ searchParams }: PageProps<'/dashboard
       ) : (
         <Card className="overflow-hidden">
           <ul className="divide-y divide-ink-200">
-            {isDigital && orders.map((o) => (
-              <li key={o.id}>
-                <DigitalOrderCard
-                  storeId={membership.storeId}
-                  canFulfil={can(membership, 'orders:update')}
-                  order={{
-                    id: o.id, orderNumber: o.order_number, status: o.status,
-                    paymentStatus: o.payment_status, total: Number(o.total),
-                    contactName: o.contact_name, contactPhone: o.contact_phone,
-                    createdAt: o.created_at,
-                    productName: itemByOrder.get(o.id)?.product ?? null,
-                    variantName: itemByOrder.get(o.id)?.variant ?? null,
-                    digital: valuesByOrder.get(o.id) ?? [],
-                  }} />
-              </li>
-            ))}
-            {!isDigital && orders.map((o) => (
+            {orders.map((o) => (
               <li key={o.id}>
                 <Link href={`/dashboard/orders/${o.id}`}
                       className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3.5

@@ -21,11 +21,9 @@ export type WizardInitial = {
   whatsapp: string; contactPhone: string;
   codEnabled: boolean; bankTransferEnabled: boolean; bankakEnabled: boolean;
   productCount: number; zoneCount: number;
-  /** قالب المتجر — يحدّد خطوات الإنشاء المعروضة. */
-  template: 'classic' | 'digital';
 };
 
-const ALL_STEPS = [
+const STEPS = [
   { key: 'store-info', label: 'معلومات المتجر', icon: Store },
   { key: 'logo',       label: 'الشعار',         icon: ImageIcon },
   { key: 'whatsapp',   label: 'واتساب',         icon: MessageCircle },
@@ -40,35 +38,13 @@ const BUSINESS_TYPES = [
   'أثاث ومنزل', 'كتب وقرطاسية', 'رياضة', 'هدايا', 'أخرى',
 ];
 
-/**
- * خطوات الإنشاء حسب القالب.
- *
- * ★★ المتجر الرقمي **لا تُعرض له خطوة مناطق التوصيل**: هو لا يوصّل
- * شيئًا (`create_digital_order` بلا منطقة وبلا عنوان)، و`publish_store`
- * لم يعد يشترطها عليه (0063). وعرضها كانت تُوقف الإنشاء عند زرّ
- * «التالي» معطَّلًا في خطوةٍ لا معنى لها في متجره — طريقٌ مسدود.
- */
-function stepsFor(template: 'classic' | 'digital') {
-  return template === 'digital'
-    ? ALL_STEPS.filter((s) => s.key !== 'delivery')
-    : ALL_STEPS;
-}
-
 export function OnboardingWizard({ initial }: { initial: WizardInitial | null }) {
   const router = useRouter();
   const [store, setStore] = useState<WizardInitial | null>(initial);
-  // ★ ترشيحُ سبع خطوات أرخص من حفظه، ولا يُحفظ حتى لا يتعارض حفظان
-  //   متداخلان (المترجم يرفض اعتماد محفوظٍ على محفوظ).
-  const template = store?.template ?? 'classic';
-  const STEPS = stepsFor(template);
   const stepIndex = useMemo(() => {
-    // ★ متجرٌ رقميّ حُفظت خطوته `delivery` قبل هذا الإصلاح لا يُعاد
-    //   إلى البداية: يُنقل إلى الخطوة التالية في مساره.
-    const saved = store?.step === 'delivery' && template === 'digital'
-      ? 'payment' : (store?.step ?? 'store-info');
-    const i = stepsFor(template).findIndex((s) => s.key === saved);
+    const i = STEPS.findIndex((s) => s.key === (store?.step ?? 'store-info'));
     return i === -1 ? 0 : i;
-  }, [store?.step, template]);
+  }, [store?.step]);
 
   if (!store) return <CreateStoreStep onCreated={setStore} />;
 
@@ -112,9 +88,7 @@ export function OnboardingWizard({ initial }: { initial: WizardInitial | null })
         {current.key === 'whatsapp'   && <WhatsappStep store={store} setStore={setStore} onNext={() => goto('product')} />}
         {current.key === 'product'    && <FirstProductStep storeId={store.storeId} count={store.productCount}
                                              onChange={(n) => setStore({ ...store, productCount: n })}
-                                             isDigital={store.template === 'digital'}
-                                             onNext={() => goto(store.template === 'digital'
-                                               ? 'payment' : 'delivery')} />}
+                                             onNext={() => goto('delivery')} />}
         {current.key === 'delivery'   && <DeliveryZonesStep storeId={store.storeId} count={store.zoneCount}
                                              onChange={(n) => setStore({ ...store, zoneCount: n })}
                                              onNext={() => goto('payment')} />}
@@ -130,8 +104,6 @@ function CreateStoreStep({ onCreated }: { onCreated: (s: WizardInitial) => void 
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
   const [businessType, setBusinessType] = useState('');
-  // ★ العادي هو الافتراضي — ولا يُشتقّ من نوع النشاط ولا من أي قيمة.
-  const [template, setTemplate] = useState<'classic' | 'digital'>('classic');
   // ★ `error` حالة مستقلّة عن `taken`: فشل الفحص ليس حجزًا.
   // دمجهما كان يجعل الواجهة تخبر التاجر أن رابطًا متاحًا «محجوز»،
   // وتمنعه من المتابعة بناءً على خبر لم يحدث.
@@ -169,9 +141,6 @@ function CreateStoreStep({ onCreated }: { onCreated: (s: WizardInitial) => void 
             whatsapp: '', contactPhone: '', codEnabled: false,
             bankTransferEnabled: true, bankakEnabled: false,
             productCount: 0, zoneCount: 0,
-            // ★ القالب المختار للتوّ يحكم خطوات الإنشاء فورًا:
-            //   من أنشأ متجرًا رقميًّا لا تُعرض له خطوة التوصيل أصلًا.
-            template,
           });
         })}
       >
@@ -250,40 +219,6 @@ function CreateStoreStep({ onCreated }: { onCreated: (s: WizardInitial) => void 
             {BUSINESS_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
           </select>
         </div>
-
-        {/* ★★ قالب المتجر: اختيارٌ صريح من اثنين لا حقلٌ مخفيّ.
-            مجموعة راديو حقيقية بنفس دلالة مُختار الإعدادات، والعادي
-            محدَّد ابتداءً. ولا يتغيّر بنوع النشاط ولا بأي قيمة أخرى،
-            ويمكن تبديله لاحقًا من الإعدادات بلا فقدان شيء. */}
-        <fieldset className="space-y-1.5">
-          <legend className="text-[13px] font-bold text-ink-700">قالب المتجر</legend>
-          <div className="space-y-2">
-            {([
-              { value: 'classic' as const, title: 'متجر كلاسيكي',
-                body: 'منتجات تُشحن وتُوصَّل: شبكة منتجات وسلّة ومناطق توصيل.' },
-              { value: 'digital' as const, title: 'متجر رقمي',
-                body: 'أكواد وشحن واشتراكات: باقات لكل منتج، وبيانات شحن، وبلا توصيل.' },
-            ]).map((opt) => (
-              <label key={opt.value} htmlFor={`tpl-${opt.value}`}
-                     className={`flex cursor-pointer items-start gap-2.5 rounded-md border p-3
-                                 ${template === opt.value
-                                   ? 'border-teal-600 bg-teal-50/50'
-                                   : 'border-ink-300 hover:border-ink-400'}`}>
-                <input type="radio" id={`tpl-${opt.value}`} name="storefront_template"
-                       value={opt.value} checked={template === opt.value}
-                       onChange={() => setTemplate(opt.value)}
-                       className="mt-0.5 size-4 shrink-0 accent-teal-600" />
-                <span className="min-w-0">
-                  <span className="block text-[14px] font-bold text-ink-900">{opt.title}</span>
-                  <span className="block text-[12.5px] leading-relaxed text-ink-600">
-                    {opt.body}
-                  </span>
-                </span>
-              </label>
-            ))}
-          </div>
-          <p className="text-[12px] text-ink-500">يمكنك تغييره لاحقًا من الإعدادات.</p>
-        </fieldset>
 
         <Button type="submit" className="w-full" size="lg" loading={pending}
                 disabled={slugState === 'taken' || slugState === 'checking'}>

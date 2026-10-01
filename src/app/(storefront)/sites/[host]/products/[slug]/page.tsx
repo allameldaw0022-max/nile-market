@@ -4,8 +4,6 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { ChevronRight, ImageOff, ShieldCheck, Truck } from 'lucide-react';
 import { resolveStoreByHost, storeTag } from '@/lib/tenant/resolve';
-import { storeChrome } from '@/lib/tenant/chrome';
-import { DigitalProductView } from '@/components/storefront/digital/DigitalProductView';
 import { decodeSlugParam } from '@/lib/tenant/params';
 import { unstable_cache } from 'next/cache';
 import { createPublicClient } from '@/lib/supabase/public';
@@ -59,12 +57,6 @@ type ProductRow = {
   product_images: ImageRow[] | null;
   product_variants: {
     id: string; name: string; price: number | null; is_active: boolean;
-    sort_order: number; deleted_at: string | null;
-  }[] | null;
-  /** حقول الشحن الرقمية — فارغة في المتجر العادي فلا تغيّر شيئًا. */
-  product_digital_fields: {
-    id: string; label: string; hint: string | null; sort_order: number;
-    is_active: boolean; deleted_at: string | null;
   }[] | null;
   inventory: { quantity: number; reserved: number }[] | null;
 };
@@ -73,8 +65,7 @@ const SELECT =
   'id, name, slug, description, price, compare_at_price, sku, track_inventory, ' +
   'category_id, seo, rating_avg, rating_count, ' +
   'product_images(sort_order, is_primary, media_files(bucket, path, blur_data_url)), ' +
-  'product_variants(id, name, price, is_active, sort_order, deleted_at), ' +
-  'product_digital_fields(id, label, hint, sort_order, is_active, deleted_at), ' +
+  'product_variants(id, name, price, is_active), ' +
   'inventory(quantity, reserved)';
 
 /**
@@ -138,41 +129,6 @@ export default async function ProductPage(
   if (!found) notFound();
 
   const { store, product } = found;
-
-  // ★★ تفريع القالب: نفس الاستعلام المخزَّن، ونفس بيانات المنتج.
-  //    والقشرة نداءٌ مخزَّن قائم يطلبه التخطيط أصلًا ⇒ كلفته صفر.
-  const chrome = await storeChrome(store.storeId);
-  if (chrome.template === 'digital') {
-    const packages = (product.product_variants ?? [])
-      .filter((v) => v.is_active && v.deleted_at == null)
-      .map((v) => ({ id: v.id, name: v.name, price: v.price,
-                     sortOrder: v.sort_order }))
-      .sort((a, b) => a.sortOrder - b.sortOrder);
-    const digitalFields = (product.product_digital_fields ?? [])
-      .filter((f) => f.is_active && f.deleted_at == null)
-      .sort((a, b) => a.sort_order - b.sort_order)
-      .map((f) => ({ id: f.id, label: f.label, hint: f.hint }));
-
-    const cover = [...(product.product_images ?? [])]
-      .sort((a, b) => Number(b.is_primary) - Number(a.is_primary)
-        || a.sort_order - b.sort_order)
-      .map((i) => i.media_files)
-      .filter((m): m is NonNullable<typeof m> => m !== null);
-
-    return (
-      <DigitalProductView
-        host={host} storeName={store.name}
-        product={{
-          id: product.id, name: product.name, slug: product.slug,
-          description: product.description,
-          price: Number(product.price),
-          compare_at_price: product.compare_at_price,
-        }}
-        images={cover} packages={packages} fields={digitalFields}
-        chrome={chrome} canCheckout={store.canCheckout} />
-    );
-  }
-
   const images = [...(product.product_images ?? [])]
     .sort((a, b) => Number(b.is_primary) - Number(a.is_primary) || a.sort_order - b.sort_order)
     .map((i) => i.media_files)

@@ -8,7 +8,6 @@ import { homeProducts } from '@/lib/products/home';
 import { ProductShowcase } from '@/components/storefront/ProductShowcase';
 import { StoreHero } from '@/components/storefront/StoreHero';
 import { StoreContact } from '@/components/storefront/StoreContact';
-import { DigitalHome } from '@/components/storefront/digital/DigitalHome';
 
 export const revalidate = 60;
 
@@ -74,20 +73,10 @@ export default async function StoreHome({ params }: PageProps<'/sites/[host]'>) 
   // يستعملها التخطيط ⇒ لا نداء ثانٍ لها في هذه الصفحة.
   // ★ والمنتجات من استعلام واحد مخزَّن يُشتقّ منه «الأحدث» و«العروض»
   //   — كانا استعلامين على نفس الجدول بنفس المرشّحات.
-  const [chrome, home] = await Promise.all([
+  const [chrome, { latest, onSale }] = await Promise.all([
     storeChrome(store.storeId),
     homeProducts(store.storeId),
   ]);
-  const { latest, onSale } = home;
-
-  // ★★ القالب الرقمي: نفس النداءين المخزَّنين، وترتيب أقسام ثابت.
-  //    والعادي أدناه بلا تغيير.
-  if (chrome.template === 'digital') {
-    return (
-      <DigitalHome host={host} storeName={store.name}
-                   chrome={chrome} products={home} />
-    );
-  }
 
   const categories = chrome.categories;
   const banner = chrome.bannerUrl;

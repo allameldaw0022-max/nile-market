@@ -2986,218 +2986,6 @@ export type Database = {
           },
         ]
       }
-      order_digital_values: {
-        Row: {
-          created_at: string
-          field_label: string
-          id: string
-          order_id: string
-          sort_order: number
-          store_id: string
-          value: string
-        }
-        Insert: {
-          created_at?: string
-          field_label: string
-          id?: string
-          order_id: string
-          sort_order?: number
-          store_id: string
-          value: string
-        }
-        Update: {
-          created_at?: string
-          field_label?: string
-          id?: string
-          order_id?: string
-          sort_order?: number
-          store_id?: string
-          value?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "order_digital_values_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
-            referencedRelation: "orders"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "order_digital_values_store_id_fkey"
-            columns: ["store_id"]
-            isOneToOne: false
-            referencedRelation: "stores"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      platform_media: {
-        Row: {
-          created_at: string
-          id: string
-          is_active: boolean
-          kind: string
-          label: string
-          license_note: string | null
-          media_file_id: string
-          slug: string
-          sort_order: number
-          source_note: string | null
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          is_active?: boolean
-          kind: string
-          label: string
-          license_note?: string | null
-          media_file_id: string
-          slug: string
-          sort_order?: number
-          source_note?: string | null
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          is_active?: boolean
-          kind?: string
-          label?: string
-          license_note?: string | null
-          media_file_id?: string
-          slug?: string
-          sort_order?: number
-          source_note?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "platform_media_media_file_id_fkey"
-            columns: ["media_file_id"]
-            isOneToOne: true
-            referencedRelation: "media_files"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      product_digital_fields: {
-        Row: {
-          created_at: string
-          deleted_at: string | null
-          hint: string | null
-          id: string
-          is_active: boolean
-          label: string
-          product_id: string
-          sort_order: number
-          store_id: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          deleted_at?: string | null
-          hint?: string | null
-          id?: string
-          is_active?: boolean
-          label: string
-          product_id: string
-          sort_order?: number
-          store_id: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          deleted_at?: string | null
-          hint?: string | null
-          id?: string
-          is_active?: boolean
-          label?: string
-          product_id?: string
-          sort_order?: number
-          store_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "product_digital_fields_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "product_digital_fields_store_id_fkey"
-            columns: ["store_id"]
-            isOneToOne: false
-            referencedRelation: "stores"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      store_theme_banners: {
-        Row: {
-          created_at: string
-          cta_href: string | null
-          cta_label: string | null
-          deleted_at: string | null
-          description: string | null
-          id: string
-          is_visible: boolean
-          media_file_id: string | null
-          slot: string
-          sort_order: number
-          store_id: string
-          title: string | null
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          cta_href?: string | null
-          cta_label?: string | null
-          deleted_at?: string | null
-          description?: string | null
-          id?: string
-          is_visible?: boolean
-          media_file_id?: string | null
-          slot?: string
-          sort_order?: number
-          store_id: string
-          title?: string | null
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          cta_href?: string | null
-          cta_label?: string | null
-          deleted_at?: string | null
-          description?: string | null
-          id?: string
-          is_visible?: boolean
-          media_file_id?: string | null
-          slot?: string
-          sort_order?: number
-          store_id?: string
-          title?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "store_theme_banners_media_file_id_fkey"
-            columns: ["media_file_id"]
-            isOneToOne: false
-            referencedRelation: "media_files"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "store_theme_banners_store_id_fkey"
-            columns: ["store_id"]
-            isOneToOne: false
-            referencedRelation: "stores"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       store_settings: {
         Row: {
           address: Json
@@ -3216,7 +3004,6 @@ export type Database = {
           seo: Json
           social_links: Json
           store_id: string
-          storefront_template: string
           theme: Json
           updated_at: string
           whatsapp_number: string | null
@@ -3238,7 +3025,6 @@ export type Database = {
           seo?: Json
           social_links?: Json
           store_id: string
-          storefront_template?: string
           theme?: Json
           updated_at?: string
           whatsapp_number?: string | null
@@ -3260,7 +3046,6 @@ export type Database = {
           seo?: Json
           social_links?: Json
           store_id?: string
-          storefront_template?: string
           theme?: Json
           updated_at?: string
           whatsapp_number?: string | null

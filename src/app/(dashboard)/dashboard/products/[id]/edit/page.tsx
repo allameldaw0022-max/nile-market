@@ -6,9 +6,6 @@ import { getActor } from '@/lib/auth/actor';
 import { can, requireStoreAccess } from '@/lib/authz/guards';
 import { ProductForm } from '@/components/dashboard/ProductForm';
 import { loadCategories, loadProductForm } from '@/lib/products/queries';
-import { createClient } from '@/lib/supabase/server';
-import { listDigitalFields } from '@/lib/digital/dashboard';
-import { DigitalFieldsManager } from '@/components/dashboard/DigitalFieldsManager';
 
 export const metadata: Metadata = { title: 'تعديل منتج' };
 
@@ -21,22 +18,12 @@ export default async function EditProductPage({ params }: PageProps<'/dashboard/
   const { membership } = await requireStoreAccess(first.storeId, 'products:update');
   const { id } = await params;
 
-  const supabase = await createClient();
-  const [product, categories, { data: settings }] = await Promise.all([
+  const [product, categories] = await Promise.all([
     loadProductForm(membership.storeId, id),
     loadCategories(membership.storeId),
-    supabase.from('store_settings').select('storefront_template')
-      .eq('store_id', membership.storeId).maybeSingle(),
   ]);
   // منتج متجر آخر يُعاد كـ404 لا 403: لا نؤكد وجوده لمن لا يملكه
   if (!product) notFound();
-
-  // ★ حقول الشحن ميزة القالب الرقمي وحده: لا تُجلب ولا تُعرض في
-  //   القالب العادي، فلا تظهر ميزةٌ رقمية لتاجرٍ لم يخترها.
-  const isDigital = settings?.storefront_template === 'digital';
-  const fields = isDigital
-    ? await listDigitalFields({ storeId: membership.storeId, productId: id })
-    : null;
 
   return (
     <div className="space-y-5">
@@ -49,14 +36,7 @@ export default async function EditProductPage({ params }: PageProps<'/dashboard/
 
       <ProductForm storeId={membership.storeId} initial={product}
                    categories={categories}
-                   canDelete={can(membership, 'products:delete')}
-                   isDigital={isDigital} />
-
-      {isDigital && fields?.ok && (
-        <DigitalFieldsManager storeId={membership.storeId} productId={id}
-                              fields={fields.data}
-                              canEdit={can(membership, 'products:update')} />
-      )}
+                   canDelete={can(membership, 'products:delete')} />
     </div>
   );
 }

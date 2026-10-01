@@ -39,7 +39,6 @@ export const NAV_GROUPS: NavGroup[] = [
     title: 'إعدادات المتجر',
     links: [
       { href: '/dashboard/settings',          label: 'عامّة',       perm: 'settings:view', exact: true },
-      { href: '/dashboard/settings/theme',    label: 'قالب المتجر', perm: 'settings:view' },
       { href: '/dashboard/settings/delivery', label: 'التوصيل',     perm: 'settings:view' },
       { href: '/dashboard/settings/domain',   label: 'الدومين',     perm: 'settings:view' },
       { href: '/dashboard/settings/policies', label: 'سياسات المتجر', perm: 'settings:view' },

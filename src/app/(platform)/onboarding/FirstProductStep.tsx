@@ -15,17 +15,11 @@ import { listOnboardingProducts, type OnboardingProduct } from './actions';
  * بلا منتج (publish_store)، والمنتج الموجود يجعل الخطوة قابلة
  * للاستئناف بعد إغلاق المتصفح.
  */
-export function FirstProductStep({ storeId, count, onChange, onNext, isDigital = false }: {
+export function FirstProductStep({ storeId, count, onChange, onNext }: {
   storeId: string;
   count: number;
   onChange: (count: number) => void;
   onNext: () => void;
-  /**
-   * ★★ المتجر الرقمي يحفظ أول منتجاته **منشورًا** لا مسودة: لا مخزون
-   * يُجهَّز ولا شحن يُرتَّب، فهو جاهز للبيع لحظة حفظه. والقالب العادي
-   * يبقى على المسودة كما هو — `publish_store` ينشرها مع المتجر.
-   */
-  isDigital?: boolean;
 }) {
   const [products, setProducts] = useState<OnboardingProduct[]>([]);
   const [loading, setLoading] = useState(true);
@@ -156,10 +150,7 @@ export function FirstProductStep({ storeId, count, onChange, onNext, isDigital =
                                      onChange={setImages} max={5} />
             </div>
 
-            {/* ★ حقلٌ مخفيّ بقيمة محسومة لا قائمةُ اختيار: لا افتراض
-                يُنسى ولا حالةُ نموذجٍ قديمة يستعيدها المتصفّح، فلا
-                ينتهي منتج الإنشاء «مخفيًّا» ولا «مسودة» في الرقمي. */}
-            <input type="hidden" name="status" value={isDigital ? 'active' : 'draft'} />
+            <input type="hidden" name="status" value="draft" />
 
             {fieldError && !fieldError.field && (
               <div role="alert" className="flex items-start gap-2 rounded-md border

@@ -8,7 +8,6 @@ import { unstable_cache } from 'next/cache';
 import { createPublicClient } from '@/lib/supabase/public';
 import { storeTag } from '@/lib/tenant/resolve';
 import { ProductBrowser } from '@/components/storefront/ProductBrowser';
-import { storeChrome } from '@/lib/tenant/chrome';
 import { listStorefrontProducts } from '@/lib/products/storefront';
 
 export const revalidate = 60;
@@ -71,16 +70,10 @@ export default async function CategoryPage(
   const found = await loadCategory(host, slug);
   if (!found) notFound();
 
-  // ★ القشرة نداءٌ مخزَّن قائم (التخطيط يطلبه لتوّه) ⇒ كلفتها صفر،
-  //   ومنها يُعرَف القالب فيُرسَم نمط البطاقات الصحيح.
-  const [{ products, total }, chrome] = await Promise.all([
-    listStorefrontProducts({
-      storeId: found.store.storeId, categoryId: found.category.id,
-      from: 0, size: PAGE_SIZE,
-    }),
-    storeChrome(found.store.storeId),
-  ]);
-  const skin = chrome.template === 'digital' ? 'digital' : 'classic';
+  const { products, total } = await listStorefrontProducts({
+    storeId: found.store.storeId, categoryId: found.category.id,
+    from: 0, size: PAGE_SIZE,
+  });
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
@@ -93,8 +86,7 @@ export default async function CategoryPage(
       <h1 className="mt-4 text-xl font-extrabold text-ink-900">{found.category.name}</h1>
       {/* ★ العدد والشبكة والترقيم داخل المتصفّح: الافتراضي مُصيَّر
           خادميًّا (بديل الـSuspense) وغيره من `/api/products`. */}
-      <ProductBrowser kind="category" host={host} skin={skin}
-                      categorySlug={found.category.slug}
+      <ProductBrowser kind="category" host={host} categorySlug={found.category.slug}
                       initial={{ products, total, page: 1,
                                  pages: Math.max(1, Math.ceil(total / PAGE_SIZE)) }}
                       emptyTitle="لا منتجات في هذا التصنيف"

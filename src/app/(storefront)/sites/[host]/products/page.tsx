@@ -102,7 +102,6 @@ export default async function AllProductsPage(
           خادميًّا (بديل الـSuspense هو المحتوى الحقيقي) فيقرؤه الزاحف،
           وغير الافتراضي يُجلب من `/api/products` بلا تصيير تخطيط. */}
       <ProductBrowser kind="all" host={host} sortBarInFallback
-                      skin={chrome.template === 'digital' ? 'digital' : 'classic'}
                       initial={{ products, total, page: 1,
                                  pages: Math.max(1, Math.ceil(total / PAGE_SIZE)) }}
                       emptyTitle="لا توجد منتجات متاحة حاليًا"
