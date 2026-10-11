@@ -19,7 +19,8 @@ export type StorefrontProduct = {
   track_inventory?: boolean | null;
   rating_avg?: number | null;
   rating_count?: number | null;
-  inventory?: { quantity: number; reserved: number }[] | null;
+  /** عمودٌ منشور يصونه محفّز (0064/0065) — لا تضمينٌ لا يقرأه الزائر. */
+  in_stock?: boolean | null;
   product_images?: ImageRow[] | null;
 };
 
@@ -54,11 +55,15 @@ export function ProductCard({ product, host, priority = false, saved, signedIn }
   const ratingCount = product.rating_count ?? 0;
   const ratingAvg = product.rating_avg == null ? null : Number(product.rating_avg);
 
-  const inv = product.inventory?.[0];
-  const tracked = product.track_inventory !== false && inv != null;
-  const available = tracked ? Math.max(inv!.quantity - inv!.reserved, 0) : null;
-  const soldOut = available !== null && available <= 0;
-  const low = available !== null && available > 0 && available <= 3;
+  // ★★★ كان التوفّر يُقرأ من `inventory(quantity, reserved)`، و`inventory`
+  //    عليها RLS بلا سياسة لـanon ⇒ التضمين يعود فارغًا للزائر، فـ
+  //    `inv == null` ⇒ `tracked = false` ⇒ البطاقة تَعِد بالشراء حتى
+  //    لمنتجٍ نفد فعلًا. والعمود المنشور يقول الحقيقة لكل زائر.
+  //
+  // ★ و«بقي N فقط» سقط معه: الرصيد الدقيق بيانُ تاجرٍ خاصّ لا يُنشر،
+  //   والشارة لم تكن تظهر لزائرٍ قطّ أصلًا (كان `available` دائمًا null).
+  const tracked = product.track_inventory !== false;
+  const soldOut = tracked && product.in_stock === false;
 
   return (
     <article className="group relative flex min-w-0 flex-col overflow-hidden rounded-lg
@@ -134,11 +139,6 @@ export function ProductCard({ product, host, priority = false, saved, signedIn }
                 </span>
               )}
             </p>
-            {low && (
-              <p className="mt-1.5 text-[11px] font-semibold tabular text-gold-700">
-                بقي {available} فقط
-              </p>
-            )}
           </div>
         </div>
       </Link>

@@ -107,11 +107,11 @@ function FeaturedOne({ product, host, saved, signedIn }: {
   const hasDiscount = was != null && was > price;
   const off = hasDiscount ? Math.round(((was - price) / was) * 100) : 0;
 
-  const inv = product.inventory?.[0];
-  const tracked = product.track_inventory !== false && inv != null;
-  const available = tracked ? Math.max(inv!.quantity - inv!.reserved, 0) : null;
-  const soldOut = available !== null && available <= 0;
-  const low = available !== null && available > 0 && available <= 3;
+  // ★★ نفس علّة البطاقة: `inventory` لا يقرأها الزائر (RLS بلا سياسة
+  //    لـanon) فكان التضمين فارغًا والمنتج يبدو متوفّرًا دائمًا.
+  //    والعمود المنشور (0064/0065) يقول الحقيقة، والرصيد يبقى خاصًّا.
+  const tracked = product.track_inventory !== false;
+  const soldOut = tracked && product.in_stock === false;
 
   return (
     <article className="overflow-hidden rounded-xl border border-ink-200 bg-white">
@@ -172,11 +172,6 @@ function FeaturedOne({ product, host, saved, signedIn }: {
             )}
           </p>
 
-          {low && (
-            <p className="text-[13px] font-semibold tabular text-gold-700">
-              بقي {available} فقط
-            </p>
-          )}
 
           <div className="flex flex-wrap items-center gap-2.5 pt-1">
             <Link href={`/products/${product.slug}`}

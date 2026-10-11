@@ -47,7 +47,7 @@ async function query(storeId: string): Promise<HomeProducts> {
   const { data } = await supabase
     .from('products')
     .select(
-      'id, name, slug, price, compare_at_price, rating_avg, rating_count, has_variants, track_inventory, inventory(quantity, reserved), product_images(media_file_id, is_primary, media_files(path, bucket, blur_data_url))')
+      'id, name, slug, price, compare_at_price, rating_avg, rating_count, has_variants, track_inventory, in_stock, product_images(media_file_id, is_primary, media_files(path, bucket, blur_data_url))')
     .eq('store_id', storeId).eq('status', 'active').is('deleted_at', null)
     .order('created_at', { ascending: false })
     .limit(POOL);

@@ -65,18 +65,18 @@ type ProductRow = {
   rating_avg: number | null; rating_count: number;
   seo: Record<string, unknown>;
   product_images: ImageRow[] | null;
+  in_stock: boolean;
   product_variants: {
     id: string; name: string; price: number | null; is_active: boolean;
+    in_stock: boolean;
   }[] | null;
-  inventory: { quantity: number; reserved: number; variant_id: string | null }[] | null;
 };
 
 const SELECT =
   'id, name, slug, description, price, compare_at_price, sku, track_inventory, ' +
-  'category_id, seo, rating_avg, rating_count, ' +
+  'category_id, seo, rating_avg, rating_count, in_stock, ' +
   'product_images(sort_order, is_primary, media_files(bucket, path, blur_data_url, width, height)), ' +
-  'product_variants(id, name, price, is_active), ' +
-  'inventory(quantity, reserved, variant_id)';
+  'product_variants(id, name, price, is_active, in_stock)';
 
 /**
  * ★★ عميل بلا كوكيز + تخزين بوسم منتجات المتجر.
@@ -167,25 +167,23 @@ export default async function ProductPage(
     .map((i) => i.media_files)
     .filter((m): m is NonNullable<typeof m> => m !== null);
 
-  const rows = product.inventory ?? [];
-  const stock = rows.reduce((sum, i) => sum + Math.max(i.quantity - i.reserved, 0), 0);
-  const available = product.track_inventory ? stock : 999;
-
-  // ★★ التوفّر لكل متغيّر على حدة: جمع مخزون المقاسات كلّها كان
-  //    يَعِد بتوفّر مقاسٍ نفد. و`inventory.variant_id` قائم منذ 0004.
-  const qtyOf = (variantId: string) => {
-    const r = rows.filter((i) => i.variant_id === variantId);
-    return product.track_inventory
-      ? r.reduce((sum, i) => sum + Math.max(i.quantity - i.reserved, 0), 0)
-      : 999;
-  };
+  // ★★★ التوفّر من عمودٍ منشور لا من `inventory`: الجدول عليه RLS بلا
+  //    سياسة لـanon، فكان التضمين يعود **فارغًا** للزائر — لا بخطأ —
+  //    فيُحسب `stock = 0` ويُعلَن كلّ منتج متتبَّع «نفد»، ويختفي زرّ
+  //    الشراء من كلّ رابطٍ يُشارَك. والعمود (0064/0065) يقول الحقيقة
+  //    ويُقرأ علنًا، ولا يكشف الأرصدة.
+  //
+  // ★ ولا حارس هنا: `place_order` تقفل صفّ المخزون وترفع
+  //   `OUT_OF_STOCK`. فهذه تجربةُ استخدام، والمنع في القاعدة.
+  const inStock = product.track_inventory ? product.in_stock : true;
+  const available = inStock ? 999 : 0;
   const variants: VariantOption[] = (product.product_variants ?? [])
     .filter((v) => v.is_active)
     .map((v) => ({
       id: v.id,
       name: v.name,
       price: v.price == null ? null : Number(v.price),
-      available: qtyOf(v.id),
+      available: !product.track_inventory || v.in_stock ? 999 : 0,
     }));
 
   const hasDiscount = product.compare_at_price != null
@@ -221,7 +219,7 @@ export default async function ProductPage(
     image: images[0] ? publicUrl(images[0].bucket, images[0].path) : null,
     url: canonical,
     storeName: store.name,
-    inStock: product.track_inventory ? stock > 0 : null,
+    inStock: product.track_inventory ? product.in_stock : null,
     canBuy: store.canCheckout,
     ratingAvg,
     ratingCount: product.rating_count,

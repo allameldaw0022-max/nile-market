@@ -40,9 +40,15 @@ test('★★★ ومعرّف المتغيّر يصل السلّة', () => {
 
 test('★★★ وتوفّر المتغيّر يُقرأ وحده لا مجموعًا', () => {
   // جمع مخزون المقاسات كلّها كان يَعِد بتوفّر مقاسٍ نفد.
-  assert.ok(/variant_id/.test(PDP), '`variant_id` لا يُجلب مع المخزون');
-  assert.ok(/i\.variant_id === variantId/.test(PDP),
-    'المخزون لا يُرشَّح بالمتغيّر — رصيدٌ مجموع يَعِد بما نفد');
+  //
+  // ★ الآلية تغيّرت والقصد لم يتغيّر: كان الرصيد يُرشَّح من صفوف
+  //   `inventory` بـ`variant_id` — وهي صفوفٌ لا يقرأها الزائر أصلًا
+  //   (RLS بلا سياسة لـanon) فكانت كلّها «نافدة». صار لكلّ خيارٍ
+  //   عمودُه المنشور `product_variants.in_stock` (0065).
+  assert.ok(/product_variants\([^)]*in_stock/.test(PDP),
+    'توفّر الخيار لا يُجلب — رصيدٌ مجموع يَعِد بما نفد');
+  assert.ok(/v\.in_stock/.test(PDP),
+    'توفّر الخيار لا يُقرأ لكلّ خيار على حدة');
   assert.ok(/available=\{current\.available\}/.test(PICKER),
     'الزرّ لا يقرأ رصيد المختار');
 });
@@ -353,4 +359,67 @@ test('★★★ ورابط المشاركة مقروء لا مشفَّر', () =>
 test('★★ ولا اسمَ مكرَّرًا فوق البطاقة', () => {
   assert.ok(!/text = `\$\{name\}/.test(SHARE),
     'الاسم مكرَّر فوق بطاقةٍ تعرضه — حشوٌ يزيح المعاينة');
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// ٥) التوفّر يُقرأ من عمودٍ منشور لا من مخزونٍ لا يملكه الزائر
+//
+// ★★★ هذا أخطر ما وُجد: `inventory` عليها RLS بلا سياسة لـanon، فكلّ
+// تضمينٍ لها في استعلامٍ عامّ يعود **فارغًا** — لا بخطأ. والنتيجة
+// عطلان متعاكسان من جذرٍ واحد: صفحة المنتج تُعلن كلّ منتج متتبَّع
+// «نفد» فيختفي زرّ الشراء من كل رابطٍ يُشارَك، والبطاقة في الشبكة
+// تَعِد بالشراء حتى لمنتجٍ نفد فعلًا. وقد ثبت على الإنتاج: ٢٤ منتجًا
+// متتبَّعًا نشطًا، ٢٣ منها متوفّرة، وصفر صفوف مخزون مرئية للزائر.
+//
+// ★ ولا اختبار سلوكيّ يكشفه: الصفحة تُرسَم بنجاح، والبيع وحده لا يقع.
+//   ويعود بأيّ `select` حسن النيّة يضيف `inventory(...)` من جديد.
+// ═══════════════════════════════════════════════════════════════════
+
+const HOMEQ = code('../src/lib/products/home.ts');
+const LISTQ = code('../src/lib/products/storefront.ts');
+const CARD = code('../src/components/storefront/ProductCard.tsx');
+const SHOWCASE = code('../src/components/storefront/ProductShowcase.tsx');
+
+test('★★★ لا استعلام عامّ يضمّن `inventory` — الزائر لا يقرأها', () => {
+  for (const [name, src] of [['صفحة المنتج', PDP], ['الرئيسية', HOMEQ],
+                             ['قائمة المنتجات', LISTQ]] as const) {
+    assert.ok(!/inventory\s*\(/.test(src),
+      `${name}: تضمين \`inventory\` في استعلام عامّ يعود فارغًا للزائر `
+      + '⇒ توفّرٌ كاذب. استعمل العمود المنشور `in_stock`.');
+  }
+});
+
+test('★★★ والعمود مطلوبٌ فعلًا في كل استعلام يعرض التوفّر', () => {
+  assert.ok(/in_stock/.test(PDP), 'صفحة المنتج لا تجلب `in_stock`');
+  assert.ok(/in_stock/.test(HOMEQ), 'الرئيسية لا تجلب `in_stock`');
+  assert.ok(/in_stock/.test(LISTQ), 'قائمة المنتجات لا تجلب `in_stock`');
+  assert.ok(/product_variants\([^)]*in_stock/.test(PDP),
+    'توفّر الخيارات لا يُجلب — جمعُ مخزون المقاسات يَعِد بمقاسٍ نفد');
+});
+
+test('★★ والبطاقة تفشل مغلقةً لا مفتوحة', () => {
+  // `inv == null` كان يعني «غير متتبَّع» ⇒ تَعِد بالشراء دائمًا.
+  for (const [name, src] of [['البطاقة', CARD], ['العرض', SHOWCASE]] as const) {
+    assert.ok(/in_stock === false/.test(src),
+      `${name}: «نفد» لا يُشتقّ من \`in_stock\` صراحةً`);
+    assert.ok(!/inv!\./.test(src), `${name}: ما زالت تقرأ صفوف المخزون`);
+  }
+});
+
+test('★★ ولا رصيدٌ دقيق يُعرض للزائر', () => {
+  // «بقي N فقط» تحتاج رقمًا لا يملكه الزائر — ولم تكن تظهر له قطّ.
+  for (const [name, src] of [['البطاقة', CARD], ['العرض', SHOWCASE]] as const) {
+    assert.ok(!/بقي \{available\}/.test(src),
+      `${name}: تعرض رصيدًا دقيقًا — بيانُ تاجرٍ خاصّ لا يُنشر`);
+  }
+});
+
+test('★★★ والمنحة العمودية مكتوبة في الهجرة — بدونها يسقط الترشيح', () => {
+  const MIG65 = read('../supabase/migrations/0065_public_stock_visibility.sql');
+  assert.ok(/grant select \(in_stock\) on public\.products to anon/.test(MIG65),
+    '`products` لها منحة أعمدة صريحة لا منحة جدول: عمودٌ جديد لا يدخلها '
+    + 'تلقائيًا، و`.eq(\'in_stock\', true)` يسقط بـpermission denied');
+  assert.ok(/app\.variant_has_stock/.test(MIG65), 'توفّر الخيار بلا دالّة');
+  assert.ok(/before update on public\.product_variants/.test(MIG65),
+    'العمود بلا محفّزٍ يصونه — والمنحة العمودية لا تكفي (درس 0064)');
 });
