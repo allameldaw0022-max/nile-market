@@ -4,9 +4,16 @@ import type { NextConfig } from 'next';
  * hostname الخاص بالتخزين يُشتق من متغير البيئة — لا يُثبَّت في الكود.
  * (إصلاح S8: كان مثبّتًا على مشروع Supabase قديم فتنكسر كل الصور.)
  */
-const supabaseHost = (() => {
-  try { return new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? '').hostname; }
-  catch { return undefined; }
+const supabaseOrigin = (() => {
+  try {
+    const u = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? '');
+    // ★ البروتوكول والمنفذ يُشتقّان كذلك لا يُثبَّتان: مكدّس Supabase
+    //   المحلّي يعمل على `http://127.0.0.1:54321`، وتثبيت `https` بلا
+    //   منفذ كان يجعل كل صورة تُردّ بـ400 في التطوير المحلّي وحده.
+    return { protocol: u.protocol.replace(':', '') as 'http' | 'https',
+             hostname: u.hostname,
+             port: u.port };
+  } catch { return undefined; }
 })();
 
 const securityHeaders = [
@@ -32,8 +39,8 @@ const nextConfig: NextConfig = {
     // والمكسب على الأصل كبير: تحسين الصور أثقل عمل CPU في طبقة
     // التطبيق، وكان يُعاد كل ٤ ساعات لكل مقاس ولكل صيغة (avif+webp).
     minimumCacheTTL: 2678400,
-    remotePatterns: supabaseHost
-      ? [{ protocol: 'https', hostname: supabaseHost, pathname: '/storage/v1/object/public/**' }]
+    remotePatterns: supabaseOrigin
+      ? [{ ...supabaseOrigin, pathname: '/storage/v1/object/public/**' }]
       : [],
   },
   async headers() {
