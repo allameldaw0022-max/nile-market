@@ -39,6 +39,12 @@ const nextConfig: NextConfig = {
     // والمكسب على الأصل كبير: تحسين الصور أثقل عمل CPU في طبقة
     // التطبيق، وكان يُعاد كل ٤ ساعات لكل مقاس ولكل صيغة (avif+webp).
     minimumCacheTTL: 2678400,
+    // ★ مُحسِّن الصور في Next 16 يحجب أيّ مضيف يُحلّ إلى IP خاصّ
+    //   (حماية من SSRF). وهذا يمنع التطوير على مكدّس Supabase محلّي
+    //   كلّيًا: كل صورة تُردّ بـ400. فالباب يُفتح بمتغيّر بيئة صريح
+    //   وحده — لا يُضبط في الإنتاج، ولا قيمة افتراضية تفتحه سهوًا.
+    dangerouslyAllowLocalIP:
+      process.env.NEXT_ALLOW_LOCAL_IMAGE_HOST === '1',
     remotePatterns: supabaseOrigin
       ? [{ ...supabaseOrigin, pathname: '/storage/v1/object/public/**' }]
       : [],
