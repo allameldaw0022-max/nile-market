@@ -27,6 +27,8 @@ async function queryProducts(input: {
   categoryId?: string | null;
   term?: string | null;
   sort?: Sort;
+  minPrice?: number | null;
+  maxPrice?: number | null;
   from: number;
   size: number;
 }): Promise<{ products: StorefrontProduct[]; total: number }> {
@@ -39,6 +41,12 @@ async function queryProducts(input: {
     .is('deleted_at', null);
 
   if (input.categoryId) query = query.eq('category_id', input.categoryId);
+
+  // ★ نطاق السعر شرطٌ في القاعدة لا ترشيحٌ بعد الجلب: الترشيح بعد
+  //   الجلب يكسر العدّ والترقيم معًا — صفحةٌ تقول «٢٤ نتيجة» وتعرض
+  //   ستًّا. والحدّان مُتحقَّق منهما قبل الوصول إلى هنا.
+  if (input.minPrice != null) query = query.gte('price', input.minPrice);
+  if (input.maxPrice != null) query = query.lte('price', input.maxPrice);
 
   // التنظيف وحدّ الطول في `@/lib/search` — لا نسخة محلية تنحرف
   const search = ilikeAny(searchTerm(input.term), ['name', 'description']);
@@ -72,12 +80,18 @@ export async function listStorefrontProducts(input: {
   categoryId?: string | null;
   term?: string | null;
   sort?: Sort;
+  minPrice?: number | null;
+  maxPrice?: number | null;
   from: number;
   size: number;
 }): Promise<{ products: StorefrontProduct[]; total: number }> {
+  // ★★ المفتاح يحمل كل ما يغيّر النتيجة — والحدّان منه. إغفالهما كان
+  //    سيخدم نتائج نطاقٍ لطالب نطاقٍ آخر من نفس المدخل المخزَّن.
   const key = [
     'sf-products', input.storeId, input.categoryId ?? '-',
     searchTerm(input.term) || '-', input.sort ?? 'newest',
+    input.minPrice == null ? '-' : String(input.minPrice),
+    input.maxPrice == null ? '-' : String(input.maxPrice),
     String(input.from), String(input.size),
   ];
   const load = unstable_cache(() => queryProducts(input), key, {

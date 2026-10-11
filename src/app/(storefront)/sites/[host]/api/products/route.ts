@@ -35,6 +35,21 @@ export const dynamic = 'force-dynamic';
 const PAGE_SIZE = 24;
 const MAX_PAGE = 100;
 const SORTS: Sort[] = ['newest', 'price_asc', 'price_desc', 'name'];
+/** سقفٌ للحدّ المرسَل: رقمٌ ضخم يُفقد الفهرس فائدته ولا يفيد زبونًا. */
+const MAX_PRICE = 1_000_000_000;
+
+/**
+ * حدّ سعرٍ من العميل ⟶ رقمٌ موجب محدود، أو `null`.
+ *
+ * ★ `Number('')` صفرٌ لا NaN، فالفحص على النصّ أولًا — وإلا صار
+ *   الحقل الفارغ «أقلّ من صفر» فتختفي كل المنتجات.
+ */
+function priceParam(raw: string | null): number | null {
+  if (raw == null || raw.trim() === '') return null;
+  const n = Number(raw);
+  if (!Number.isFinite(n) || n < 0) return null;
+  return Math.min(n, MAX_PRICE);
+}
 
 /** سَلَك التصنيف ⟶ معرّفه، محصورًا بهذا المتجر ومخزَّنًا. */
 const categoryIdOf = (storeId: string, slug: string) => unstable_cache(
@@ -68,6 +83,14 @@ export async function GET(
   const term = searchTerm(sp.get('q'));
   const categorySlug = sp.get('category');
 
+  // ★ حدّان مقلوبان (الأدنى أكبر من الأعلى) يُعدّان لا نطاق: لو مُرّرا
+  //   كما هما لعادت القاعدة بصفر نتيجة بلا سبب ظاهر للزبون.
+  let minPrice = priceParam(sp.get('min'));
+  let maxPrice = priceParam(sp.get('max'));
+  if (minPrice != null && maxPrice != null && minPrice > maxPrice) {
+    [minPrice, maxPrice] = [maxPrice, minPrice];
+  }
+
   const categoryId = categorySlug
     ? await categoryIdOf(store.storeId, categorySlug)()
     : null;
@@ -83,6 +106,8 @@ export async function GET(
     categoryId,
     term: term.length >= 2 ? term : null,
     sort,
+    minPrice,
+    maxPrice,
     from: (page - 1) * PAGE_SIZE,
     size: PAGE_SIZE,
   });

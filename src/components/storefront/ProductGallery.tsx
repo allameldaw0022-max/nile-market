@@ -1,7 +1,7 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { ImageOff } from 'lucide-react';
+import { ImageOff, X, ZoomIn } from 'lucide-react';
 import { publicUrl } from '@/lib/media/url';
 
 export type GalleryImage = {
@@ -29,12 +29,38 @@ export function ProductGallery({ images, alt }: {
   alt: string;
 }) {
   const [active, setActive] = useState(0);
+  const [zoom, setZoom] = useState(false);
   const current = images[active] ?? images[0];
+
+  // ★ Escape يغلق، والتمرير خلف الطبقة يُجمَّد: طبقةٌ تُغلق بالنقر
+  //   وحده تحبس من يستعمل لوحة المفاتيح، وخلفيةٌ تتمرّر تُفقد مكان
+  //   القراءة عند الإغلاق.
+  useEffect(() => {
+    if (!zoom) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setZoom(false); };
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [zoom]);
 
   return (
     <div className="space-y-2">
       <div className="relative aspect-square overflow-hidden rounded-lg
                       border border-ink-200 bg-ink-100">
+        {current && (
+          <button type="button" onClick={() => setZoom(true)}
+                  aria-label="تكبير الصورة"
+                  className="absolute inset-0 z-10 flex items-start justify-end p-2">
+            <span className="rounded-md bg-white/85 p-1.5 text-ink-700 shadow-sm
+                             backdrop-blur">
+              <ZoomIn size={16} aria-hidden />
+            </span>
+          </button>
+        )}
         {current ? (
           <Image
             src={publicUrl(current.bucket, current.path)}
@@ -54,6 +80,26 @@ export function ProductGallery({ images, alt }: {
           </div>
         )}
       </div>
+
+      {zoom && current && (
+        <div role="dialog" aria-modal="true" aria-label="صورة المنتج مكبَّرة"
+             onClick={() => setZoom(false)}
+             className="fixed inset-0 z-50 flex items-center justify-center
+                        bg-ink-900/90 p-4">
+          <button type="button" onClick={() => setZoom(false)} aria-label="إغلاق"
+                  autoFocus
+                  className="absolute end-4 top-4 rounded-md bg-white/10 p-2 text-white
+                             hover:bg-white/20">
+            <X size={22} aria-hidden />
+          </button>
+          {/* ★ `contain` لا `cover`: غرض التكبير رؤية الصورة كاملة،
+              والقصّ هنا يناقض سببه. */}
+          <div className="relative h-full max-h-[85vh] w-full max-w-4xl">
+            <Image src={publicUrl(current.bucket, current.path)} alt={alt}
+                   fill sizes="100vw" className="object-contain" />
+          </div>
+        </div>
+      )}
 
       {images.length > 1 && (
         <ul className="grid grid-cols-5 gap-2">

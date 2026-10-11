@@ -100,12 +100,16 @@ function Browser({ kind, host, initial, categorySlug, emptyTitle, emptyDescripti
   const sortRaw = params.get('sort') ?? 'newest';
   const sort = SORTS.some((s) => s.value === sortRaw) ? sortRaw : 'newest';
   const q = (params.get('q') ?? '').trim();
+  const min = (params.get('min') ?? '').trim();
+  const max = (params.get('max') ?? '').trim();
 
   // هل الطلب هو الافتراضي الذي صيَّره الخادم أصلًا؟
-  const isDefault = page === 1 && sort === 'newest'
+  // ★ النطاق جزءٌ من الشرط: نطاقٌ مضبوط ليس هو ما صيَّره الخادم، فلو
+  //   عُدَّ افتراضيًّا لعادت القائمة كاملة بلا ترشيح.
+  const isDefault = page === 1 && sort === 'newest' && min === '' && max === ''
     && (kind === 'search' ? q.length < 2 : q === '');
 
-  const key = `${kind}|${categorySlug ?? ''}|${page}|${sort}|${q}`;
+  const key = `${kind}|${categorySlug ?? ''}|${page}|${sort}|${q}|${min}|${max}`;
   const [seenKey, setSeenKey] = useState(key);
 
   // ★ الضبط أثناء الرسم لا داخل `useEffect`: الرجوع إلى العرض
@@ -126,13 +130,15 @@ function Browser({ kind, host, initial, categorySlug, emptyTitle, emptyDescripti
     url.searchParams.set('sort', sort);
     if (categorySlug) url.searchParams.set('category', categorySlug);
     if (q.length >= 2) url.searchParams.set('q', q);
+    if (min) url.searchParams.set('min', min);
+    if (max) url.searchParams.set('max', max);
 
     fetch(url, { signal: ctl.signal })
       .then((r) => (r.ok ? r.json() : null))
       .then((body: Payload | null) => { if (body) setData(body); })
       .catch(() => {/* تبقى النتائج السابقة معروضة حتى تصل الجديدة */});
     return () => ctl.abort();
-  }, [key, isDefault, page, sort, q, categorySlug]);
+  }, [key, isDefault, page, sort, q, min, max, categorySlug]);
 
   // ★ الرابط يبقى قابلًا للمشاركة: المعاملات تُكتب في العنوان، فصفحةٌ
   //   مشتركة تُفتح على نفس النتائج (يقرؤها هذا المكوّن عند التحميل).
@@ -167,6 +173,13 @@ function Browser({ kind, host, initial, categorySlug, emptyTitle, emptyDescripti
           ))}
         </div>
       )}
+
+      {/* ★★ مرشّح السعر: المتجر كان يملك ترتيبًا بلا ترشيح، فمتجرٌ
+          بمئة منتج لا طريق فيه لحصر النطاق. والحدّان في العنوان
+          فالنتيجة قابلة للمشاركة كبقيّة المعاملات. */}
+      <PriceFilter min={min} max={max} onApply={(a, b) =>
+        go({ min: a, max: b, page: '' })} />
+
       <div>
         {empty ? (
           <p className="mt-6 rounded-lg border border-dashed border-ink-300 bg-white
@@ -228,5 +241,58 @@ function SortBarStatic() {
         </span>
       ))}
     </div>
+  );
+}
+
+
+/**
+ * مرشّح نطاق السعر.
+ *
+ * ★ حالةٌ محلّية ثم تطبيقٌ صريح، لا طلبٌ عند كل ضغطة مفتاح: الكتابة
+ * في «من ١٠٠٠» تمرّ بـ«١» و«١٠» و«١٠٠» — ثلاثة طلبات لنتائج لا
+ * يريدها أحد. والنموذج يُرسَل بالإدخال أيضًا فلوحة المفاتيح تكفي.
+ *
+ * ★ `inputMode="numeric"` لا `type="number"`: الأخير يفتح أسهمًا
+ * ويقلب العجلة قيمةً بالخطأ، ولا يحترم الاتجاه في بعض المتصفّحات.
+ */
+function PriceFilter({ min, max, onApply }: {
+  min: string; max: string;
+  onApply: (min: string, max: string) => void;
+}) {
+  const [a, setA] = useState(min);
+  const [b, setB] = useState(max);
+
+  // ★ مزامنة مع العنوان: من فتح رابطًا مشتركًا أو ضغط «رجوع» يرى
+  //   الحقول موافقةً لما يُعرض، لا قيمًا من جلسته السابقة.
+  const [seen, setSeen] = useState(`${min}|${max}`);
+  if (seen !== `${min}|${max}`) { setSeen(`${min}|${max}`); setA(min); setB(max); }
+
+  const clean = (v: string) => v.replace(/[^\d]/g, '').slice(0, 10);
+  const on = min !== '' || max !== '';
+  const box = 'h-10 w-28 rounded-md border border-ink-300 bg-white px-3 '
+            + 'text-[13px] tabular text-ink-900 placeholder:text-ink-400';
+
+  return (
+    <form className="mt-3 flex flex-wrap items-center gap-2"
+          onSubmit={(e) => { e.preventDefault(); onApply(a, b); }}>
+      <span className="text-[12px] font-semibold text-ink-500">السعر</span>
+      <input value={a} onChange={(e) => setA(clean(e.target.value))}
+             inputMode="numeric" placeholder="من" aria-label="أقل سعر" className={box} />
+      <input value={b} onChange={(e) => setB(clean(e.target.value))}
+             inputMode="numeric" placeholder="إلى" aria-label="أعلى سعر" className={box} />
+      <button type="submit"
+              className="h-10 rounded-md bg-ink-900 px-4 text-[13px] font-semibold
+                         text-white transition-colors hover:bg-ink-800">
+        تطبيق
+      </button>
+      {on && (
+        <button type="button"
+                onClick={() => { setA(''); setB(''); onApply('', ''); }}
+                className="h-10 rounded-md px-3 text-[13px] font-semibold text-ink-600
+                           underline underline-offset-4 hover:text-ink-900">
+          إلغاء الترشيح
+        </button>
+      )}
+    </form>
   );
 }

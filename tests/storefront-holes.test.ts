@@ -176,3 +176,65 @@ test('★★ و«مجاني فوق X» تصدق على منطقة واحدة ع�
 test('★★ وتفشل مفتوحةً: لا سطر توصيل خيرٌ من صفحة لا تُفتح', () => {
   assert.ok(/catch \{ return null; \}/.test(DELIV), 'سقوط الاستعلام يُسقط الصفحة');
 });
+
+// ═══════════════════════════════════════════════════════════════════
+// الدفعة الثالثة — نضج: مرشّح السعر · تكبير الصورة
+// ═══════════════════════════════════════════════════════════════════
+
+const SF = code('../src/lib/products/storefront.ts');
+const API = code('../src/app/(storefront)/sites/[host]/api/products/route.ts');
+const BROWSER = code('../src/components/storefront/ProductBrowser.tsx');
+
+test('★★★ نطاق السعر شرطٌ في القاعدة لا ترشيحٌ بعد الجلب', () => {
+  // الترشيح بعد الجلب يكسر العدّ والترقيم: «٢٤ نتيجة» وتُعرض ستّ.
+  assert.ok(/query\.gte\('price', input\.minPrice\)/.test(SF), 'الحدّ الأدنى لا يُطبَّق');
+  assert.ok(/query\.lte\('price', input\.maxPrice\)/.test(SF), 'الحدّ الأعلى لا يُطبَّق');
+  assert.ok(!/\.filter\(\(p\) => p\.price/.test(SF), 'ترشيحٌ بعد الجلب');
+});
+
+test('★★★ والحدّان في مفتاح التخزين — وإلا خُدم نطاقٌ لطالب غيره', () => {
+  const at = SF.indexOf("const key = [");
+  const block = SF.slice(at, SF.indexOf('];', at));
+  assert.ok(/minPrice/.test(block) && /maxPrice/.test(block),
+    'المفتاح لا يحمل الحدّين: مدخلٌ مخزَّن واحد لنطاقات مختلفة');
+});
+
+test('★★★ وحدّ السعر من العميل يُتحقَّق منه', () => {
+  assert.ok(/Number\.isFinite\(n\) \|\| n < 0/.test(API), 'قيمة غير رقمية أو سالبة تمرّ');
+  assert.ok(/Math\.min\(n, MAX_PRICE\)/.test(API), 'لا سقف — رقمٌ ضخم يُفقد الفهرس فائدته');
+  // `Number('')` صفرٌ لا NaN: الحقل الفارغ كان سيصير «أقلّ من صفر».
+  assert.ok(/raw\.trim\(\) === ''/.test(API), 'الفارغ يُقرأ صفرًا فتختفي كل المنتجات');
+});
+
+test('★★ وحدّان مقلوبان يُعدَّلان لا يُعادان بصفر نتيجة', () => {
+  assert.ok(/minPrice > maxPrice/.test(API), 'لا معالجة للنطاق المقلوب');
+  assert.ok(/\[minPrice, maxPrice\] = \[maxPrice, minPrice\]/.test(API), 'لا تبديل');
+});
+
+test('★★★ ونطاقٌ مضبوط ليس «الافتراضي» الذي صيَّره الخادم', () => {
+  // وإلا عُدَّ افتراضيًّا فعادت القائمة كاملة بلا ترشيح.
+  assert.ok(/min === '' && max === ''/.test(BROWSER),
+    'شرط الافتراضي لا يشمل النطاق — الترشيح يُهمَل صامتًا');
+  assert.ok(/\$\{min\}\|\$\{max\}/.test(BROWSER), 'مفتاح إعادة الجلب لا يحمل النطاق');
+});
+
+test('★★ والترشيح يُطبَّق بإرسالٍ صريح لا عند كل ضغطة مفتاح', () => {
+  // «١٠٠٠» تمرّ بـ«١» و«١٠» و«١٠٠»: ثلاثة طلبات لنتائج لا يريدها أحد.
+  assert.ok(/onSubmit=\{\(e\) => \{ e\.preventDefault\(\); onApply/.test(BROWSER),
+    'لا إرسال صريح');
+  assert.ok(!/onChange=\{\(e\) => onApply/.test(BROWSER), 'طلبٌ عند كل ضغطة');
+});
+
+test('★★ تكبير الصورة يُغلق بـEscape ولا يحبس من يستعمل لوحة المفاتيح', () => {
+  assert.ok(/e\.key === 'Escape'/.test(GALLERY), 'لا إغلاق بلوحة المفاتيح');
+  assert.ok(/aria-modal="true"/.test(GALLERY), 'الطبقة ليست حوارًا معلنًا');
+  assert.ok(/removeEventListener\('keydown', onKey\)/.test(GALLERY), 'المستمع لا يُرفع');
+  assert.ok(/document\.body\.style\.overflow = prev/.test(GALLERY),
+    'تمرير الصفحة يبقى مجمَّدًا بعد الإغلاق');
+});
+
+test('★★ والصورة المكبَّرة تُعرض كاملة لا مقصوصة', () => {
+  const at = GALLERY.indexOf('aria-modal');
+  assert.ok(/object-contain/.test(GALLERY.slice(at)),
+    'القصّ في التكبير يناقض سببه');
+});
