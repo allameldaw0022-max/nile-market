@@ -113,3 +113,66 @@ test('★★ ولا صورة تُخترع لمن لم يرفع شيئًا', () =
   assert.ok(/preview \? \[preview\] : undefined/.test(HOME),
     'صورةٌ افتراضية تُعرض باسم التاجر دون أن يرفعها');
 });
+
+// ═══════════════════════════════════════════════════════════════════
+// الدفعة الثانية — تحويل: الشريط الثابت · المشاركة · أجرة التوصيل
+// ═══════════════════════════════════════════════════════════════════
+
+const STICKY = code('../src/components/storefront/StickyBuyBar.tsx');
+const SHARE = code('../src/components/storefront/ShareProduct.tsx');
+const DELIV = code('../src/lib/delivery/summary.ts');
+
+test('★★ الشريط الثابت لا يكرّر زرّ الإضافة ولا حالة السلّة', () => {
+  // تكرار الزرّ = حالة كمّية ومتغيّر ثانية تخالف الأولى: زبونٌ يختار
+  // مقاسًا فوق ويشتري غيره تحت.
+  assert.ok(!/AddToCartButton|addToCart/.test(STICKY),
+    'الشريط يضيف إلى السلّة بنفسه — حالتان متعارضتان للمتغيّر والكمّية');
+  assert.ok(/scrollIntoView/.test(STICKY), 'الشريط لا يقود إلى صندوق الشراء');
+  assert.ok(/id="buy-box"/.test(PDP), 'صندوق الشراء بلا معرّف يرصده الشريط');
+});
+
+test('★★ ويظهر برصد التقاطع لا بمستمع تمرير', () => {
+  assert.ok(/IntersectionObserver/.test(STICKY), 'لا رصد تقاطع');
+  assert.ok(!/addEventListener\(\s*['"]scroll/.test(STICKY),
+    'مستمع تمرير يوقظ الخيط في كل إطار');
+  assert.ok(/io\.disconnect\(\)/.test(STICKY), 'الراصد لا يُفصَل — تسريب');
+});
+
+test('★★★ ولا يُعرض لمتجر لا يبيع الآن', () => {
+  assert.ok(/store\.canCheckout && available > 0 && \(\s*<StickyBuyBar/.test(PDP),
+    'زرٌّ عائم يقود إلى رسالة منع، أو إلى منتج نفد');
+});
+
+test('★★ رابط المشاركة يُقرأ من المتصفّح لا يُبنى في الصفحة المخزَّنة', () => {
+  // الصفحة واحدة لكل الزوّار؛ بناء الرابط فيها حقنُ قيمة في HTML مشترك.
+  assert.ok(/window\.location\.href/.test(SHARE), 'الرابط لا يُقرأ من المتصفّح');
+  assert.ok(/wa\.me/.test(SHARE), 'لا مشاركة واتساب — قناة التوزيع الأولى');
+  assert.ok(/encodeURIComponent/.test(SHARE), 'نصّ المشاركة بلا ترميز');
+});
+
+test('★★★ أجرة التوصيل حقيقية من `delivery_zones` لا وعدٌ عامّ', () => {
+  assert.ok(/delivery_zones/.test(DELIV), 'المناطق لا تُقرأ');
+  assert.ok(/is_active.*true|eq\('is_active', true\)/.test(DELIV),
+    'مناطق معطَّلة تدخل الحساب');
+  assert.ok(/deleted_at/.test(DELIV), 'مناطق محذوفة تدخل الحساب');
+  assert.ok(/التوصيل من \$\{formatMoney\(delivery\.minFee\)\}/.test(PDP),
+    'الأجرة لا تُعرض في صفحة المنتج');
+});
+
+test('★★ وتُبطَل بنفس وسم أفعال التوصيل', () => {
+  // وإلا بقي سعرٌ قديم معروضًا بعد تعديل التاجر حتى تنتهي مدّة التخزين.
+  assert.ok(/tags: \[storeTag\(storeId, 'settings'\)\]/.test(DELIV),
+    'وسم الإبطال لا يطابق `delivery/actions.ts`');
+  const ACT = code('../src/lib/delivery/actions.ts');
+  assert.ok(/storeTag\(membership\.storeId, 'settings'\)/.test(ACT),
+    'أفعال التوصيل غيّرت وسمها — الملخّص لن يُبطَل');
+});
+
+test('★★ و«مجاني فوق X» تصدق على منطقة واحدة على الأقلّ', () => {
+  assert.ok(/Math\.min\(\.\.\.frees\)/.test(DELIV),
+    'العتبة ليست الأدنى — وعدٌ لا يتحقّق في أرخص منطقة');
+});
+
+test('★★ وتفشل مفتوحةً: لا سطر توصيل خيرٌ من صفحة لا تُفتح', () => {
+  assert.ok(/catch \{ return null; \}/.test(DELIV), 'سقوط الاستعلام يُسقط الصفحة');
+});

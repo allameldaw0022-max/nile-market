@@ -12,6 +12,9 @@ import { ProductCard, type StorefrontProduct } from '@/components/storefront/Pro
 import { formatMoney } from '@/lib/money/format';
 import { publicUrl } from '@/lib/media/url';
 import { storeChrome } from '@/lib/tenant/chrome';
+import { deliverySummary } from '@/lib/delivery/summary';
+import { StickyBuyBar } from '@/components/storefront/StickyBuyBar';
+import { ShareProduct } from '@/components/storefront/ShareProduct';
 import { ProductGallery } from '@/components/storefront/ProductGallery';
 import { VariantPicker, type VariantOption }
   from '@/components/storefront/VariantPicker';
@@ -164,10 +167,11 @@ export default async function ProductPage(
   // ★ الاثنان عامّان ومخزَّنان، ويُجلبان معًا لا متسلسلين.
   // ★ القشرة نداءٌ مخزَّن قائم (التخطيط طلبه لتوّه) ⇒ كلفتها صفر،
   //   ومنها تُقرأ طرق الدفع التي فعّلها التاجر فعلًا.
-  const [related, reviews, chrome] = await Promise.all([
+  const [related, reviews, chrome, delivery] = await Promise.all([
     loadRelated(store.storeId, product.category_id, product.id),
     loadReviews(store.storeId, product.id),
     storeChrome(store.storeId),
+    deliverySummary(store.storeId),
   ]);
 
   const pay = [
@@ -246,7 +250,7 @@ export default async function ProductPage(
             </p>
           )}
 
-          <div className="mt-6">
+          <div id="buy-box" className="mt-6 scroll-mt-20">
             {variants.length > 0 ? (
               <VariantPicker host={host} productId={product.id} variants={variants}
                              basePrice={Number(product.price)}
@@ -266,14 +270,28 @@ export default async function ProductPage(
                             variant="full" />
           </div>
 
+          <ShareProduct name={product.name} />
+
           {/* ★★ كان هنا نصّ ثابت يَعِد بـ«الدفع عند الاستلام أو تحويل
               بنكي» مهما كانت إعدادات التاجر — فمتجرٌ أغلق الدفع عند
               الاستلام يَعِد به ثم يُفاجأ الزبون عند الدفع. الرئيسية
               تشتقّها من الإعدادات الحقيقية، وهذه الصفحة الآن مثلها. */}
           <ul className="mt-6 space-y-2 text-sm text-ink-500">
+            {/* ★★ أجرة حقيقية من `delivery_zones` بدل وعدٍ عامّ:
+                مفاجأة الشحن عند الدفع هي السبب الأول لترك السلّة. */}
             <li className="flex items-center gap-2">
-              <Truck size={15} /> التوصيل داخل المدن المحددة من المتجر
+              <Truck size={15} />
+              {delivery
+                ? `التوصيل من ${formatMoney(delivery.minFee)}`
+                  + ` · ${delivery.zoneCount} منطقة`
+                  + (delivery.etaMax != null ? ` · حتى ${delivery.etaMax} أيام` : '')
+                : 'التوصيل داخل المدن المحددة من المتجر'}
             </li>
+            {delivery?.freeOver != null && (
+              <li className="flex items-center gap-2 font-semibold text-teal-700">
+                <Truck size={15} /> توصيل مجاني فوق {formatMoney(delivery.freeOver)}
+              </li>
+            )}
             {payLine && (
               <li className="flex items-center gap-2">
                 <ShieldCheck size={15} /> {payLine}
@@ -288,6 +306,14 @@ export default async function ProductPage(
                         avg={ratingAvg} count={product.rating_count}
                         reviews={reviews} />
       </div>
+
+      {/* ★ الشريط يرصد صندوق الشراء، فيظهر حين يغيب عن الشاشة. ولا
+          يُعرض لمتجرٍ لا يبيع الآن: زرٌّ عائم يقود إلى رسالة منعٍ
+          إزعاجٌ لا مساعدة. */}
+      {store.canCheckout && available > 0 && (
+        <StickyBuyBar targetId="buy-box" label={product.name}
+                      price={Number(variants[0]?.price ?? product.price)} />
+      )}
 
       {related.length > 0 && (
         <section className="mt-12">
