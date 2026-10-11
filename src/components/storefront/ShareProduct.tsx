@@ -16,14 +16,28 @@ import { Check, Link2, Share2 } from 'lucide-react';
  *
  * ★ ونسخ الرابط بديلٌ حاضر: لا نفترض أن واتساب مثبَّت.
  */
-export function ShareProduct({ name }: { name: string }) {
+export function ShareProduct() {
   const [copied, setCopied] = useState(false);
 
-  const href = () => (typeof window === 'undefined' ? '' : window.location.href);
+  /**
+   * ★★ الرابط مفكوك الترميز للعرض: سَلَك المنتج عربيّ، فيظهر في
+   * الرسالة سطرًا من `%D8%A7%D8%AF...` لا يقرؤه أحد ولا يُطمئن من
+   * يستقبله. وفكّه يُظهره بالعربية، والتطبيقات تعيد ترميزه عند الفتح
+   * فالوجهة واحدة. و`decodeURI` لا `decodeURIComponent`: الثانية تفكّ
+   * الشرطات المائلة وعلامة الاستفهام فتكسر الرابط.
+   */
+  const href = () => {
+    if (typeof window === 'undefined') return '';
+    const raw = window.location.href;
+    try { return decodeURI(raw); } catch { return raw; }
+  };
 
+  /**
+   * ★ الرابط وحده في الرسالة: الاسم والصورة والسعر تأتي من بطاقة
+   * المعاينة نفسها، وتكرار الاسم فوقها حشوٌ يزيح البطاقة.
+   */
   const toWhatsapp = () => {
-    const text = `${name}\n${href()}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`,
+    window.open(`https://wa.me/?text=${encodeURIComponent(href())}`,
       '_blank', 'noopener,noreferrer');
   };
 

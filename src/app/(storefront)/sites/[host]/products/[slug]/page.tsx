@@ -52,7 +52,10 @@ export async function generateStaticParams() {
 
 type ImageRow = {
   sort_order: number; is_primary: boolean;
-  media_files: { bucket: string; path: string; blur_data_url: string | null } | null;
+  media_files: {
+    bucket: string; path: string; blur_data_url: string | null;
+    width: number | null; height: number | null;
+  } | null;
 };
 
 type ProductRow = {
@@ -71,7 +74,7 @@ type ProductRow = {
 const SELECT =
   'id, name, slug, description, price, compare_at_price, sku, track_inventory, ' +
   'category_id, seo, rating_avg, rating_count, ' +
-  'product_images(sort_order, is_primary, media_files(bucket, path, blur_data_url)), ' +
+  'product_images(sort_order, is_primary, media_files(bucket, path, blur_data_url, width, height)), ' +
   'product_variants(id, name, price, is_active), ' +
   'inventory(quantity, reserved, variant_id)';
 
@@ -114,7 +117,25 @@ export async function generateMetadata(
   const { store, product } = found;
   const canonical = `https://${store.primaryHost}/products/${product.slug}`;
   const cover = pickCover(product);
-  const description = (product.description ?? '').slice(0, 160) || product.name;
+
+  // ★★ السعر أوّل المعاينة لا آخرها: واتساب يقصّ الوصف بعد سطرين،
+  //    فسعرٌ في ذيل النصّ لا يصل المشتري أبدًا — وهو أول ما يسأل عنه.
+  //    وكانت المعاينة تعرض الوصف وحده فتبدو خبرًا لا عرضَ بيع.
+  const body = (product.description ?? '').replace(/\s+/g, ' ').trim();
+  const description = [formatMoney(product.price), body]
+    .filter(Boolean).join(' · ').slice(0, 200);
+
+  // ★ الأبعاد مُعلَنة من `media_files` (موجودة منذ 0004): بدونها يقرّر
+  //   الزاحف حجم البطاقة بالتخمين، فتظهر مصغَّرةً جانبيّة بدل بطاقةٍ
+  //   كبيرة — وهو ما رآه التاجر.
+  const image = cover
+    ? {
+        url: publicUrl(cover.bucket, cover.path),
+        ...(cover.width ? { width: cover.width } : {}),
+        ...(cover.height ? { height: cover.height } : {}),
+        alt: product.name,
+      }
+    : null;
 
   return {
     title: `${product.name} — ${store.name}`,
@@ -123,7 +144,12 @@ export async function generateMetadata(
     openGraph: {
       title: product.name, description, url: canonical,
       siteName: store.name, type: 'website', locale: 'ar_SD',
-      images: cover ? [publicUrl(cover.bucket, cover.path)] : undefined,
+      images: image ? [image] : undefined,
+    },
+    twitter: {
+      card: image ? 'summary_large_image' : 'summary',
+      title: product.name, description,
+      images: image ? [image.url] : undefined,
     },
   };
 }
@@ -277,7 +303,7 @@ export default async function ProductPage(
                             variant="full" />
           </div>
 
-          <ShareProduct name={product.name} />
+          <ShareProduct />
 
           {/* ★★ كان هنا نصّ ثابت يَعِد بـ«الدفع عند الاستلام أو تحويل
               بنكي» مهما كانت إعدادات التاجر — فمتجرٌ أغلق الدفع عند
