@@ -85,6 +85,7 @@ export async function GET(
 
   // ★ حدّان مقلوبان (الأدنى أكبر من الأعلى) يُعدّان لا نطاق: لو مُرّرا
   //   كما هما لعادت القاعدة بصفر نتيجة بلا سبب ظاهر للزبون.
+  const inStock = sp.get('stock') === '1';
   let minPrice = priceParam(sp.get('min'));
   let maxPrice = priceParam(sp.get('max'));
   if (minPrice != null && maxPrice != null && minPrice > maxPrice) {
@@ -108,6 +109,7 @@ export async function GET(
     sort,
     minPrice,
     maxPrice,
+    inStock,
     from: (page - 1) * PAGE_SIZE,
     size: PAGE_SIZE,
   });

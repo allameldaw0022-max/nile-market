@@ -238,3 +238,85 @@ test('★★ والصورة المكبَّرة تُعرض كاملة لا مقص
   assert.ok(/object-contain/.test(GALLERY.slice(at)),
     'القصّ في التكبير يناقض سببه');
 });
+
+// ═══════════════════════════════════════════════════════════════════
+// الدفعة الرابعة — «المتوفّر فقط» و«نبّهني عند التوفّر»
+// ═══════════════════════════════════════════════════════════════════
+
+const MIG64 = read('../supabase/migrations/0064_stock_alerts.sql');
+const ALERT = code('../src/components/storefront/StockAlertForm.tsx');
+const SACT = code('../src/lib/stock/actions.ts');
+const MAIL = code('../src/lib/email/templates.ts');
+
+test('★★★ التوفّر يحترم الحجز — لا تقريبَ `quantity > 0`', () => {
+  // التقريب كان يَعِد بتوفّر ما كلّ كمّيته محجوزة في طلبات معلّقة.
+  assert.ok(/\(i\.quantity - i\.reserved\) > 0/.test(MIG64),
+    'الحجز لا يُطرح: منتجٌ محجوزٌ بالكامل يُعلَن متوفّرًا');
+  assert.ok(/when not new\.track_inventory then true/.test(MIG64),
+    'منتجٌ بلا تتبّع مخزون يختفي من الترشيح');
+});
+
+test('★★★ والعمود يُفرَض بمحفّز لا بمنحة — المنحة لا تكفي', () => {
+  // `authenticated` يملك `update` على مستوى الجدول منذ 0004، و
+  // `revoke update (col)` لا يُنقص منها. جُرِّب فسقط الاختبار.
+  assert.ok(/create trigger products_sync_in_stock\s+before update on public\.products/
+    .test(MIG64.replace(/\s+/g, ' ').replace(/create trigger/g, '\ncreate trigger'))
+    || /before update on public\.products/.test(MIG64),
+    'لا محفّز BEFORE على كل تحديث: قيمةٌ مزوّرة تثبت');
+  assert.ok(/new\.in_stock := case/.test(MIG64),
+    'المحفّز لا يُعيد الحساب — يقبل ما يكتبه العميل');
+});
+
+test('★★★ ولا كتابة على المنتج بلا تغيّر فعليّ في التوفّر', () => {
+  // بدونها صار كل حجزٍ وإفراج كتابةً تُبطل تخزين صفحات المتجر كلّها.
+  assert.ok(/in_stock is distinct from v_now/.test(MIG64),
+    'كل حركة مخزون تكتب على `products` فتُبطل التخزين بلا داعٍ');
+});
+
+test('★★ والترشيح يقرأ العمود ويدخل مفتاح التخزين', () => {
+  assert.ok(/query\.eq\('in_stock', true\)/.test(SF), 'الترشيح لا يستعمل العمود');
+  assert.ok(/input\.inStock \? 'in' : '-'/.test(SF),
+    'التوفّر خارج مفتاح التخزين: نتائج مرشَّحة تُخدَم لمن لم يرشّح');
+});
+
+test('★★★ طلب التنبيه: المتجر من المنتج لا من العميل', () => {
+  assert.ok(!/p_store_id/.test(SACT),
+    '`store_id` يُرسَل من المتصفّح — تعليقُ بريدٍ على متجرٍ آخر');
+  assert.ok(/select p\.store_id, p\.in_stock into v_store/.test(MIG64),
+    'القاعدة لا تشتقّ المتجر من المنتج');
+});
+
+test('★★★ ولا يُسجَّل تنبيهٌ لمنتج متوفّر أو متجرٍ متوقّف', () => {
+  assert.ok(/IN_STOCK: /.test(MIG64), 'تنبيهٌ لمنتج متوفّر أصلًا');
+  assert.ok(/s\.status = 'active' and s\.deleted_at is null/.test(MIG64),
+    'متجرٌ متوقّف أو محذوف يقبل طلبات تنبيه');
+  assert.ok(/check_rate_limit\('stockalert:/.test(MIG64), 'بلا حدّ معدّل');
+});
+
+test('★★★ وقائمة البُرُد غير مقروءة لأيّ دور عميل', () => {
+  assert.ok(/revoke all on public\.stock_alerts from anon, authenticated/.test(MIG64),
+    'قائمة بُرُدٍ تنتظر منتجًا بيانٌ شخصيّ');
+  assert.ok(/enable row level security/.test(MIG64), 'الجدول بلا RLS');
+});
+
+test('★★★ والتنبيه يُرسَل فعلًا — لا قائمةٌ تُجمَع ولا يُنبَّه أحد', () => {
+  assert.ok(/insert into public\.email_outbox/.test(MIG64),
+    'لا إدراج في طابور البريد: ميزةٌ تجمع بُرُدًا ولا تُنبّه');
+  assert.ok(/'stock_back'/.test(MIG64) && /stock_back:/.test(MAIL),
+    'القالب غير مسجَّل — بريدٌ بقالبٍ مجهول لا يُرسَل');
+  assert.ok(/dedupe_key/.test(MIG64), 'بلا مفتاح منع تكرار');
+  assert.ok(/new\.in_stock and not old\.in_stock/.test(MIG64),
+    'يُرسل على كل كتابة لا عند العودة وحدها');
+});
+
+test('★★ ونموذج التنبيه لا يُعرض لمتجرٍ لا يبيع', () => {
+  assert.ok(/available <= 0 && store\.canCheckout \?\s*\(\s*<StockAlertForm/
+    .test(PDP.replace(/\s+/g, ' ')),
+    'وعدُ تنبيهٍ من متجرٍ متوقّف وعدٌ لا يُوفى');
+});
+
+test('★★ والتحقّق في القاعدة لا في الواجهة وحدها', () => {
+  assert.ok(/INVALID_EMAIL/.test(MIG64), 'صحّة البريد في المتصفّح وحده — تُتخطّى');
+  assert.ok(!/\.test\(email\)/.test(ALERT) || /required/.test(ALERT),
+    'لا تحقّق أساسي في النموذج');
+});

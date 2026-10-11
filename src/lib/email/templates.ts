@@ -180,6 +180,33 @@ const TEMPLATES: Record<string, Template> = {
     };
   },
 
+  /**
+   * عودة منتجٍ إلى المخزون.
+   * ★ الرابط من القاعدة (الدومين الأساسي للمتجر) لا من `siteUrl`:
+   *   المتجر قد يكون على دومينه الخاصّ، ورابط المنصّة يضيّع الزبون.
+   */
+  stock_back: (p, brand) => {
+    const subject = `${p.product_name ?? 'المنتج'} عاد متوفّرًا`;
+    const url = String(p.product_url ?? '');
+    return {
+      subject,
+      html: layout(brand, subject, `
+        <p>المنتج الذي طلبت التنبيه عنه عاد متوفّرًا في
+           <strong>${escape(p.store_name)}</strong>:</p>
+        <p style="font-size:17px;font-weight:700;color:#17191C;">
+          ${escape(p.product_name)}
+        </p>
+        ${url ? button(url, 'اطلبه الآن') : ''}
+        <p style="color:#667085;font-size:13px;">
+          الكمّيات محدودة، وقد ينفد ثانيةً.
+        </p>`),
+      text: [
+        `${p.product_name} عاد متوفّرًا في ${p.store_name}.`,
+        url,
+      ].filter(Boolean).join('\n'),
+    };
+  },
+
   support_reply: (p, brand) => {
     const subject = `رد جديد على تذكرتك ${p.ticket_number ?? ''}`;
     return {

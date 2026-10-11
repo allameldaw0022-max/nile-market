@@ -2362,6 +2362,7 @@ export type Database = {
           status: Database["public"]["Enums"]["product_status"]
           store_id: string
           track_inventory: boolean
+          in_stock: boolean
           updated_at: string
           views_count: number
           weight_grams: number | null
@@ -2388,6 +2389,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["product_status"]
           store_id: string
           track_inventory?: boolean
+          in_stock?: boolean
           updated_at?: string
           views_count?: number
           weight_grams?: number | null
@@ -2414,6 +2416,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["product_status"]
           store_id?: string
           track_inventory?: boolean
+          in_stock?: boolean
           updated_at?: string
           views_count?: number
           weight_grams?: number | null

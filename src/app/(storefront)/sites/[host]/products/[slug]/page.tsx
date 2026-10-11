@@ -15,6 +15,7 @@ import { storeChrome } from '@/lib/tenant/chrome';
 import { deliverySummary } from '@/lib/delivery/summary';
 import { StickyBuyBar } from '@/components/storefront/StickyBuyBar';
 import { ShareProduct } from '@/components/storefront/ShareProduct';
+import { StockAlertForm } from '@/components/storefront/StockAlertForm';
 import { ProductGallery } from '@/components/storefront/ProductGallery';
 import { VariantPicker, type VariantOption }
   from '@/components/storefront/VariantPicker';
@@ -251,7 +252,13 @@ export default async function ProductPage(
           )}
 
           <div id="buy-box" className="mt-6 scroll-mt-20">
-            {variants.length > 0 ? (
+            {/* ★★ «نفدت الكمّية» كانت نهاية طريق. والزبون الذي أراد
+                المنتج فعلًا أثمنُ زائر في الصفحة، وكان يُصرَف بلا أثر.
+                ولا يُعرض لمتجرٍ لا يبيع: وعدُ تنبيهٍ من متجرٍ متوقّف
+                وعدٌ لا يُوفى. */}
+            {available <= 0 && store.canCheckout ? (
+              <StockAlertForm productId={product.id} />
+            ) : variants.length > 0 ? (
               <VariantPicker host={host} productId={product.id} variants={variants}
                              basePrice={Number(product.price)}
                              canCheckout={store.canCheckout}

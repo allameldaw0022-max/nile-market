@@ -29,6 +29,7 @@ async function queryProducts(input: {
   sort?: Sort;
   minPrice?: number | null;
   maxPrice?: number | null;
+  inStock?: boolean;
   from: number;
   size: number;
 }): Promise<{ products: StorefrontProduct[]; total: number }> {
@@ -47,6 +48,11 @@ async function queryProducts(input: {
   //   ستًّا. والحدّان مُتحقَّق منهما قبل الوصول إلى هنا.
   if (input.minPrice != null) query = query.gte('price', input.minPrice);
   if (input.maxPrice != null) query = query.lte('price', input.maxPrice);
+
+  // ★★ عمودٌ مصون في القاعدة (0064) لا تقريبٌ على `quantity`:
+  //    `quantity > 0` كان يَعِد بتوفّر ما كلّ كمّيته محجوزة، ويُخفي
+  //    المنتج الذي لا يُتتبَّع مخزونه. والعمود يقول الحقيقة ويُفهرَس.
+  if (input.inStock) query = query.eq('in_stock', true);
 
   // التنظيف وحدّ الطول في `@/lib/search` — لا نسخة محلية تنحرف
   const search = ilikeAny(searchTerm(input.term), ['name', 'description']);
@@ -82,6 +88,7 @@ export async function listStorefrontProducts(input: {
   sort?: Sort;
   minPrice?: number | null;
   maxPrice?: number | null;
+  inStock?: boolean;
   from: number;
   size: number;
 }): Promise<{ products: StorefrontProduct[]; total: number }> {
@@ -92,6 +99,7 @@ export async function listStorefrontProducts(input: {
     searchTerm(input.term) || '-', input.sort ?? 'newest',
     input.minPrice == null ? '-' : String(input.minPrice),
     input.maxPrice == null ? '-' : String(input.maxPrice),
+    input.inStock ? 'in' : '-',
     String(input.from), String(input.size),
   ];
   const load = unstable_cache(() => queryProducts(input), key, {

@@ -336,6 +336,10 @@ export type RpcMap = {
     args: { p_product_id: string };
     returns: { in_wishlist: boolean; store_id: string }[];
   };
+  request_stock_alert: {
+    args: { p_product_id: string; p_email: string };
+    returns: boolean;
+  };
   submit_product_review: {
     args: { p_product_id: string; p_rating: number; p_body?: string | null };
     returns: { review_id: string; rating_avg: number | null;

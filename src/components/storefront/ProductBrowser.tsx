@@ -102,14 +102,15 @@ function Browser({ kind, host, initial, categorySlug, emptyTitle, emptyDescripti
   const q = (params.get('q') ?? '').trim();
   const min = (params.get('min') ?? '').trim();
   const max = (params.get('max') ?? '').trim();
+  const stock = params.get('stock') === '1';
 
   // هل الطلب هو الافتراضي الذي صيَّره الخادم أصلًا؟
   // ★ النطاق جزءٌ من الشرط: نطاقٌ مضبوط ليس هو ما صيَّره الخادم، فلو
   //   عُدَّ افتراضيًّا لعادت القائمة كاملة بلا ترشيح.
-  const isDefault = page === 1 && sort === 'newest' && min === '' && max === ''
+  const isDefault = page === 1 && sort === 'newest' && min === '' && max === '' && !stock
     && (kind === 'search' ? q.length < 2 : q === '');
 
-  const key = `${kind}|${categorySlug ?? ''}|${page}|${sort}|${q}|${min}|${max}`;
+  const key = `${kind}|${categorySlug ?? ''}|${page}|${sort}|${q}|${min}|${max}|${stock}`;
   const [seenKey, setSeenKey] = useState(key);
 
   // ★ الضبط أثناء الرسم لا داخل `useEffect`: الرجوع إلى العرض
@@ -132,13 +133,14 @@ function Browser({ kind, host, initial, categorySlug, emptyTitle, emptyDescripti
     if (q.length >= 2) url.searchParams.set('q', q);
     if (min) url.searchParams.set('min', min);
     if (max) url.searchParams.set('max', max);
+    if (stock) url.searchParams.set('stock', '1');
 
     fetch(url, { signal: ctl.signal })
       .then((r) => (r.ok ? r.json() : null))
       .then((body: Payload | null) => { if (body) setData(body); })
       .catch(() => {/* تبقى النتائج السابقة معروضة حتى تصل الجديدة */});
     return () => ctl.abort();
-  }, [key, isDefault, page, sort, q, min, max, categorySlug]);
+  }, [key, isDefault, page, sort, q, min, max, stock, categorySlug]);
 
   // ★ الرابط يبقى قابلًا للمشاركة: المعاملات تُكتب في العنوان، فصفحةٌ
   //   مشتركة تُفتح على نفس النتائج (يقرؤها هذا المكوّن عند التحميل).
@@ -177,8 +179,9 @@ function Browser({ kind, host, initial, categorySlug, emptyTitle, emptyDescripti
       {/* ★★ مرشّح السعر: المتجر كان يملك ترتيبًا بلا ترشيح، فمتجرٌ
           بمئة منتج لا طريق فيه لحصر النطاق. والحدّان في العنوان
           فالنتيجة قابلة للمشاركة كبقيّة المعاملات. */}
-      <PriceFilter min={min} max={max} onApply={(a, b) =>
-        go({ min: a, max: b, page: '' })} />
+      <PriceFilter min={min} max={max} stock={stock}
+                   onApply={(a, b) => go({ min: a, max: b, page: '' })}
+                   onStock={(v) => go({ stock: v ? '1' : '', page: '' })} />
 
       <div>
         {empty ? (
@@ -255,9 +258,10 @@ function SortBarStatic() {
  * ★ `inputMode="numeric"` لا `type="number"`: الأخير يفتح أسهمًا
  * ويقلب العجلة قيمةً بالخطأ، ولا يحترم الاتجاه في بعض المتصفّحات.
  */
-function PriceFilter({ min, max, onApply }: {
-  min: string; max: string;
+function PriceFilter({ min, max, stock, onApply, onStock }: {
+  min: string; max: string; stock: boolean;
   onApply: (min: string, max: string) => void;
+  onStock: (on: boolean) => void;
 }) {
   const [a, setA] = useState(min);
   const [b, setB] = useState(max);
@@ -268,7 +272,7 @@ function PriceFilter({ min, max, onApply }: {
   if (seen !== `${min}|${max}`) { setSeen(`${min}|${max}`); setA(min); setB(max); }
 
   const clean = (v: string) => v.replace(/[^\d]/g, '').slice(0, 10);
-  const on = min !== '' || max !== '';
+  const on = min !== '' || max !== '' || stock;
   const box = 'h-10 w-28 rounded-md border border-ink-300 bg-white px-3 '
             + 'text-[13px] tabular text-ink-900 placeholder:text-ink-400';
 
@@ -285,9 +289,19 @@ function PriceFilter({ min, max, onApply }: {
                          text-white transition-colors hover:bg-ink-800">
         تطبيق
       </button>
+      {/* ★★ «المتوفّر فقط» يصدق الآن: عمودٌ مصون في القاعدة (0064)
+          يحترم الحجز وغياب التتبّع معًا — لا تقريبٌ على `quantity`. */}
+      <label className={`inline-flex h-10 cursor-pointer items-center gap-2 rounded-md
+                         border px-3.5 text-[13px] font-semibold
+                         ${stock ? 'border-teal-600 bg-teal-50 text-teal-800'
+                                 : 'border-ink-300 text-ink-700 hover:border-ink-400'}`}>
+        <input type="checkbox" checked={stock} className="size-4 accent-teal-600"
+               onChange={(e) => onStock(e.target.checked)} />
+        المتوفّر فقط
+      </label>
       {on && (
         <button type="button"
-                onClick={() => { setA(''); setB(''); onApply('', ''); }}
+                onClick={() => { setA(''); setB(''); onApply('', ''); onStock(false); }}
                 className="h-10 rounded-md px-3 text-[13px] font-semibold text-ink-600
                            underline underline-offset-4 hover:text-ink-900">
           إلغاء الترشيح
