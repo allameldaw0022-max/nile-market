@@ -44,12 +44,29 @@ export async function generateMetadata(
 
   // ★ canonical مبني دائمًا على الدومين الأساسي (§10.7)
   const canonical = `https://${store.primaryHost}`;
+
+  // ★★ صورة المعاينة: رابط المتجر هو الأكثر مشاركة (واتساب أوّلًا في
+  // السوق السوداني)، وكان يظهر نصًّا عاريًا بلا صورة بينما صفحة
+  // المنتج تفعلها صحّ. اللافتة أولى لأنها بعرض أفقي يناسب المعاينة،
+  // والشعار بديلها. ولا صورة تُخترع إن لم يرفع التاجر شيئًا.
+  const chrome = await storeChrome(store.storeId);
+  const preview = chrome.bannerUrl ?? chrome.logoUrl;
+
   return {
     title: store.name,
+    description: chrome.description ?? undefined,
     alternates: { canonical },
     openGraph: {
       title: store.name, url: canonical, siteName: store.name,
+      description: chrome.description ?? undefined,
       type: 'website', locale: 'ar_SD',
+      images: preview ? [preview] : undefined,
+    },
+    twitter: {
+      card: preview ? 'summary_large_image' : 'summary',
+      title: store.name,
+      description: chrome.description ?? undefined,
+      images: preview ? [preview] : undefined,
     },
   };
 }

@@ -1,8 +1,7 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { ChevronRight, ImageOff, ShieldCheck, Truck } from 'lucide-react';
+import { ChevronRight, ShieldCheck, Truck } from 'lucide-react';
 import { resolveStoreByHost, storeTag } from '@/lib/tenant/resolve';
 import { decodeSlugParam } from '@/lib/tenant/params';
 import { unstable_cache } from 'next/cache';
@@ -12,6 +11,10 @@ import { WishlistButton } from '@/components/storefront/WishlistButton';
 import { ProductCard, type StorefrontProduct } from '@/components/storefront/ProductCard';
 import { formatMoney } from '@/lib/money/format';
 import { publicUrl } from '@/lib/media/url';
+import { storeChrome } from '@/lib/tenant/chrome';
+import { ProductGallery } from '@/components/storefront/ProductGallery';
+import { VariantPicker, type VariantOption }
+  from '@/components/storefront/VariantPicker';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { RatingSummary } from '@/components/storefront/Stars';
 import { ProductReviews, type PublicReview }
@@ -58,7 +61,7 @@ type ProductRow = {
   product_variants: {
     id: string; name: string; price: number | null; is_active: boolean;
   }[] | null;
-  inventory: { quantity: number; reserved: number }[] | null;
+  inventory: { quantity: number; reserved: number; variant_id: string | null }[] | null;
 };
 
 const SELECT =
@@ -66,7 +69,7 @@ const SELECT =
   'category_id, seo, rating_avg, rating_count, ' +
   'product_images(sort_order, is_primary, media_files(bucket, path, blur_data_url)), ' +
   'product_variants(id, name, price, is_active), ' +
-  'inventory(quantity, reserved)';
+  'inventory(quantity, reserved, variant_id)';
 
 /**
  * ★★ عميل بلا كوكيز + تخزين بوسم منتجات المتجر.
@@ -134,18 +137,45 @@ export default async function ProductPage(
     .map((i) => i.media_files)
     .filter((m): m is NonNullable<typeof m> => m !== null);
 
-  const stock = (product.inventory ?? []).reduce(
-    (sum, i) => sum + Math.max(i.quantity - i.reserved, 0), 0);
+  const rows = product.inventory ?? [];
+  const stock = rows.reduce((sum, i) => sum + Math.max(i.quantity - i.reserved, 0), 0);
   const available = product.track_inventory ? stock : 999;
+
+  // ★★ التوفّر لكل متغيّر على حدة: جمع مخزون المقاسات كلّها كان
+  //    يَعِد بتوفّر مقاسٍ نفد. و`inventory.variant_id` قائم منذ 0004.
+  const qtyOf = (variantId: string) => {
+    const r = rows.filter((i) => i.variant_id === variantId);
+    return product.track_inventory
+      ? r.reduce((sum, i) => sum + Math.max(i.quantity - i.reserved, 0), 0)
+      : 999;
+  };
+  const variants: VariantOption[] = (product.product_variants ?? [])
+    .filter((v) => v.is_active)
+    .map((v) => ({
+      id: v.id,
+      name: v.name,
+      price: v.price == null ? null : Number(v.price),
+      available: qtyOf(v.id),
+    }));
 
   const hasDiscount = product.compare_at_price != null
     && Number(product.compare_at_price) > Number(product.price);
 
   // ★ الاثنان عامّان ومخزَّنان، ويُجلبان معًا لا متسلسلين.
-  const [related, reviews] = await Promise.all([
+  // ★ القشرة نداءٌ مخزَّن قائم (التخطيط طلبه لتوّه) ⇒ كلفتها صفر،
+  //   ومنها تُقرأ طرق الدفع التي فعّلها التاجر فعلًا.
+  const [related, reviews, chrome] = await Promise.all([
     loadRelated(store.storeId, product.category_id, product.id),
     loadReviews(store.storeId, product.id),
+    storeChrome(store.storeId),
   ]);
+
+  const pay = [
+    chrome.codEnabled && 'الدفع عند الاستلام',
+    chrome.bankTransferEnabled && 'تحويل بنكي',
+    chrome.bankakEnabled && 'بنكك',
+  ].filter(Boolean) as string[];
+  const payLine = pay.length > 0 ? pay.join(' · ') : null;
   const ratingAvg = product.rating_avg == null ? null : Number(product.rating_avg);
 
   // بيانات منظَّمة: تظهر النتيجة في جوجل بسعرها وتوفّرها (§22).
@@ -184,35 +214,7 @@ export default async function ProductPage(
       </nav>
 
       <div className="mt-5 grid gap-6 md:grid-cols-2">
-        <div className="space-y-2">
-          <div className="relative aspect-square overflow-hidden rounded-lg
-                          border border-ink-200 bg-ink-100">
-            {images[0] ? (
-              <Image src={publicUrl(images[0].bucket, images[0].path)} alt={product.name}
-                     fill priority sizes="(max-width: 768px) 100vw, 50vw"
-                     className="object-cover"
-                     placeholder={images[0].blur_data_url ? 'blur' : 'empty'}
-                     blurDataURL={images[0].blur_data_url ?? undefined} />
-            ) : (
-              <div className="grid h-full place-items-center text-ink-400">
-                <ImageOff size={36} strokeWidth={1.5} />
-              </div>
-            )}
-          </div>
-
-          {images.length > 1 && (
-            <ul className="grid grid-cols-5 gap-2">
-              {images.slice(1, 6).map((m) => (
-                <li key={m.path}
-                    className="relative aspect-square overflow-hidden rounded-md
-                               border border-ink-200 bg-ink-100">
-                  <Image src={publicUrl(m.bucket, m.path)} alt="" fill sizes="80px"
-                         className="object-cover" />
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+        <ProductGallery images={images} alt={product.name} />
 
         <div>
           <h1 className="text-xl font-extrabold text-ink-900 sm:text-2xl">{product.name}</h1>
@@ -223,10 +225,14 @@ export default async function ProductPage(
             </a>
           )}
 
+          {/* ★ المنتج ذو المتغيّرات يعرض سعره داخل المُختار لأنه
+              يتبع الخيار؛ وإلا فالسعر هنا كما كان. */}
           <div className="mt-3 flex items-baseline gap-3">
-            <p className="text-2xl font-extrabold text-teal-700 tabular">
-              {formatMoney(product.price)}
-            </p>
+            {variants.length === 0 && (
+              <p className="text-2xl font-extrabold text-teal-700 tabular">
+                {formatMoney(product.price)}
+              </p>
+            )}
             {hasDiscount && (
               <p className="text-base text-ink-500 line-through tabular">
                 {formatMoney(product.compare_at_price)}
@@ -241,9 +247,16 @@ export default async function ProductPage(
           )}
 
           <div className="mt-6">
-            <AddToCartButton host={host} productId={product.id} available={available}
-                             disabled={!store.canCheckout}
+            {variants.length > 0 ? (
+              <VariantPicker host={host} productId={product.id} variants={variants}
+                             basePrice={Number(product.price)}
+                             canCheckout={store.canCheckout}
                              disabledNote="هذا المتجر غير متاح للشراء حاليًا — يمكنك التواصل معه." />
+            ) : (
+              <AddToCartButton host={host} productId={product.id} available={available}
+                               disabled={!store.canCheckout}
+                               disabledNote="هذا المتجر غير متاح للشراء حاليًا — يمكنك التواصل معه." />
+            )}
           </div>
 
           {/* الحفظ متاح حتى حين يتوقّف الشراء: المتجر مرئي والاشتراك
@@ -253,13 +266,19 @@ export default async function ProductPage(
                             variant="full" />
           </div>
 
+          {/* ★★ كان هنا نصّ ثابت يَعِد بـ«الدفع عند الاستلام أو تحويل
+              بنكي» مهما كانت إعدادات التاجر — فمتجرٌ أغلق الدفع عند
+              الاستلام يَعِد به ثم يُفاجأ الزبون عند الدفع. الرئيسية
+              تشتقّها من الإعدادات الحقيقية، وهذه الصفحة الآن مثلها. */}
           <ul className="mt-6 space-y-2 text-sm text-ink-500">
             <li className="flex items-center gap-2">
               <Truck size={15} /> التوصيل داخل المدن المحددة من المتجر
             </li>
-            <li className="flex items-center gap-2">
-              <ShieldCheck size={15} /> الدفع عند الاستلام أو تحويل بنكي
-            </li>
+            {payLine && (
+              <li className="flex items-center gap-2">
+                <ShieldCheck size={15} /> {payLine}
+              </li>
+            )}
           </ul>
         </div>
       </div>
