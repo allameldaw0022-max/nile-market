@@ -60,8 +60,15 @@ export function StockAlertForm({ productId }: { productId: string }) {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@example.com"
-          className="h-11 min-w-0 flex-1 rounded-md border border-ink-300 bg-white px-3
-                     text-sm text-ink-900 placeholder:text-ink-400"
+          /* ★★ `w-full` ضروريّ مع `flex-1 min-w-0`: لـ`<input>` عرضٌ
+             ذاتيّ من `size=20` (٣٠٦ بكسل هنا). و`min-w-0` يسمح له
+             بالانكماش داخل المساحة المتاحة، لكنّه **لا يمنع** عرضه
+             الذاتيّ من المساهمة في `min-content` — وعمود الشبكة
+             يُقاس بـ`min-content`. فكان صفّ الحقل والزرّ يطلب ٤٠٥
+             بكسل على شاشة ٣٦٠، فتتمدّد صفحة المنتج كلّها وتتمرّر
+             أفقيًّا على كل هاتف. و`w-full` يُسقط العرض الذاتيّ. */
+          className="h-11 w-full min-w-0 flex-1 rounded-md border border-ink-300
+                     bg-white px-3 text-sm text-ink-900 placeholder:text-ink-400"
         />
         <Button type="submit" loading={pending} icon={<BellRing size={16} />}>
           نبّهني
