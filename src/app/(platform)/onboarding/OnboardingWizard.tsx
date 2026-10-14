@@ -112,6 +112,18 @@ function CreateStoreStep({ onCreated }: { onCreated: (s: WizardInitial) => void 
   const [slugError, setSlugError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
+  // ★★★ انتقالٌ مستقلّ لفحص الرابط — لا يُشارك زرّ الإنشاء حالته.
+  //
+  // بمشاركتها كانت أوّل ضغطة على «إنشاء المتجر» تضيع: الضغط يُخرج
+  // التركيز من حقل الرابط ⇒ `onBlur` يبدأ الفحص ⇒ `pending` يصير
+  // صحيحًا ⇒ `Button` يُعطَّل (`disabled = disabled || loading`) بين
+  // `mousedown` و`click` ⇒ الضغطة تسقط على زرٍّ معطَّل فلا يُرسَل
+  // النموذج. ثم ينتهي الفحص ويعود الزرّ — ولا شيء حدث.
+  //
+  // وهذا أوّل زرّ في المنصّة كلّها: بابُ «لا أستطيع إنشاء متجر».
+  // ويتّسع أثره كلّما بطُؤت الشبكة — أي على الهاتف في السودان أكثر
+  // ممّا على خادم الاختبار.
+  const [, startSlugCheck] = useTransition();
 
   const autoSlug = (v: string) =>
     v.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-')
@@ -167,7 +179,7 @@ function CreateStoreStep({ onCreated }: { onCreated: (s: WizardInitial) => void 
               setSlugState('idle');
               setSlugError(null);
             }}
-            onBlur={() => start(async () => {
+            onBlur={() => startSlugCheck(async () => {
               const value = slug || autoSlug(name);
               if (value.length < 3) return;
               setSlugState('checking');
@@ -220,8 +232,12 @@ function CreateStoreStep({ onCreated }: { onCreated: (s: WizardInitial) => void 
           </select>
         </div>
 
+        {/* ★ لا تعطيل أثناء الفحص: القاعدة هي الحاجز الحقيقي كما يقول
+            تعليق `checkSlug` أعلاه، فتعطيلُ الزرّ ريثما يُفحص لا يمنع
+            خطأً — ويبتلع ضغطة التاجر. ويبقى التعطيل على «محجوز» وحده:
+            منعُ إرسالٍ نعرف يقينًا أنه سيفشل. */}
         <Button type="submit" className="w-full" size="lg" loading={pending}
-                disabled={slugState === 'taken' || slugState === 'checking'}>
+                disabled={slugState === 'taken'}>
           إنشاء المتجر
         </Button>
       </form>
