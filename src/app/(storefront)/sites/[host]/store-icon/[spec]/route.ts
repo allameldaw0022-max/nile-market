@@ -35,21 +35,52 @@ import { log } from '@/lib/observability/logger';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-/** خلفيةٌ بيضاء لا لون الثيم: ثيمٌ غامق وشعارٌ غامق = أيقونة عمياء. */
-const BACKGROUND = { r: 255, g: 255, b: 255, alpha: 1 };
+/** أبيضُ احتياطيّ حين لا تُعرف خلفية الشعار. */
+const WHITE = { r: 255, g: 255, b: 255, alpha: 1 };
 
-type Spec = { size: number; inset: number; fallback: string };
+type Spec = { size: number; fallback: string; maskable?: true };
 
 const SPECS: Record<string, Spec> = {
   // مقاسا البيان القياسيان
-  '192': { size: 192, inset: 0, fallback: '/icons/icon-192.png' },
-  '512': { size: 512, inset: 0, fallback: '/icons/icon-512.png' },
+  '192': { size: 192, fallback: '/icons/icon-192.png' },
+  '512': { size: 512, fallback: '/icons/icon-512.png' },
   // iOS: ١٨٠ هو ما يطلبه، وبلا شفافية (الشفاف يصير أسود على الشاشة)
-  apple: { size: 180, inset: 0, fallback: '/icons/apple-touch-icon.png' },
-  // ★ هامش الأمان ٢٠٪: المشغّل يقصّ الأيقونة بقناعٍ دائري أو مربّعٍ
-  //   مستدير، فشعارٌ يملأ الإطار تُقصّ أطرافه.
-  maskable: { size: 512, inset: 0.2, fallback: '/icons/maskable-512.png' },
+  apple: { size: 180, fallback: '/icons/apple-touch-icon.png' },
+  maskable: { size: 512, fallback: '/icons/maskable-512.png', maskable: true },
 };
+
+/**
+ * لون خلفية الشعار — من حوافّه الأربع.
+ *
+ * ★★★ لماذا لا الأبيض دائمًا: شعارُ تاجرٍ حقيقيّ في الإنتاج مربّعٌ
+ * **أسود يملأ إطاره**. فحشوُه بأبيض يصنع إطارًا أبيض حول مربّع أسود،
+ * ثم يُصغّره المشغّل داخل مربّعه هو ⇒ شعارٌ صغير في وسط بياض — وهو
+ * بالضبط ما اشتكى منه صاحب المنصّة في لقطة الشاشة.
+ *
+ * والحلّ أن يُحشى بلون الشعار نفسه: شعارٌ مربّع لا يُحشى أصلًا، وشعارٌ
+ * مستطيل يمتدّ لونه إلى الحواف فيبدو مقصودًا لا مقصوصًا.
+ */
+async function backdrop(bytes: Buffer): Promise<typeof WHITE> {
+  const { width = 0, height = 0, hasAlpha } = await sharp(bytes).metadata();
+  // ★ شعارٌ بشفافية مارِكٌ عارٍ لا بطاقة: خلفيته بيضاء وله هامش أمان.
+  if (hasAlpha || !width || !height) return WHITE;
+
+  const band = Math.max(2, Math.round(Math.min(width, height) * 0.04));
+  const regions = [
+    { left: 0, top: 0, width, height: band },
+    { left: 0, top: height - band, width, height: band },
+    { left: 0, top: 0, width: band, height },
+    { left: width - band, top: 0, width: band, height },
+  ];
+
+  let r = 0, g = 0, b = 0;
+  for (const region of regions) {
+    const { channels } = await sharp(bytes).extract(region).stats();
+    r += channels[0].mean; g += channels[1].mean; b += channels[2].mean;
+  }
+  const n = regions.length;
+  return { r: Math.round(r / n), g: Math.round(g / n), b: Math.round(b / n), alpha: 1 };
+}
 
 const CACHE = 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800';
 
@@ -93,15 +124,23 @@ export async function GET(
     if (!source.ok) throw new Error(`storage ${source.status}`);
     const bytes = Buffer.from(await source.arrayBuffer());
 
-    const inner = Math.round(wanted.size * (1 - wanted.inset));
+    const background = await backdrop(bytes);
+
+    // ★★ هامش الأمان للأيقونة القابلة للقناع **فقط** حين يكون الشعار
+    //    مارِكًا بشفافية: المشغّل يقصّ أطراف الإطار، فمارِكٌ بلا هامش
+    //    تُقصّ حوافّه. أمّا بطاقةٌ معتمة لها خلفيتها فتملأ الإطار
+    //    كما هي — والمقصوص منها خلفيتها لا شعارها.
+    const inset = wanted.maskable && background === WHITE ? 0.2 : 0;
+    const inner = Math.round(wanted.size * (1 - inset));
     const pad = Math.round((wanted.size - inner) / 2);
 
     // ★ `contain` لا `cover`: شعارٌ طوليّ (٧٠٩×١٦٠٠ في الإنتاج) يُقصّ
-    //   بـ`cover` فيضيع نصفه. الاحتواء يُبقيه كاملًا ويحشو الباقي.
+    //   بـ`cover` فيضيع نصفه. الاحتواء يُبقيه كاملًا، ويُحشى الباقي
+    //   بلون حوافّه فيمتدّ إلى أطراف الأيقونة.
     const png = await sharp(bytes, { limitInputPixels: 50_000_000 })
-      .resize(inner, inner, { fit: 'contain', background: BACKGROUND })
-      .extend({ top: pad, bottom: pad, left: pad, right: pad, background: BACKGROUND })
-      .flatten({ background: BACKGROUND })
+      .resize(inner, inner, { fit: 'contain', background })
+      .extend({ top: pad, bottom: pad, left: pad, right: pad, background })
+      .flatten({ background })
       .png({ compressionLevel: 9 })
       .toBuffer();
 
