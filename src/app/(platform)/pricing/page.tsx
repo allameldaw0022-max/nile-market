@@ -1,10 +1,7 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { Check, Minus } from 'lucide-react';
-// ★★★ العميل العامّ لا عميل الجلسة: هذه قراءةٌ عامّة لا تعتمد هويّة،
-//     وعميل الجلسة يقرأ الكوكيز — فتصير الصفحة (والقسم كلّه معها)
-//     مُصيَّرة لكل طلب، ويسقط `revalidate` بلا أن يقول أحد.
-import { createPublicClient } from '@/lib/supabase/public';
+import { createClient } from '@/lib/supabase/server';
 import { buttonClass } from '@/components/ui/Button';
 import { PlanGrid, type PublicPlan } from '@/components/marketing/PlanGrid';
 import { Faq } from '@/components/marketing/Faq';
@@ -46,7 +43,7 @@ type PlanRow = PublicPlan & { duration_days: number | null; plan_entitlements: E
  * لا زرّ اشتراك لها (D18) بل «تواصل معنا» الذي يفتح تذكرة فعلية.
  */
 export default async function PricingPage() {
-  const supabase = createPublicClient();
+  const supabase = await createClient();
   const { data } = await supabase
     .from('plans')
     .select('id, code, name, description, price, duration_days, is_free, price_configured_at, plan_entitlements(feature_key, limit_value, bool_value, configured_at)')

@@ -65,13 +65,8 @@ test('★★ ومنطقة الشريك والقسم العام كذلك', () => 
   const partner = read(join(root, 'app/(partner)/partner/layout.tsx'));
   assert.match(partner, /AccountMenu/, 'ترويسة الشريك فيها قائمة الحساب');
 
-  // ★ في القسم العام انتقل ركن الحساب إلى مكوّن عميل (`HeaderAccount`)
-  //   ليبقى التخطيط بلا قراءة كوكيز فتُخزَّن صفحاته على الحافّة. والمخرج
-  //   هو هو — والحارس يتبعه إلى موضعه الجديد ولا يسقط عنه.
-  const platform = read(join(root, 'components/marketing/HeaderAccount.tsx'));
+  const platform = read(join(root, 'app/(platform)/layout.tsx'));
   assert.match(platform, /AccountMenu/, 'والقسم العام كذلك');
-  assert.match(read(join(root, 'app/(platform)/layout.tsx')), /HeaderAccount/,
-    'وركن الحساب مركَّب في ترويسة القسم العام فعلًا');
 });
 
 test('★★ والمخرج يظهر على الهاتف لا على الشاشات الواسعة وحدها', () => {

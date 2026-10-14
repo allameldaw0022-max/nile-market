@@ -1,10 +1,7 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { FileText } from 'lucide-react';
-// ★★★ العميل العامّ لا عميل الجلسة: هذه قراءةٌ عامّة لا تعتمد هويّة،
-//     وعميل الجلسة يقرأ الكوكيز — فتصير الصفحة (والقسم كلّه معها)
-//     مُصيَّرة لكل طلب، ويسقط `revalidate` بلا أن يقول أحد.
-import { createPublicClient } from '@/lib/supabase/public';
+import { createClient } from '@/lib/supabase/server';
 import { Card } from '@/components/ui/Card';
 import { firstRow, rpc } from '@/lib/supabase/rpc';
 import { formatDate } from '@/lib/money/format';
@@ -15,7 +12,7 @@ const SLUGS = ['terms', 'privacy', 'subscription', 'cancellation'] as const;
 
 async function load(slug: string) {
   if (!(SLUGS as readonly string[]).includes(slug)) return null;
-  const supabase = createPublicClient();
+  const supabase = await createClient();
   const { data } = await rpc(supabase, 'legal_document', { p_slug: slug });
   return firstRow(data);
 }
