@@ -1,5 +1,6 @@
 'use server';
 import 'server-only';
+import { SIGNED_URL_TTL_SECONDS } from '@/lib/media/signed-ttl';
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { requireUser } from '@/lib/authz/guards';
@@ -143,7 +144,7 @@ export async function attachmentUrl(input: {
 
     const signed = await supabase.storage
       .from('support-attachments')
-      .createSignedUrl(row.path, 120);
+      .createSignedUrl(row.path, SIGNED_URL_TTL_SECONDS);
 
     if (signed.error || !signed.data?.signedUrl) {
       throw errors.internal({ what: 'support_attachment_signed_url',

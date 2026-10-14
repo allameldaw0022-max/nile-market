@@ -25,8 +25,8 @@ import { rpc, firstRow } from '@/lib/supabase/rpc';
  * ولا يصلح للمشاركة ولا للأرشفة.
  */
 
-/** عمر الرابط الموقَّع بالثواني — نفس ما تعتمده مرفقات الدعم. */
-const SIGNED_TTL = 120;
+/** عمر الرابط الموقَّع — ثابت مشترك مع مرفقات الدعم، لا رقمان متفرّقان. */
+import { SIGNED_URL_TTL_SECONDS as SIGNED_TTL } from '@/lib/media/signed-ttl';
 
 export type OrderReceipt = {
   paymentId: string;

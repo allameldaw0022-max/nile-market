@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { AppError, errors, fromPostgres } from '../src/lib/authz/errors.ts';
 import { actionError } from '../src/lib/action-result.ts';
 
@@ -157,5 +158,22 @@ test('★★★ خطأ إدخال من القاعدة يُترجَم ولا يُ
       `${code} ما زال يُعرض كعطل نظام — التاجر لا يعرف أن بيده إصلاحه`);
     assert.match(result.message, expected);
     assert.deepEqual(lines, [], `${code} خطأ مستخدم لا يستحقّ سطرًا في سجلّ الأعطال`);
+  }
+});
+
+test('★★ عمر الرابط الموقَّع يكفي لقراءة بشريّة', () => {
+  // ★ ١٢٠ ثانية أقصر من قراءة تذكرة واحدة: من يعود إلى المرفق بعد
+  //   دقيقتين يسقط على JSON خام من Supabase («InvalidJWT»)، ولا يفهم
+  //   أن عليه إعادة الفتح. مُثبَت في سجلّ التخزين: فتحٌ ناجح ثم رفضان
+  //   بعد عشر دقائق من الجهاز نفسه.
+  const ttl = readFileSync(new URL('../src/lib/media/signed-ttl.ts', import.meta.url), 'utf8');
+  const value = Number(ttl.match(/SIGNED_URL_TTL_SECONDS\s*=\s*(\d+)/)?.[1]);
+  assert.ok(value >= 600, `عمر الرابط ${value} ثانية — أقصر من أن يُقرأ`);
+  assert.ok(value <= 3600, `عمر الرابط ${value} ثانية — أطول مما يجوز لرابطٍ خاصّ`);
+
+  for (const f of ['../src/lib/support/attachments.ts', '../src/lib/payments/receipts.ts']) {
+    const src = readFileSync(new URL(f, import.meta.url), 'utf8');
+    assert.ok(!/createSignedUrl\([^,]+,\s*\d+\s*\)/.test(src),
+      `${f}: مدّة مكتوبة بالرقم — استعمل الثابت المشترك`);
   }
 });
