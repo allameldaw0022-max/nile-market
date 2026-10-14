@@ -161,3 +161,32 @@ select t.ok((select count(*) = 1 from public.capacity_samples
               where metric = 'store_visits_rows'),
             'ويُسجَّل كمقياس له عتبتاه');
 rollback;
+
+\set ownerA 11111111-1111-1111-1111-111111111111
+
+\echo '── قراءة السعة: المجدول يقرؤها كما يكتبها (0067) ──'
+begin;
+select t.reset();
+select t.ok(public.record_capacity() is not null, 'قياسٌ مُسجَّل ليُقرأ');
+
+-- المجدول: بلا هويّة، بدور الخدمة
+set local role service_role;
+select t.ok((select count(*) > 0 from public.capacity_latest()),
+            '★★★ المجدول يقرأ السعة — كان يُرفض فيعلن الفحص «degraded» أبدًا');
+select t.reset();
+
+-- موظّف المنصّة بصلاحيته
+select t.login(:'adminOwner');
+select t.ok((select count(*) > 0 from public.capacity_latest()),
+            'وموظّف المنصّة بصلاحية system_health يقرؤها');
+
+-- تاجر: هويّةٌ بلا صلاحية ⇒ رفض
+select t.login(:'ownerA');
+select t.throws('select * from public.capacity_latest()',
+                '★★ والتاجر يُرفض — الحارس لم يُفتَح للجميع');
+
+-- زائر: لا منحة تنفيذ أصلًا
+select t.logout();
+select t.throws('select * from public.capacity_latest()',
+                '★★ والزائر لا ينفّذها أصلًا — المنحة هي الجدار');
+rollback;

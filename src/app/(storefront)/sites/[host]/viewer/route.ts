@@ -53,6 +53,12 @@ const EMPTY: ViewerPayload = {
   needsMerge: false, owner: false, review: null,
 };
 
+/** جواب حالة التقييم لزائرٍ بلا جلسة — ثابتٌ لا يحتاج القاعدة. */
+const ANON_REVIEW: NonNullable<ViewerPayload['review']> = {
+  canReview: false, reason: 'auth',
+  myRating: null, myBody: null, myHidden: false,
+};
+
 /** لا يُخزَّن في متصفّح ولا في CDN ولا في وسيط: بيانات زائر بعينه. */
 const noStore = (body: ViewerPayload) =>
   NextResponse.json(body, {
@@ -95,7 +101,14 @@ export async function GET(
     const [lines, savedIds, review, owner] = await Promise.all([
       cartToken || signedIn ? loadCart(host) : Promise.resolve([]),
       signedIn ? wishlistIds(supabase, store.storeId) : Promise.resolve([]),
-      productId ? reviewState(supabase, productId) : Promise.resolve(null),
+      // ★★ بلا جلسة لا نسأل القاعدة: الجواب ثابتٌ معروف («سجّل الدخول»).
+      //   كان الزائر يستدعيها فيتلقّى 42501 — `anon` بلا منحة تنفيذ —
+      //   فيبتلعه `reviewState` ويعيد الجواب نفسه. أي أن السلوك الصحيح
+      //   كان يقوم على **فشلٍ** صامت: ٢٣ رفضًا في اليوم في سجلّ الإنتاج،
+      //   ورحلة شبكة ضائعة في كل زيارة منتج، وسلوكٌ ينقلب لو عُومل
+      //   الرفض يومًا بغير ابتلاع.
+      productId && signedIn ? reviewState(supabase, productId)
+        : Promise.resolve(productId ? ANON_REVIEW : null),
       signedIn && store.status !== 'active'
         ? isOwner(supabase, store.storeId)
         : Promise.resolve(false),

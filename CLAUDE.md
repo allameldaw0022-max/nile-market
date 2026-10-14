@@ -18,7 +18,7 @@
 | `src/app/(admin)/` · `(partner)/` · `(platform)/` | إدارة المنصّة · الشركاء · الموقع التعريفي |
 | `src/proxy.ts` | يحلّ المستأجر من الـHost ويجدّد الجلسة (بديل middleware في Next 16) |
 | `src/lib/supabase/` | `public` (anon بلا كوكيز) · `server` (جلسة) · `service` (يتجاوز RLS) |
-| `supabase/migrations/` | ٦٦ هجرة — مصدر الحقيقة للمخطّط والصلاحيات |
+| `supabase/migrations/` | ٦٧ هجرة — مصدر الحقيقة للمخطّط والصلاحيات |
 | `supabase/tests/` | ٣٤ ملف اختبار سلوكيّ على القاعدة |
 | `docs/` | التفصيل: `ARCHITECTURE` · `DATABASE` · `NILE-MARKET-SPEC` · `API` |
 
@@ -97,7 +97,7 @@
 ```bash
 npm run typecheck                      # tsc --noEmit
 npm run build                          # next build
-npm run test:unit                      # ١٧٧ اختبارًا بنيويًّا — استعمل هذا الأمر
+npm run test:unit                      # ١٧٨ اختبارًا بنيويًّا — استعمل هذا الأمر
 DB=nile_check ./scripts/test-db.sh     # كل اختبارات القاعدة + التزامن
 ```
 
