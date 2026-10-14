@@ -1,7 +1,10 @@
 import Link from 'next/link';
 import { ArrowLeft, Check } from 'lucide-react';
 import type { Metadata } from 'next';
-import { createClient } from '@/lib/supabase/server';
+// ★★★ العميل العامّ لا عميل الجلسة: هذه قراءةٌ عامّة لا تعتمد هويّة،
+//     وعميل الجلسة يقرأ الكوكيز — فتصير الصفحة (والقسم كلّه معها)
+//     مُصيَّرة لكل طلب، ويسقط `revalidate` بلا أن يقول أحد.
+import { createPublicClient } from '@/lib/supabase/public';
 import { buttonClass } from '@/components/ui/Button';
 import {
   DashboardPreview, MobilePreview, OrdersPreview, ProductsPreview,
@@ -26,7 +29,7 @@ export const metadata: Metadata = {
  * يجعل الموقع يبدو مولَّدًا، فلا يتكرّر هنا قسم بتخطيط قسم آخر.
  */
 export default async function HomePage() {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data: plans } = await supabase
     .from('plans')
     .select('id, code, name, description, price, is_free, price_configured_at')

@@ -1,10 +1,7 @@
 import Link from 'next/link';
-import { getActor } from '@/lib/auth/actor';
-import { buttonClass } from '@/components/ui/Button';
 import { SkipLink } from '@/components/ui/SkipLink';
-import { AccountMenu } from '@/components/shared/AccountMenu';
 import { Wordmark } from '@/components/marketing/Wordmark';
-import { MobileNav } from '@/components/marketing/MobileNav';
+import { HeaderAccount } from '@/components/marketing/HeaderAccount';
 
 /** روابط القسم العام — قائمة واحدة تُستعمل في الشريطين: الواسع والضيّق. */
 const NAV = [
@@ -16,16 +13,19 @@ const NAV = [
   { href: '/support',  label: 'الدعم' },
 ];
 
-export default async function PlatformLayout({ children }: LayoutProps<'/'>) {
-  const actor = await getActor();
-  const signedIn = actor.kind === 'user';
-  const hasStore = actor.kind === 'user' && actor.stores.length > 0;
-  const appHref = hasStore ? '/dashboard' : '/onboarding';
-  const appLabel = hasStore ? 'لوحة التحكم' : 'أنشئ متجرك';
-  // الشريك يصل إلى لوحته من أي صفحة عامة
-  const partnerLink = actor.kind === 'user' && actor.partnerId
-    ? [{ href: '/partner', label: 'لوحة الشريك' }] : [];
-
+/**
+ * ★★★ لا `getActor()` هنا — ولا أي قراءة كوكيز.
+ *
+ * قراءة واحدة للكوكيز في تخطيط القسم تجعل Next يصيّر **كل** صفحاته
+ * لكل طلب: سبع عشرة صفحة تعريفية، منها الرئيسية والباقات والصفحات
+ * القانونية. والرئيسية تعلن `revalidate = 300` فيبدو أنها مخزَّنة،
+ * والتخزين مُبطَل من فوقها بلا أن يقول أحد — قياسًا على الإنتاج:
+ * `x-vercel-cache: MISS` في كل طلب.
+ *
+ * فالشخصيّ انتقل إلى `HeaderAccount` يجلبه بعد الإماهة، والقشرة
+ * تُخدَم من الحافّة. نفس فصل `/sites/[host]/viewer` في المتجر.
+ */
+export default function PlatformLayout({ children }: LayoutProps<'/'>) {
   return (
     <div className="flex min-h-screen flex-col">
       <SkipLink />
@@ -43,31 +43,7 @@ export default async function PlatformLayout({ children }: LayoutProps<'/'>) {
             ))}
           </ul>
 
-          <div className="ms-auto flex items-center gap-2">
-            {signedIn ? (
-              <>
-                <Link href={appHref} className={buttonClass('primary', 'sm')}>{appLabel}</Link>
-                {/* ★ مخرج في القسم العام أيضًا: من سجّل ووقف هنا كان
-                    يرى زرّ لوحة فقط، بلا طريقة للخروج من الحساب. */}
-                <span className="hidden sm:block">
-                  <AccountMenu email={actor.kind === 'user' ? actor.email : null}
-                               isPlatformStaff={actor.kind === 'user' && Boolean(actor.admin)}
-                               links={partnerLink} />
-                </span>
-              </>
-            ) : (
-              <>
-                <Link href="/login"
-                      className="hidden px-2 text-[14px] font-medium text-ink-600
-                                 transition-colors hover:text-ink-900 sm:block">
-                  تسجيل الدخول
-                </Link>
-                <Link href="/signup" className={buttonClass('primary', 'sm')}>أنشئ متجرك</Link>
-              </>
-            )}
-            <MobileNav items={NAV} signedIn={signedIn} appHref={appHref}
-                       appLabel={appLabel} extra={partnerLink} />
-          </div>
+          <HeaderAccount items={NAV} />
         </nav>
       </header>
 
