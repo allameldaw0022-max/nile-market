@@ -402,7 +402,10 @@ function isCachedStorePath(pathname: string): boolean {
 
 /** مسارات ليست صفحات يراها زائر ⇒ لا تُحسب زيارة. */
 const NON_PAGE = ['/viewer', '/api', '/manifest.webmanifest',
-                  '/robots.txt', '/sitemap.xml'];
+                  '/robots.txt', '/sitemap.xml',
+                  // ★ أيقونة المتجر ليست صفحةً يراها زائر: المتصفّح
+                  //   يجلبها مع كل تبويب، فحسبُها زيارةً يضخّم الإحصاء.
+                  '/store-icon'];
 
 /**
  * ترجمة المضيف إلى معرّف المتجر، بذاكرة داخل العملية.

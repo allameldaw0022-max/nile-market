@@ -1,6 +1,5 @@
 import { resolveStoreByHost } from '@/lib/tenant/resolve';
 import { createClient } from '@/lib/supabase/server';
-import { publicUrl } from '@/lib/media/url';
 
 /**
  * بيان المتجر — واحد لكل مستأجر.
@@ -33,23 +32,25 @@ export async function GET(
   const themeColor = typeof theme.primary === 'string'
     && /^#[0-9a-fA-F]{6}$/.test(theme.primary) ? theme.primary : THEME_FALLBACK;
 
-  const { data: logo } = await supabase
-    .from('media_files').select('bucket, path')
-    .eq('store_id', store.storeId).eq('purpose', 'store_logo')
-    .eq('status', 'ready').is('deleted_at', null)
-    .order('created_at', { ascending: false }).limit(1).maybeSingle();
-
-  // شعار المتجر أيقونةً حين وُجد، وأيقونة المنصة احتياطًا — متجر بلا
-  // أيقونة لا يُثبَّت على الشاشة الرئيسية.
-  const logoUrl = logo ? publicUrl(logo.bucket, logo.path) : null;
-  const icons = logoUrl
-    ? [{ src: logoUrl, sizes: '512x512', type: 'image/png', purpose: 'any' },
-       { src: '/icons/maskable-512.png', sizes: '512x512',
-         type: 'image/png', purpose: 'maskable' }]
-    : [{ src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
-       { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
-       { src: '/icons/maskable-512.png', sizes: '512x512',
-         type: 'image/png', purpose: 'maskable' }];
+  // ★★★ الأيقونات من مسار المتجر لا من ملف الشعار مباشرة:
+  //
+  //   • كان البيان يرسل الشعار كما هو بإعلان
+  //     `sizes: '512x512', type: 'image/png'` — وكلّ شعارات الإنتاج
+  //     `image/webp` بمقاسات متفرّقة (١٦٠٠×١٦٠٠ · ٦١٩×٦٠٤ · ٧٠٩×١٦٠٠
+  //     · ٤٠٠×٤٠٠). فالإعلان كاذبٌ في النوع والمقاس: كروم قد يتخطّى
+  //     أيقونةً لا تطابقه، وشعارٌ طوليّ معلَنٌ مربّعًا يُسحق، وشعارٌ
+  //     أصغر من المعلَن يسقط من فحص الحدّ الأدنى للتثبيت.
+  //   • و`maskable` كانت **من أيقونات المنصّة**، ومعظم مشغّلات أندرويد
+  //     تُفضّلها ⇒ يثبّت الزبون المتجر فيرى علامة «سوق النيل».
+  //
+  //   والمسار يولّد PNG مربّعًا بالمقاس المطلوب فعلًا، وينحدر إلى
+  //   أيقونة المنصّة وحده حين لا شعار.
+  const icons = [
+    { src: '/store-icon/192', sizes: '192x192', type: 'image/png', purpose: 'any' },
+    { src: '/store-icon/512', sizes: '512x512', type: 'image/png', purpose: 'any' },
+    { src: '/store-icon/maskable', sizes: '512x512',
+      type: 'image/png', purpose: 'maskable' },
+  ];
 
   return Response.json({
     name: store.name,

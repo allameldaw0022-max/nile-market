@@ -36,9 +36,12 @@ export async function generateMetadata(
       statusBarStyle: 'default',
       title: store?.name,
     },
+    // ★★★ أيقونات المتجر لا أيقونات المنصّة. و`apple` تحديدًا هي
+    //     الوحيدة التي يقرؤها iOS (يتجاهل البيان كلّه)، فكانت كل
+    //     عملية تثبيت على iPhone تُظهر علامة «سوق النيل».
     icons: {
-      icon: '/icons/icon-192.png',
-      apple: '/icons/apple-touch-icon.png',
+      icon: [{ url: '/store-icon/192', sizes: '192x192', type: 'image/png' }],
+      apple: [{ url: '/store-icon/apple', sizes: '180x180', type: 'image/png' }],
     },
     formatDetection: { telephone: false },
   };
