@@ -128,6 +128,20 @@ export function fromPostgres(err: { code?: string; message?: string }): AppError
   if (err.code === '42501' || named('FORBIDDEN'))
     return errors.forbidden();
   if (err.code === '23505') return new AppError('CONFLICT', 'هذا العنصر موجود مسبقًا');
+  // ★★★ أخطاء إدخالٍ تبدو أخطاءَ نظام إن لم تُترجَم:
+  //   22003 رقمٌ أكبر من سعة عموده · 22P02 نصٌّ في موضع رقم ·
+  //   23514 قيمةٌ تخالف قيد الجدول · 22001 نصٌّ أطول من عموده.
+  //   كانت تسقط إلى «حدث خطأ غير متوقع، تم إبلاغ الفريق» — فيعيد
+  //   التاجر المحاولة بالقيمة نفسها لأنه لا يعرف أنّها هي الخطأ.
+  //   (مُثبَت من لقطة شاشة تاجر: أربع محاولات في خمس ساعات.)
+  if (err.code === '22003')
+    return new AppError('VALIDATION_ERROR', 'رقمٌ من الأرقام كبير جدًا — راجع الأرقام المُدخَلة');
+  if (err.code === '22P02')
+    return new AppError('VALIDATION_ERROR', 'قيمة غير صالحة في أحد الحقول — راجع ما أدخلته');
+  if (err.code === '22001')
+    return new AppError('VALIDATION_ERROR', 'نصٌّ من النصوص طويل جدًا — اختصره');
+  if (err.code === '23514')
+    return new AppError('VALIDATION_ERROR', 'قيمة غير مقبولة في أحد الحقول — راجع ما أدخلته');
   if (err.code === 'P0002' || named('NOT_FOUND')) return errors.notFound();
 
   // لا يُسرَّب نص خطأ القاعدة إلى المستخدم إطلاقًا — لكنه **يُسجَّل**

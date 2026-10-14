@@ -18,7 +18,7 @@
 | `src/app/(admin)/` · `(partner)/` · `(platform)/` | إدارة المنصّة · الشركاء · الموقع التعريفي |
 | `src/proxy.ts` | يحلّ المستأجر من الـHost ويجدّد الجلسة (بديل middleware في Next 16) |
 | `src/lib/supabase/` | `public` (anon بلا كوكيز) · `server` (جلسة) · `service` (يتجاوز RLS) |
-| `supabase/migrations/` | ٦٧ هجرة — مصدر الحقيقة للمخطّط والصلاحيات |
+| `supabase/migrations/` | ٦٨ هجرة — مصدر الحقيقة للمخطّط والصلاحيات |
 | `supabase/tests/` | ٣٤ ملف اختبار سلوكيّ على القاعدة |
 | `docs/` | التفصيل: `ARCHITECTURE` · `DATABASE` · `NILE-MARKET-SPEC` · `API` |
 

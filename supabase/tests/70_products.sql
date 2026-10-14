@@ -309,3 +309,27 @@ select t.logout();
 select t.empty('select 1 from store_team', '★ الزائر لا يرى أي عضو');
 rollback;
 select t.reset();
+
+\echo '── رقمٌ أكبر من عموده: رسالةٌ تسمّي الحقل لا «خطأ غير متوقع» (0068) ──'
+begin;
+select t.login(:'ownerA');
+-- ★ قبل الإصلاح كان كلٌّ من هذه يرفع 22003 (فيض رقميّ) وهو رمزٌ غير
+--   مترجَم، فيرى التاجر «حدث خطأ غير متوقع» ولا يعرف أيّ حقلٍ أخطأ.
+select t.throws('select public.save_product(' || quote_literal(:'A')
+  || ', ''سعر ضخم'', 99999999999999.99)',
+  '★★★ سعرٌ فوق الحدّ يُرفض');
+select t.ok((select message like 'VALIDATION:%السعر كبير%'
+             from (select t.catch('select public.save_product(' || quote_literal(:'A')
+                   || ', ''سعر ضخم٢'', 99999999999999.99)') as message) q),
+            '★★★ وبرسالةٍ تسمّي الحقل — لا رمز فيض خام');
+select t.throws('select public.save_product(' || quote_literal(:'A')
+  || ', ''وزن ضخم'', 100, p_weight_grams => 2000000000)',
+  '★★ ووزنٌ غير معقول');
+select t.throws('select public.save_product(' || quote_literal(:'A')
+  || ', ''كمّية ضخمة'', 100, p_initial_quantity => 2000000000)',
+  '★★ وكمّيةٌ ابتدائية ضخمة');
+select t.ok((select count(*) = 1 from public.save_product(
+               :'A', 'منتج طبيعي', 2600000, p_initial_quantity => 50,
+               p_weight_grams => 250)),
+            '★ وأرقام المتجر الحقيقية تمرّ كما هي');
+rollback;

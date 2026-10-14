@@ -157,3 +157,17 @@ begin
   return v_order;
 end $$;
 grant execute on all functions in schema t to anon, authenticated, service_role;
+
+-- يُعيد نصّ رسالة الخطأ بدل رميها — للتحقّق من **مضمون** الرسالة
+-- لا من وقوع الخطأ وحده: «رُفض» لا تكفي حين يكون المطلوب أن يعرف
+-- التاجر أيّ حقلٍ أخطأ فيه.
+create or replace function t.catch(p_sql text)
+returns text language plpgsql as $$
+declare msg text;
+begin
+  execute p_sql;
+  return '(لم يُرفض)';
+exception when others then
+  get stacked diagnostics msg = message_text;
+  return msg;
+end $$;
