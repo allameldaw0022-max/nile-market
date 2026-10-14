@@ -94,10 +94,61 @@ test('★★ والأيقونة تُولَّد مربّعةً بلا شفافي�
     'بلا حدٍّ لأبعاد المدخل: صورةٌ ضخمة تستنزف ذاكرة الدالّة');
 });
 
+/**
+ * ★★★ العطل الذي يحرسه: مصدر الأيقونة كان «أحدث ملفٍ غرضُه
+ * `store_logo`». و`BankAccountsForm` يرفع **شعار البنك** بنفس الغرض
+ * (المكوّن مشترك و`useUploader(storeId, 'store_logo')` مكتوبة فيه)،
+ * فآخرُ ما رُفع قد يكون شعار بنكٍ لا شعار المتجر.
+ *
+ * مُثبَت على الإنتاج: متجران من أربعة عشر أحدثُ ملفٍ لهما ليس شعارهما
+ * المختار — وهما المتجران اللذان لهما حسابات بنكية. أي أن زبونهما كان
+ * سيثبّت المتجر فيرى شعار بنك.
+ *
+ * والمصدر الصحيح `stores.logo_url`: ما اختاره التاجر صراحةً، وهو نفسه
+ * ما يعرضه رأس المتجر — فلا تفترق الأيقونة عن الرأس.
+ */
+test('★★★ ومصدر الأيقونة الشعار المختار لا أحدث ملفٍ مرفوع', () => {
+  // ★ يُفحص **الاستعلام** لا الكلمة: شرحُ العلّة في التعليق يذكر
+  //   `store_logo` بالضرورة، فمطابِقٌ على الكلمة وحدها يسقط على نصّه.
+  const QUERY = /\.eq\(\s*'purpose'\s*,\s*'store_logo'\s*\)/;
+  const route = read(ICON_ROUTE);
+  assert.ok(!QUERY.test(route),
+    'المسار يستعلم أحدث ملفٍ بغرض store_logo — وقد يكون شعار بنك');
+  assert.match(route, /storeChrome\(/,
+    'الشعار لا يُقرأ من `storeChrome` — فقد تفترق الأيقونة عن رأس المتجر');
+
+  const manifest = read(MANIFEST);
+  assert.ok(!QUERY.test(manifest),
+    'البيان ما زال يستعلم أحدث ملفٍ بغرض store_logo');
+});
+
+test('★★★ وللتاجر مكانٌ يغيّر فيه شعاره', () => {
+  // ★ `stores.logo_url` كان يُكتب في **معالج الإنشاء وحده**: تاجرٌ رفع
+  //   شعارًا خاطئًا لا سبيل له لتغييره، ولا الدعم يملك أن يطلب منه.
+  const page = read('src/app/(dashboard)/dashboard/settings/page.tsx');
+  assert.match(page, /<StoreLogoForm/, 'لا شاشة لتغيير الشعار في الإعدادات');
+  assert.match(page, /logo_url/, 'صفحة الإعدادات لا تقرأ الشعار الحالي');
+
+  const actions = read('src/lib/settings/actions.ts');
+  assert.match(actions, /export async function saveStoreLogo/,
+    'لا فعلَ لحفظ الشعار');
+  // ★ حتى التصدير التالي: قطعٌ عند أوّل `}` في العمود الأوّل يتوقّف
+  //   عند قوس نوعِ المُدخَل، فيمرّ الحارس على جسمٍ فارغ. (جُرّب فمرّ.)
+  const start = actions.indexOf('export async function saveStoreLogo');
+  assert.ok(start > 0, 'لم يُعثر على `saveStoreLogo`');
+  const rest = actions.slice(start + 1);
+  const end = rest.indexOf('\nexport ');
+  const body = [rest.slice(0, end === -1 ? undefined : end)];
+  assert.match(body[0], /cleanPublicUrl/,
+    'الرابط يصل من المتصفّح بلا تحقّق — حقنُ رابطٍ خارجي يُحمَّل في كل صفحة');
+  assert.match(body[0], /requireStoreAccess\([^)]*'settings:update'\)/,
+    'بلا فحص صلاحية `settings:update`');
+});
+
 test('★★ ومتجرٌ بلا شعار ينحدر إلى أيقونة المنصّة لا إلى لا شيء', () => {
   // أيقونةٌ مفقودة تمنع التثبيت أصلًا — وهذا أسوأ من أيقونةٍ ليست له.
   const route = read(ICON_ROUTE);
-  assert.match(route, /if \(!logo\) return Response\.redirect/,
+  assert.match(route, /if \(!chrome\.logoUrl\) \{\s*\n\s*return Response\.redirect/,
     'لا بديل حين لا شعار — التثبيت يسقط');
   assert.match(route, /log\.error\('store_icon_failed'/,
     'فشل التوليد يُبتلع بلا أثر (قاعدة ٨) — شعارٌ لا يُفكّ يراه كل زبون');

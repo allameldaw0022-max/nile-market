@@ -1,7 +1,6 @@
 import sharp from 'sharp';
 import { resolveStoreByHost } from '@/lib/tenant/resolve';
-import { createClient } from '@/lib/supabase/server';
-import { publicUrl } from '@/lib/media/url';
+import { storeChrome } from '@/lib/tenant/chrome';
 import { log } from '@/lib/observability/logger';
 
 /**
@@ -65,21 +64,32 @@ export async function GET(
   const store = await resolveStoreByHost(host);
   if (!store) return new Response('Not found', { status: 404 });
 
-  const supabase = await createClient();
-  const { data: logo } = await supabase
-    .from('media_files').select('bucket, path')
-    .eq('store_id', store.storeId).eq('purpose', 'store_logo')
-    .eq('status', 'ready').is('deleted_at', null)
-    .order('created_at', { ascending: false }).limit(1).maybeSingle();
+  // ★★★ الشعار **المختار** (`stores.logo_url`) لا أحدث ملفٍ مرفوع:
+  //   `BankAccountsForm` يرفع **شعار البنك** بنفس الغرض
+  //   (`purpose: 'store_logo'`)، فاستعلام «الأحدث» كان يعطي شعار بنكٍ
+  //   أيقونةً للمتجر. مُثبَت على الإنتاج: متجران من أربعة عشر أحدثُ
+  //   ملفٍ لهما ليس شعارهما المختار، وهما المتجران اللذان لهما حسابات
+  //   بنكية. و`storeChrome` هي مصدر الشعار نفسه الذي يعرضه رأس المتجر،
+  //   فالأيقونة والرأس لا يفترقان.
+  const chrome = await storeChrome(store.storeId);
 
   // ★ متجرٌ بلا شعار يأخذ أيقونة المنصّة: أيقونةٌ مفقودة تمنع التثبيت
   //   أصلًا، وهذا أسوأ من أيقونةٍ ليست له.
-  if (!logo) return Response.redirect(new URL(wanted.fallback, _request.url), 307);
+  if (!chrome.logoUrl) {
+    return Response.redirect(new URL(wanted.fallback, _request.url), 307);
+  }
+
+  // ★ ولا يُجلب إلا من دلو هذا المشروع: الرابط مُحقَّقٌ عند الكتابة
+  //   (`cleanPublicUrl`)، وهذا الفحص الثاني يمنع أن يصير المسار بوّابة
+  //   جلبٍ لأي عنوان لو تسرّب رابطٌ خارجيّ إلى العمود يومًا.
+  const allowed = `${process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''}/storage/v1/object/public/`;
+  if (!allowed.startsWith('https://') || !chrome.logoUrl.startsWith(allowed)) {
+    log.error('store_icon_foreign_logo', { store_id: store.storeId, spec });
+    return Response.redirect(new URL(wanted.fallback, _request.url), 307);
+  }
 
   try {
-    const source = await fetch(publicUrl(logo.bucket, logo.path), {
-      cache: 'no-store',
-    });
+    const source = await fetch(chrome.logoUrl, { cache: 'no-store' });
     if (!source.ok) throw new Error(`storage ${source.status}`);
     const bytes = Buffer.from(await source.arrayBuffer());
 

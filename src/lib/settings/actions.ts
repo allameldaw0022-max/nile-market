@@ -136,6 +136,43 @@ export async function saveStoreCover(input: {
   }
 }
 
+/**
+ * شعار المتجر.
+ *
+ * ★★★ لم يكن له مكانٌ في اللوحة إطلاقًا: `stores.logo_url` يُكتب في
+ * **معالج الإنشاء وحده**، فالتاجر الذي رفع شعارًا خاطئًا — أو رفع
+ * لقطة شاشة — لا سبيل له لتغييره بعدها. (مُشاهَد في الإنتاج.)
+ *
+ * ★ ونفس حارس الغلاف: الرابط يصل من المتصفّح فلا يُقبل إلا ملفًا في
+ *   الدلو العام لهذا المشروع، وإلا أمكن حقن رابط خارجي يُحمَّل في كل
+ *   صفحة من صفحات المتجر — وصار الشعار أيقونةَ التطبيق كذلك.
+ */
+export async function saveStoreLogo(input: {
+  storeId: string; url: string | null;
+}): Promise<ActionResult> {
+  try {
+    const { membership } = await requireStoreAccess(input.storeId, 'settings:update');
+    const url = cleanPublicUrl(input.url ?? undefined, 'رابط الشعار');
+
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from('stores')
+      .update({ logo_url: url ?? null })
+      .eq('id', membership.storeId);
+    if (error) throw fromPostgres(error);
+
+    const { data: domain } = await supabase
+      .from('store_domains').select('hostname')
+      .eq('store_id', membership.storeId).eq('is_primary', true).maybeSingle();
+    if (domain?.hostname) updateTag(tenantTag(domain.hostname));
+    updateTag(storeTag(membership.storeId, 'settings'));
+
+    return ok(undefined);
+  } catch (err) {
+    return actionError(err);
+  }
+}
+
 export type BankAccount = {
   bank: string; account: string; holder?: string;
   /** رابط شعار البنك في `store-public` — اختياري. */
