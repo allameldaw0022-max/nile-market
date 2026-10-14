@@ -18,8 +18,8 @@
 | `src/app/(admin)/` · `(partner)/` · `(platform)/` | إدارة المنصّة · الشركاء · الموقع التعريفي |
 | `src/proxy.ts` | يحلّ المستأجر من الـHost ويجدّد الجلسة (بديل middleware في Next 16) |
 | `src/lib/supabase/` | `public` (anon بلا كوكيز) · `server` (جلسة) · `service` (يتجاوز RLS) |
-| `supabase/migrations/` | ٦٥ هجرة — مصدر الحقيقة للمخطّط والصلاحيات |
-| `supabase/tests/` | ٣٣ ملف اختبار سلوكيّ على القاعدة |
+| `supabase/migrations/` | ٦٦ هجرة — مصدر الحقيقة للمخطّط والصلاحيات |
+| `supabase/tests/` | ٣٤ ملف اختبار سلوكيّ على القاعدة |
 | `docs/` | التفصيل: `ARCHITECTURE` · `DATABASE` · `NILE-MARKET-SPEC` · `API` |
 
 ## قواعد صارمة — خالفها فكسرت الإنتاج
@@ -44,6 +44,19 @@
 **٤) `revoke update (col)` لا يُنقص من منحة على مستوى الجدول.**
 لحماية عمودٍ محسوب استعمل محفّز `before update` يُعيد القيمة الصحيحة
 (انظر `app.enforce_in_stock`) — لا منحة عمودية وحدها.
+
+**٤ب) سكيمة `app` لا يراها PostgREST.** `supabase.rpc('x')` يحلّ في
+`public` وحدها. نداء دالّةٍ في `app` يُردّ **قبل** أن يلمس الطلب
+القاعدة ⇒ «حدث خطأ غير متوقع» بلا سطرٍ واحد في سجلّ Postgres. هكذا
+بقيت أكواد الخصم معطّلة في كل المنصّة منذ الإطلاق (صفر كوبون). وحارس
+`tests/rpc-contract.test.ts` يقابل كل اسم دالّة في الكود بما هو
+معرَّف ومَمنوح في الهجرات — لا تُسكته، أصلح النداء.
+
+**٤ج) الحدّ الذي يُفحص بنداءٍ منفصل ليس حدًّا.** إن بقيت منحة
+`insert` على الجدول، فطلبٌ مباشر إلى PostgREST يتخطّى الفحص. الحدّ
+داخل دالّة الكتابة، والمنحة المباشرة تُسحب (انظر `save_coupon`
+و`revoke insert on public.coupons`). ولا تنسَ الباب الخلفي: صفٌّ
+يُنشأ معطّلًا ثم يُفعَّل لاحقًا يتخطّى فحصًا يقع عند الإنشاء وحده.
 
 **٥) الكمّيات لا تُكتب مباشرة.** `inventory.quantity` يحرسها
 `guard_inventory_quantity`؛ التغيير عبر `inventory_movements` أو
@@ -77,7 +90,7 @@
 ```bash
 npm run typecheck                      # tsc --noEmit
 npm run build                          # next build
-npm run test:unit                      # ١٦٥ اختبار بنيوي — استعمل هذا الأمر
+npm run test:unit                      # ١٦٩ اختبارًا بنيويًّا — استعمل هذا الأمر
 DB=nile_check ./scripts/test-db.sh     # كل اختبارات القاعدة + التزامن
 ```
 
