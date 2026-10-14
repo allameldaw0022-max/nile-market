@@ -333,3 +333,50 @@ select t.ok((select count(*) = 1 from public.save_product(
                p_weight_grams => 250)),
             '★ وأرقام المتجر الحقيقية تمرّ كما هي');
 rollback;
+
+\echo '── حدّ التنبيه: الحقل الذي كان يُفشل الحفظ كلّه (0069) ──'
+begin;
+select t.login(:'ownerA');
+-- ★★★ قبل 0069 كان أيّ نداء يحمل `p_low_stock_threshold` يرفع
+--   `42702 column reference "product_id" is ambiguous`: اسم عمود
+--   الإخراج متغيّرٌ في PL/pgSQL، و`on conflict (product_id, …)` تلتبس.
+--   والكتلة شرطية ⇒ من تَرك الحقل فارغًا نجح، ومن ملأه فشل حفظ منتجه
+--   كلّه. قائمٌ منذ 0016 — أي منذ إطلاق المنصّة.
+select t.ok((select count(*) = 1 from public.save_product(
+               :'A', 'منتج بحدّ تنبيه', 1500,
+               p_initial_quantity => 7, p_low_stock_threshold => 3)),
+            '★★★ منتج جديد بحدّ تنبيه يُحفظ');
+select t.ok((select low_stock_threshold = 3 and quantity = 7
+             from public.inventory i
+             join public.products p on p.id = i.product_id
+             where p.name = 'منتج بحدّ تنبيه'),
+            '★★ والحدّ يُكتب والكمّية الابتدائية لا تُمَسّ');
+select t.ok((select count(*) = 1 from public.save_product(
+               :'A', 'حدّ بلا كمّية', 1500, p_low_stock_threshold => 0)),
+            '★ وحدٌّ بلا كمّية ابتدائية كذلك — والصفر قيمةٌ مقبولة');
+
+-- ★ المسار الثاني: `do update` على صفّ مخزونٍ قائم. لا يمرّ به إلا
+--   تعديلٌ لاحق، فلو بقي اللبس في فرعٍ واحد لنجا من اختبار الإنشاء.
+select t.ok((select t.catch('select public.save_product(' || quote_literal(:'A')
+  || ', ''منتج بحدّ تنبيه'', 1500, p_product_id => (select id from public.products'
+  || ' where name = ''منتج بحدّ تنبيه''), p_low_stock_threshold => 9)')
+             = '(لم يُرفض)'),
+            '★★★ وتعديل منتجٍ له صفّ مخزون يُحدّث الحدّ');
+select t.ok((select low_stock_threshold = 9 and quantity = 7
+             from public.inventory i
+             join public.products p on p.id = i.product_id
+             where p.name = 'منتج بحدّ تنبيه'),
+            '★★ والكمّية باقية — الحدّ لا يمسّ الرصيد');
+select t.throws('select public.save_product(' || quote_literal(:'A')
+  || ', ''حدّ ضخم'', 100, p_low_stock_threshold => 99999999)',
+  '★ والحدّ الأعلى من 0068 ما زال يَحرس');
+rollback;
+
+-- ★★ والدالّة المساعدة ليست بابًا جديدًا: سكيمة `app` لا يكشفها
+--    PostgREST، والمنحة مسحوبة فوق ذلك.
+select t.ok((select not has_function_privilege('authenticated',
+               'app.set_low_stock_threshold(uuid,uuid,uuid,integer)', 'execute')),
+            '★★ ولا يملك التاجر تنفيذها مباشرة');
+select t.ok((select not has_function_privilege('anon',
+               'app.set_low_stock_threshold(uuid,uuid,uuid,integer)', 'execute')),
+            '★★ ولا الزائر');
