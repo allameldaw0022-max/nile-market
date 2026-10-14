@@ -146,7 +146,8 @@ export async function attachmentUrl(input: {
       .createSignedUrl(row.path, 120);
 
     if (signed.error || !signed.data?.signedUrl) {
-      throw errors.internal('تعذّر إنشاء رابط التنزيل');
+      throw errors.internal({ what: 'support_attachment_signed_url',
+                              storage_error: signed.error?.message?.slice(0, 200) });
     }
     return ok({ url: signed.data.signedUrl });
   } catch (err) {

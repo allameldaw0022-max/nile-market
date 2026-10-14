@@ -1,3 +1,9 @@
+import 'server-only';
+// ★ نسبيٌّ لا `@/`: اختبارات الوحدة تشغّل هذا الملف بـnode مباشرة بلا
+//   مُحلِّل مسارات Next، فاسمٌ مستعار هنا يجعل طبقة الأخطاء كلّها غير
+//   قابلة للاختبار — وهي آخر ما نقبل بقاءه بلا حارس.
+import { log } from '../observability/logger.ts';
+
 /** أخطاء التطبيق الموحّدة — رسائلها عربية وتُعرض للمستخدم مباشرة. */
 export type ErrorCode =
   | 'UNAUTHENTICATED' | 'FORBIDDEN' | 'NOT_FOUND' | 'VALIDATION_ERROR'
@@ -5,14 +11,25 @@ export type ErrorCode =
   | 'ILLEGAL_TRANSITION' | 'CONFLICT' | 'RATE_LIMITED' | 'INTERNAL';
 
 export class AppError extends Error {
+  // ★ إسنادٌ صريح لا «خاصّيات معاملات» (`readonly code: ErrorCode` في
+  //   التوقيع): تلك صيغةٌ لا يفهمها مجرّد نزع الأنواع، فيسقط استيراد
+  //   هذا الملف في اختبارات الوحدة (`--experimental-strip-types`) —
+  //   أي أن أخطاءنا تصير غير قابلة للاختبار أصلًا.
+  readonly code: ErrorCode;
+  readonly details?: Record<string, unknown>;
+  readonly action?: { label: string; href: string };
+
   constructor(
-    readonly code: ErrorCode,
+    code: ErrorCode,
     message: string,
-    readonly details?: Record<string, unknown>,
-    readonly action?: { label: string; href: string },
+    details?: Record<string, unknown>,
+    action?: { label: string; href: string },
   ) {
     super(message);
     this.name = 'AppError';
+    this.code = code;
+    this.details = details;
+    this.action = action;
   }
 }
 
@@ -42,9 +59,42 @@ export const errors = {
     ),
   rateLimited: () =>
     new AppError('RATE_LIMITED', 'محاولات كثيرة — حاول بعد قليل'),
-  internal: (correlationId?: string) =>
-    new AppError('INTERNAL', 'حدث خطأ غير متوقع، تم إبلاغ الفريق', { correlationId }),
+  /**
+   * ★★★ خطأ غير متوقع: يُسجَّل **هنا** ويحمل رمزًا يراه المستخدم.
+   *
+   * كانت هذه الدالّة تُنتج `AppError`، و`actionError` تسجّل ما **ليس**
+   * `AppError` وحده ⇒ كل خطأ قاعدة غير معروف يختفي بلا سطرٍ واحد في
+   * أي سجلّ، والمستخدم يُطمأن بـ«تم إبلاغ الفريق» ولم يُبلَّغ أحد.
+   * هكذا بقي عطل أكواد الخصم شهرًا بلا أن يعرف به أحد، ولم يُشخَّص
+   * إلا من شكوى تاجر.
+   *
+   * الرمز هو الوصلة: التاجر يقوله للدعم، والدعم يجده في السجلّ.
+   */
+  internal: (fields: Record<string, string | number | null | undefined> = {}) => {
+    const id = correlationId();
+    log.error('internal_error', { correlation_id: id, ...fields });
+    return new AppError(
+      'INTERNAL',
+      `حدث خطأ غير متوقع. إن تكرّر فأرسل هذا الرمز للدعم: ${id}`,
+      { correlationId: id },
+    );
+  },
 };
+
+/** ثماني خانات: قصيرٌ يُملى هاتفيًّا، وواسعٌ بما يكفي للبحث في السجلّ. */
+function correlationId(): string {
+  return globalThis.crypto.randomUUID().replace(/-/g, '').slice(0, 8);
+}
+
+/**
+ * أوّل إطار في المكدّس خارج هذا الملف — يقول «من أين جاء الخطأ».
+ * بلا نصّ المستخدم ولا وسائطه: اسم الدالّة والملف فقط.
+ */
+function originFrame(): string | undefined {
+  const frames = (new Error().stack ?? '').split('\n').slice(1);
+  const frame = frames.find((f) => !f.includes('authz/errors'));
+  return frame?.trim().slice(0, 200);
+}
 
 /** يترجم أخطاء Postgres إلى أخطاء تطبيق دون تسريب تفاصيل القاعدة. */
 export function fromPostgres(err: { code?: string; message?: string }): AppError {
@@ -80,6 +130,15 @@ export function fromPostgres(err: { code?: string; message?: string }): AppError
   if (err.code === '23505') return new AppError('CONFLICT', 'هذا العنصر موجود مسبقًا');
   if (err.code === 'P0002' || named('NOT_FOUND')) return errors.notFound();
 
-  // لا يُسرَّب نص خطأ القاعدة إلى المستخدم إطلاقًا
-  return errors.internal();
+  // لا يُسرَّب نص خطأ القاعدة إلى المستخدم إطلاقًا — لكنه **يُسجَّل**
+  // خادميًّا مربوطًا برمز يراه المستخدم، وإلا فالعطل بلا أثر.
+  //
+  // ★ `details` و`hint` من Postgres **لا تُسجَّل**: فيهما قيمُ الصفّ
+  //   نفسها («Key (phone)=(09…) already exists») وهي بيانات شخصية.
+  //   و`message` في هذا المستودع نصٌّ ثابت نكتبه نحن أو وصفُ قيدٍ.
+  return errors.internal({
+    pg_code: err.code ?? null,
+    pg_message: msg.slice(0, 300),
+    at: originFrame(),
+  });
 }

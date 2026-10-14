@@ -61,7 +61,8 @@ export async function subscriptionProofUrl(
       .from(row.bucket)
       .createSignedUrl(row.path, SIGNED_TTL);
     if (signed.error || !signed.data?.signedUrl) {
-      throw errors.internal('تعذّر إنشاء رابط الإيصال');
+      throw errors.internal({ what: 'order_receipt_signed_url',
+                              storage_error: signed.error?.message?.slice(0, 200) });
     }
     return ok({ url: signed.data.signedUrl, mime: row.mime_type });
   } catch (err) {
@@ -121,7 +122,8 @@ export async function orderReceiptUrl(input: {
       .from(row.bucket)
       .createSignedUrl(row.path, SIGNED_TTL);
     if (signed.error || !signed.data?.signedUrl) {
-      throw errors.internal('تعذّر إنشاء رابط الإيصال');
+      throw errors.internal({ what: 'order_receipt_signed_url',
+                              storage_error: signed.error?.message?.slice(0, 200) });
     }
     return ok({ url: signed.data.signedUrl, mime: row.mime_type });
   } catch (err) {
