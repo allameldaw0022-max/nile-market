@@ -5,7 +5,11 @@ import { ChevronRight } from 'lucide-react';
 import { getActor } from '@/lib/auth/actor';
 import { can, requireStoreAccess } from '@/lib/authz/guards';
 import { ProductForm } from '@/components/dashboard/ProductForm';
+import {
+  ProductVariantsManager,
+} from '@/components/dashboard/ProductVariantsManager';
 import { loadCategories, loadProductForm } from '@/lib/products/queries';
+import { listProductVariants } from '@/lib/products/variants';
 
 export const metadata: Metadata = { title: 'تعديل منتج' };
 
@@ -18,9 +22,10 @@ export default async function EditProductPage({ params }: PageProps<'/dashboard/
   const { membership } = await requireStoreAccess(first.storeId, 'products:update');
   const { id } = await params;
 
-  const [product, categories] = await Promise.all([
+  const [product, categories, variants] = await Promise.all([
     loadProductForm(membership.storeId, id),
     loadCategories(membership.storeId),
+    listProductVariants(membership.storeId, id),
   ]);
   // منتج متجر آخر يُعاد كـ404 لا 403: لا نؤكد وجوده لمن لا يملكه
   if (!product) notFound();
@@ -37,6 +42,13 @@ export default async function EditProductPage({ params }: PageProps<'/dashboard/
       <ProductForm storeId={membership.storeId} initial={product}
                    categories={categories}
                    canDelete={can(membership, 'products:delete')} />
+
+      {/* ★ الخيارات بعد النموذج لا داخله: حفظُها نداءٌ مستقلّ لكل خيار،
+          ولو كانت حقولًا في النموذج لضاع ما كُتب عند أوّل خطأ تحقّق. */}
+      <ProductVariantsManager
+        storeId={membership.storeId} productId={product.id ?? id}
+        variants={variants.ok ? variants.data : []}
+        canManage={can(membership, 'products:update')} />
     </div>
   );
 }

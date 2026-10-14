@@ -11,8 +11,8 @@ import { adjustInventory } from '@/app/(dashboard)/dashboard/products/actions';
  * تكون تغيّرت بطلب زبون بين التحميل والضغط، والرقم الصحيح هو ما
  * تعيده القاعدة بعد تسجيل الحركة.
  */
-export function InventoryAdjuster({ storeId, productId, quantity }: {
-  storeId: string; productId: string; quantity: number;
+export function InventoryAdjuster({ storeId, productId, variantId, quantity }: {
+  storeId: string; productId: string; variantId?: string | null; quantity: number;
 }) {
   const router = useRouter();
   const [current, setCurrent] = useState(quantity);
@@ -30,8 +30,11 @@ export function InventoryAdjuster({ storeId, productId, quantity }: {
       return;
     }
 
+    // ★★★ `variantId` لازم: منتجٌ بألوان له صفّ مخزونٍ لكل لون، وصفٌّ
+    //     أساس. وبلا تمريره تذهب كل حركةٍ إلى الصفّ الأساس — فيرى
+    //     التاجر رقمًا يتغيّر وزبونه يرى «نفد» لأن رصيد اللون لم يُمَسّ.
     const res = await adjustInventory({
-      storeId, productId, delta: sign * step,
+      storeId, productId, variantId: variantId ?? null, delta: sign * step,
     });
     if (!res.ok) { setError(res.message); return; }
 

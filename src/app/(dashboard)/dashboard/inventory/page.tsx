@@ -27,8 +27,12 @@ const REASON_LABEL: Record<string, string> = {
 };
 
 type StockRow = {
+  variant_id: string | null;
   quantity: number; low_stock_threshold: number | null;
   products: { id: string; name: string; sku: string | null; status: string } | null;
+  // ★ منتجٌ بألوان له صفٌّ لكل لون: بلا اسم الخيار تتشابه الصفوف
+  //   فيعدّل التاجر صفًّا ويظنّه آخر.
+  product_variants: { name: string; is_active: boolean } | null;
 };
 
 type MovementRow = {
@@ -56,7 +60,9 @@ export default async function InventoryPage({ searchParams }: PageProps<'/dashbo
     supabase.from('store_settings').select('low_stock_threshold')
       .eq('store_id', membership.storeId).maybeSingle(),
     supabase.from('inventory')
-      .select('quantity, low_stock_threshold, products!inner(id, name, sku, status)',
+      .select('variant_id, quantity, low_stock_threshold, ' +
+              'products!inner(id, name, sku, status), ' +
+              'product_variants(name, is_active)',
               { count: 'exact' })
       .eq('store_id', membership.storeId)
       .is('products.deleted_at', null)
@@ -141,16 +147,21 @@ export default async function InventoryPage({ searchParams }: PageProps<'/dashbo
             {list.map((row) => {
               const product = row.products;
               if (!product) return null;
+              const variant = row.product_variants;
               return (
-                <li key={product.id}
+                <li key={row.variant_id ?? product.id}
                     className="flex flex-wrap items-center gap-3 px-4 py-3">
                   <div className="min-w-0 flex-1">
                     <Link href={`/dashboard/products/${product.id}/edit`}
                           className="truncate font-bold text-ink-900 hover:text-teal-700">
                       {product.name}
+                      {variant && (
+                        <span className="font-normal text-ink-600"> — {variant.name}</span>
+                      )}
                     </Link>
                     <p className="flex items-center gap-2 text-xs text-ink-500">
                       {product.sku && <span className="tabular" dir="ltr">{product.sku}</span>}
+                      {variant && !variant.is_active && <Badge tone="neutral">معطّل</Badge>}
                       {row.quantity === 0 ? (
                         <Badge tone="danger">نفد</Badge>
                       ) : isLow(row) ? (
@@ -161,7 +172,9 @@ export default async function InventoryPage({ searchParams }: PageProps<'/dashbo
 
                   {canEdit ? (
                     <InventoryAdjuster storeId={membership.storeId}
-                                       productId={product.id} quantity={row.quantity} />
+                                       productId={product.id}
+                                       variantId={row.variant_id}
+                                       quantity={row.quantity} />
                   ) : (
                     <span className="font-bold tabular text-ink-900">{row.quantity}</span>
                   )}

@@ -189,6 +189,24 @@ export type RpcMap = {
     args: { p_product_id: string };
     returns: { product_id: string; slug: string }[];
   };
+  // ★★ `returns uuid` قياسية لا `returns table (variant_id …)`: اسم
+  //    عمود الإخراج متغيّرٌ في PL/pgSQL، و`variant_id` عمودٌ في
+  //    `inventory` التي تكتب فيها الدالّة ⇒ 42702 (عطل 0069 بالحرف).
+  save_variant: {
+    args: {
+      p_store_id: string; p_product_id: string; p_value: string;
+      p_variant_id?: string | null; p_group?: string | null;
+      p_price?: number | null; p_compare_at_price?: number | null;
+      p_sku?: string | null; p_image_media_id?: string | null;
+      p_is_active?: boolean | null; p_sort_order?: number | null;
+      p_initial_quantity?: number | null; p_low_stock_threshold?: number | null;
+    };
+    returns: string;
+  };
+  delete_variant: {
+    args: { p_variant_id: string };
+    returns: void;
+  };
   delete_product: {
     args: { p_product_id: string };
     returns: void;

@@ -380,3 +380,28 @@ select t.ok((select not has_function_privilege('authenticated',
 select t.ok((select not has_function_privilege('anon',
                'app.set_low_stock_threshold(uuid,uuid,uuid,integer)', 'execute')),
             '★★ ولا الزائر');
+
+\echo '── منتجٌ بلا رصيد لا يُعلَن متوفّرًا (0070) ──'
+begin;
+select t.login(:'ownerA');
+-- ★★★ قبل 0070 كان محفّز `products_sync_in_stock` على التحديث وحده،
+--   و`save_product` لا تُنشئ صفّ مخزون إن كانت الكمّية صفرًا، و
+--   `in_stock` يولد `true` ⇒ منتجٌ متتبَّعٌ بلا رصيد يُعلَن متوفّرًا
+--   فيضغط الزبون «أضف للسلة» ثم يسقط عند الدفع بـOUT_OF_STOCK.
+--   (ثلاثة منتجات على الإنتاج، أحدها منشور في متجر تاجر.)
+select t.ok((select count(*) = 1 from public.save_product(
+               :'A', 'بلا رصيد', 1000, p_track_inventory => true)),
+            'منتج متتبَّع بلا كمّية ابتدائية');
+select t.ok((select not in_stock from public.products where name = 'بلا رصيد'),
+            '★★★ يُعلَن نافدًا من لحظة إنشائه');
+select t.ok((select count(*) = 1 from public.save_product(
+               :'A', 'بلا تتبّع', 1000, p_track_inventory => false)),
+            'ومنتج بلا تتبّع مخزون');
+select t.ok((select in_stock from public.products where name = 'بلا تتبّع'),
+            '★★ وهذا متوفّر دائمًا — لا رصيد له أصلًا');
+select t.ok((select count(*) = 1 from public.save_product(
+               :'A', 'برصيد', 1000, p_initial_quantity => 5)),
+            'ومنتج بكمّية ابتدائية');
+select t.ok((select in_stock from public.products where name = 'برصيد'),
+            '★★ ويُعلَن متوفّرًا — الحركة تُصحّحه بعد الإدراج');
+rollback;
