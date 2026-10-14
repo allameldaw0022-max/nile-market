@@ -135,8 +135,26 @@ export type RpcMap = {
     args: { p_slug: string; p_store_id?: string };
     returns: boolean;
   };
-  assert_within_limit: {
-    args: { p_store_id: string; p_key: string };
+  /**
+   * ★ لا مدخل لـ`assert_within_limit` هنا عمدًا: هي دالّة في سكيمة
+   *   `app` غير المكشوفة عبر PostgREST، وإعلانها هنا كدالّة عامّة هو
+   *   ما أغرى باستدعائها من الواجهة فسقط إنشاء كل كود خصم (0066).
+   *   الحدود تُفحص داخل دوال القاعدة، لا بنداءٍ منفصل من الخادم.
+   */
+  save_coupon: {
+    args: {
+      p_store_id: string; p_code: string;
+      p_type: 'percentage' | 'fixed'; p_value: number;
+      p_coupon_id?: string | null;
+      p_min_order_amount?: number | null; p_max_discount_amount?: number | null;
+      p_starts_at?: string | null; p_ends_at?: string | null;
+      p_usage_limit_total?: number | null; p_usage_limit_per_customer?: number | null;
+      p_is_active?: boolean;
+    };
+    returns: { coupon_id: string; code: string }[];
+  };
+  set_coupon_active: {
+    args: { p_store_id: string; p_coupon_id: string; p_is_active: boolean };
     returns: void;
   };
   adjust_inventory: {

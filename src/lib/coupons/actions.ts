@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server';
 import { errors, fromPostgres } from '@/lib/authz/errors';
 import { actionError, ok, type ActionResult } from '@/lib/action-result';
 import { storeTag } from '@/lib/tenant/resolve';
+import { firstRow, rpc } from '@/lib/supabase/rpc';
 
 /**
  * أكواد الخصم.
@@ -13,6 +14,12 @@ import { storeTag } from '@/lib/tenant/resolve';
  * الواجهة تنشئ الكود وتحدّد شروطه، لكنها **لا تحسب خصمًا أبدًا**:
  * الحساب كله في `validate_coupon` بالقاعدة وقت الطلب، وهي التي تتحقق
  * من الصلاحية وحد الاستخدام والحد الأدنى (D10).
+ *
+ * ★★★ والكتابة كلها في `save_coupon` بالقاعدة (0066). كانت هنا كتابةً
+ * مباشرة على الجدول يسبقها نداءُ `assert_within_limit` — وهي دالّة في
+ * سكيمة `app` لا يكشفها PostgREST، فكان كل إنشاء كودٍ نشط يفشل بـ«خطأ
+ * غير متوقع» في كل متاجر المنصّة. ومنحة `insert` على `coupons` مسحوبة
+ * الآن، فإعادة الكتابة المباشرة هنا تفشل فورًا لا بصمت.
  */
 
 export type CouponInput = {
@@ -51,41 +58,27 @@ export async function saveCoupon(
     const { membership } = await requireStoreAccess(input.storeId, 'coupons:manage');
     const supabase = await createClient();
 
-    const patch = {
-      code,
-      type: input.type,
-      value: input.value,
-      min_order_amount: input.minOrderAmount ?? null,
-      // سقف الخصم لا معنى له مع خصم ثابت
-      max_discount_amount: input.type === 'percentage'
-        ? (input.maxDiscountAmount ?? null) : null,
-      starts_at: input.startsAt || null,
-      ends_at: input.endsAt || null,
-      usage_limit_total: input.usageLimitTotal ?? null,
-      usage_limit_per_customer: input.usageLimitPerCustomer ?? null,
-      is_active: input.isActive ?? true,
-    };
-
-    // حد الباقة على الأكواد النشطة — يُفحص قبل الإنشاء فقط
-    if (!input.couponId && patch.is_active) {
-      const { error: limitError } = await supabase.rpc('assert_within_limit' as never, {
-        p_store_id: membership.storeId, p_key: 'coupons.max_active',
-      } as never);
-      if (limitError) throw fromPostgres(limitError);
-    }
-
-    const query = input.couponId
-      ? supabase.from('coupons').update(patch)
-          .eq('id', input.couponId).eq('store_id', membership.storeId)
-          .is('deleted_at', null).select('id, code').single()
-      : supabase.from('coupons').insert({ ...patch, store_id: membership.storeId })
-          .select('id, code').single();
-
-    const { data, error } = await query;
+    const { data, error } = await rpc(supabase, 'save_coupon', {
+      p_store_id: membership.storeId,
+      p_code: code,
+      p_type: input.type,
+      p_value: input.value,
+      p_coupon_id: input.couponId ?? null,
+      p_min_order_amount: input.minOrderAmount ?? null,
+      p_max_discount_amount: input.maxDiscountAmount ?? null,
+      p_starts_at: input.startsAt || null,
+      p_ends_at: input.endsAt || null,
+      p_usage_limit_total: input.usageLimitTotal ?? null,
+      p_usage_limit_per_customer: input.usageLimitPerCustomer ?? null,
+      p_is_active: input.isActive ?? true,
+    });
     if (error) throw fromPostgres(error);
 
+    const row = firstRow(data);
+    if (!row) throw errors.internal();
+
     updateTag(storeTag(membership.storeId, 'coupons'));
-    return ok({ id: data.id, code: data.code });
+    return ok({ id: row.coupon_id, code: row.code });
   } catch (err) {
     return actionError(err);
   }
@@ -97,12 +90,14 @@ export async function setCouponActive(
   try {
     const { membership } = await requireStoreAccess(storeId, 'coupons:manage');
     const supabase = await createClient();
-    const { data, error } = await supabase
-      .from('coupons').update({ is_active: isActive })
-      .eq('id', couponId).eq('store_id', membership.storeId).is('deleted_at', null)
-      .select('id');
+    // ★ عبر الدالّة لا بكتابةٍ مباشرة: إحياء كودٍ معطّل يزيد عدد الأكواد
+    //   النشطة، فيلزمه فحص حدّ الباقة كما يلزم الإنشاء تمامًا.
+    const { error } = await rpc(supabase, 'set_coupon_active', {
+      p_store_id: membership.storeId,
+      p_coupon_id: couponId,
+      p_is_active: isActive,
+    });
     if (error) throw fromPostgres(error);
-    if (!data || data.length === 0) throw errors.notFound();
 
     updateTag(storeTag(membership.storeId, 'coupons'));
     return ok(undefined);
