@@ -95,6 +95,32 @@ select t.ok((select public.save_variant(:'A', :'P1', 'أحمر',
             'ثم يُعيد تفعيله');
 select t.ok((select in_stock from public.products where id = :'P1'),
             '★★ ويعود متوفّرًا');
+
+-- ★★★ عقد `save_variant`: تكتب **كل** عمودٍ مما يصلها — كما
+--   `save_product` حرفيًّا. فنداءٌ جزئيّ يمحو ما لم يُرسَل، ولهذا
+--   تُرسل شاشة التاجر الحقول كلّها عند التعطيل (وحارسٌ في
+--   tests/product-options.test.ts يمنع نداءً ناقصًا).
+select t.ok((select public.save_variant(:'A', :'P1', 'أصفر',
+               p_price => 7000, p_sku => 'YL-1') is not null), 'خيار بسعر وSKU');
+select t.ok((select price = 7000 and sku = 'YL-1' from public.product_variants
+             where product_id = :'P1' and name = 'أصفر' and deleted_at is null),
+            'السعر وSKU محفوظان');
+select t.ok((select public.save_variant(:'A', :'P1', 'أصفر',
+               p_variant_id => (select id from public.product_variants
+                 where product_id = :'P1' and name = 'أصفر' and deleted_at is null),
+               p_price => 7000, p_sku => 'YL-1', p_is_active => false)
+             is not null), 'تعطيلٌ بإرسال الحقول كلّها');
+select t.ok((select price = 7000 and sku = 'YL-1' and not is_active
+             from public.product_variants
+             where product_id = :'P1' and name = 'أصفر' and deleted_at is null),
+            '★★★ يُبقيهما — وهذا ما تفعله الشاشة');
+select t.ok((select public.save_variant(:'A', :'P1', 'أصفر',
+               p_variant_id => (select id from public.product_variants
+                 where product_id = :'P1' and name = 'أصفر' and deleted_at is null),
+               p_is_active => true) is not null), 'ونداءٌ جزئيّ');
+select t.ok((select price is null and sku is null from public.product_variants
+             where product_id = :'P1' and name = 'أصفر' and deleted_at is null),
+            '★★ يمحوهما — العقد صريحٌ لا مفاجأة');
 rollback;
 
 \echo '── ما يُرفض، وبرسالةٍ تُفهَم ──'

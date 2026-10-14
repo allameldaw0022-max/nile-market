@@ -93,7 +93,31 @@ test('★★ وشاشة الخيارات موصولة بصفحة تعديل ال
     'صفحة تعديل المنتج بلا شاشة خيارات — فلا مسار للتاجر مرّة أخرى');
   const manager = stripComments(read('src/components/dashboard/ProductVariantsManager.tsx'));
   assert.match(manager, /saveProductVariant/, 'الشاشة لا تنادي فعل الحفظ');
-  assert.match(manager, /deleteProductVariant/, 'الشاشة لا تنادي فعل الحذف');
+  assert.match(manager, /isActive: !v\.isActive/,
+    'لا سبيل لإخفاء خيارٍ عن المتجر — فخطأٌ في الإضافة يبقى أمام الزبون');
+});
+
+/**
+ * ★★★ العطل الذي يحرسه: `save_variant` تكتب **كل** عمودٍ مما يصلها
+ * (`price = v_price` وv_price من `p_price`)، فنداءٌ يحمل `isActive`
+ * وحده يُرسل `p_price => null` ⇒ **يمحو سعر الخيار وSKU وسعر الخصم**.
+ * وتعطيلٌ ثم تفعيلٌ كان سيُفقد التاجر أسعار ألوانه بلا أن يلمسها.
+ */
+test('★★★ ونداء التعطيل يحمل الحقول كلّها — وإلا محا السعر وSKU', () => {
+  const manager = stripComments(read('src/components/dashboard/ProductVariantsManager.tsx'));
+  // ★ يُقتطع جسم `toggle` أوّلًا: مطابِقٌ يبدأ من أيّ `saveProductVariant`
+  //   كان يمتدّ من نداء الحفظ (الحامل للحقول كلّها) إلى سطر التعطيل،
+  //   فيمرّ تحت الطفرة. جُرِّب فمرّ — ثم شُدّ.
+  const body = /const toggle =[\s\S]*?\n  \}\);/.exec(manager);
+  assert.ok(body, 'لم يُعثر على جسم `toggle` — المطابِق انكسر');
+  assert.equal((body[0].match(/saveProductVariant/g) ?? []).length, 1,
+    'جسم `toggle` يحمل أكثر من نداء — القطع غير دقيق');
+  const call = [body[0]];
+  for (const field of ['value', 'group', 'price', 'compareAtPrice', 'sku',
+                       'lowStockThreshold']) {
+    assert.match(call[0], new RegExp(`\\b${field}:`),
+      `نداء التعطيل بلا «${field}» — ستُمحى قيمته من الخيار`);
+  }
 });
 
 test('★★ وحقول الشاشة كلّها `w-full` — `<input>` بعرضٍ ذاتيّ يمدّ الصفحة', () => {

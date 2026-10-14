@@ -132,7 +132,7 @@ update` على `products` و`product_variants`، والقيمة تُحسب من 
 ```bash
 npm run typecheck                      # tsc --noEmit
 npm run build                          # next build
-npm run test:unit                      # ١٩٧ اختبارًا بنيويًّا — استعمل هذا الأمر
+npm run test:unit                      # ١٩٨ اختبارًا بنيويًّا — استعمل هذا الأمر
 DB=nile_check ./scripts/test-db.sh     # كل اختبارات القاعدة + التزامن
 ```
 

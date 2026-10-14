@@ -1,15 +1,13 @@
 'use client';
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { AlertTriangle, Palette, Pencil, Plus, Trash2 } from 'lucide-react';
+import { AlertTriangle, Eye, EyeOff, Palette, Pencil, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Input, Switch } from '@/components/ui/Field';
 import { Badge } from '@/components/ui/Badge';
 import { formatMoney } from '@/lib/money/format';
-import {
-  deleteProductVariant, saveProductVariant, type ProductVariant,
-} from '@/lib/products/variants';
+import { saveProductVariant, type ProductVariant } from '@/lib/products/variants';
 
 /**
  * ألوان المنتج ومقاساته.
@@ -29,6 +27,11 @@ import {
  *
  * ★ والكمّية تُقبل عند الإنشاء وحده — بعده تغييرها حركةُ مخزون تُسجَّل
  *   من صفحة المخزون (قاعدة ٥).
+ *
+ * ★★ وإزالة الخيار **تعطيلٌ** لا حذف: المعطَّل يختفي من المتجر تمامًا،
+ *    ويبقى اسمه في الطلبات القديمة مفهومًا، والتاجر يعيده إن أخطأ.
+ *    (`delete_variant` موجودة في الهجرة 0070 للحذف الناعم، ويُضاف
+ *    زرّها حين تُطبَّق على الإنتاج.)
  */
 export function ProductVariantsManager({ storeId, productId, variants, canManage }: {
   storeId: string;
@@ -74,9 +77,22 @@ export function ProductVariantsManager({ storeId, productId, variants, canManage
     router.refresh();
   });
 
-  const remove = (variant: ProductVariant) => start(async () => {
+  // ★★ تُرسَل الحقول كلّها لا `isActive` وحده: `save_variant` تكتب كل
+  //    عمود مما يصلها، فنداءٌ ناقص كان سيمحو السعر وSKU وسعر الخصم.
+  const toggle = (v: ProductVariant) => start(async () => {
     setError(null);
-    const res = await deleteProductVariant(storeId, variant.id);
+    const res = await saveProductVariant({
+      storeId,
+      productId,
+      variantId: v.id,
+      value: v.value,
+      group: v.group,
+      price: v.price,
+      compareAtPrice: v.compareAtPrice,
+      sku: v.sku,
+      isActive: !v.isActive,
+      lowStockThreshold: v.lowStockThreshold,
+    });
     if (!res.ok) { setError({ message: res.message }); return; }
     router.refresh();
   });
@@ -123,9 +139,9 @@ export function ProductVariantsManager({ storeId, productId, variants, canManage
                       تعديل
                     </Button>
                     <Button type="button" variant="ghost" size="sm"
-                            icon={<Trash2 size={14} />} disabled={pending}
-                            onClick={() => remove(v)}>
-                      حذف
+                            icon={v.isActive ? <EyeOff size={14} /> : <Eye size={14} />}
+                            disabled={pending} onClick={() => toggle(v)}>
+                      {v.isActive ? 'تعطيل' : 'تفعيل'}
                     </Button>
                   </span>
                 )}
