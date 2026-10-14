@@ -1,6 +1,6 @@
 'use client';
-import Link from 'next/link';
 import { useViewer } from './ViewerProvider';
+import { platformOrigin } from '@/lib/partners/links';
 
 /**
  * سطر إضافي لصاحب متجر لم يُنشره بعد.
@@ -31,11 +31,15 @@ export function DraftOwnerHint() {
         متجرك جاهز على هذا الرابط، ولا يراه الزبائن حتى تنشره.
         افتح لوحة التحكم واضغط «نشر المتجر».
       </p>
-      <Link href="/dashboard"
-            className="mt-4 inline-flex h-11 items-center justify-center
-                       rounded-md bg-teal-600 px-5 font-bold text-white">
+      {/* ★★★ رابطٌ مطلق لا جذريّ: نحن على مضيف المستأجر، و`/dashboard`
+          هنا يمرّ بالـproxy إلى `/_sites/<host>/dashboard` ⇒ 404 — وهو
+          ما كان يحدث فعلًا لكل صاحب متجر يضغط هذا الزرّ. ولوحة التحكم
+          على مضيف المنصّة لا على مضيف المتجر، فالانتقال عبر الأصل. */}
+      <a href={`${platformOrigin()}/dashboard`}
+         className="mt-4 inline-flex h-11 items-center justify-center
+                    rounded-md bg-teal-600 px-5 font-bold text-white">
         انشر متجرك الآن
-      </Link>
+      </a>
     </>
   );
 }

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 
 const read = (p: string) => readFileSync(new URL(p, import.meta.url), 'utf8');
 const code = (p: string) => read(p)
@@ -17,6 +17,17 @@ const code = (p: string) => read(p)
  * وحده هو ما لا يحدث.
  * ═══════════════════════════════════════════════════════════════════
  */
+
+/** كل ملفات واجهة المتجر — المكوّنات والصفحات معًا. */
+function storefrontFiles(dir = '../src/components/storefront/', out: string[] = []): string[] {
+  for (const entry of readdirSync(new URL(dir, import.meta.url), { withFileTypes: true })) {
+    const path = `${dir}${entry.name}`;
+    if (entry.isDirectory()) storefrontFiles(`${path}/`, out);
+    else if (/\.tsx?$/.test(entry.name)) out.push(path);
+  }
+  if (dir === '../src/components/storefront/') storefrontFiles('../src/app/(storefront)/', out);
+  return out;
+}
 
 const PDP = code('../src/app/(storefront)/sites/[host]/products/[slug]/page.tsx');
 const HOME = code('../src/app/(storefront)/sites/[host]/page.tsx');
@@ -472,4 +483,39 @@ test('★★ حالة التقييم لا تُطلب من القاعدة بلا 
   const condition = VIEWER.slice(VIEWER.lastIndexOf('\n', question), question);
   assert.match(condition, /signedIn/,
     `شرط النداء «${condition.trim()}» بلا فحص جلسة — الزائر يرتدّ بـ42501 في كل صفحة منتج`);
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// ٦) لا رابط من داخل المتجر يقود إلى 404
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * ★★★ العطل: زرّ «انشر متجرك الآن» كان `href="/dashboard"` داخل قشرة
+ * المتجر. ونحن على مضيف المستأجر، فالـproxy يحوّل كل مسار هناك إلى
+ * `/_sites/<host>/...` ⇒ **404 مُثبَت على الإنتاج**. ويراه كل صاحب
+ * متجر لم يُنشر بعد — وهي أشيع حالة في المنصّة بنصّ تعليق المكوّن
+ * نفسه (١١ متجرًا من ٢٤ يوم اكتشافه).
+ *
+ * ★ ولا يكشفه بناءٌ ولا نوع: الرابط نصٌّ صحيح الشكل، والصفحة تُرسم،
+ *   والزرّ يظهر — ولا شيء يفشل إلا عند الضغط.
+ */
+const PLATFORM_ONLY =
+  /href=\{?[`"'](\/(?:dashboard|admin|partner|onboarding|pricing|signup|faq|help|legal)\b[^`"'{]*)/g;
+
+test('★★★ لا رابط جذريّ من المتجر إلى مسار لا يعيش إلا على المنصّة', () => {
+  const offenders: string[] = [];
+  for (const file of storefrontFiles()) {
+    for (const m of code(file).matchAll(PLATFORM_ONLY)) {
+      offenders.push(`${file} → ${m[1]}`);
+    }
+  }
+  assert.deepEqual(offenders, [],
+    'رابطٌ جذريّ داخل المتجر يبقى على مضيف المستأجر فيردّ 404. '
+    + 'استعمل `platformOrigin()` لرابطٍ مطلق:\n' + offenders.join('\n'));
+});
+
+test('وزرّ النشر يقود إلى أصل المنصّة فعلًا', () => {
+  const HINT = code('../src/components/storefront/DraftOwnerHint.tsx');
+  assert.match(HINT, /platformOrigin\(\)\}\/dashboard/,
+    'زرّ «انشر متجرك» لا يبني رابطًا مطلقًا إلى لوحة التحكم');
 });
