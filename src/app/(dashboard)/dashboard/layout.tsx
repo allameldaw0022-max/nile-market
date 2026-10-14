@@ -28,8 +28,16 @@ export default async function DashboardLayout({ children }: LayoutProps<'/dashbo
 
   const supabase = await createClient();
   const [{ data: sub }, { data: domain }, { count: unread }] = await Promise.all([
+    // ★★★ `plans!plan_id` لا `plans`: لهذا الجدول مفتاحان نحو `plans`
+    //     (`plan_id` و`previous_plan_id`)، فتضمينٌ بلا تحديد يلتبس على
+    //     PostgREST فيردّ **300** قبل أن يلمس الطلبُ القاعدة. والنتيجة
+    //     أن `sub` تعود `null` دائمًا، فـ`subStatus` تصير `'expired'`
+    //     لكل تاجر مهما كان اشتراكه — ويرى في أعلى لوحته «الشراء من
+    //     متجرك متوقّف حاليًا» وزرّ تجديد. أي أن **كل** تجّار المنصّة
+    //     كانوا يُخبَرون أن اشتراكهم منتهٍ وهم مشتركون ودافعون.
+    //     (الصيغة نفسها مستعملة أصلًا في `lib/subscriptions/actions.ts`.)
     supabase.from('subscriptions')
-      .select('status, current_period_end, plans(name)')
+      .select('status, current_period_end, plans!plan_id(name)')
       .eq('store_id', membership.storeId).neq('status', 'cancelled').maybeSingle(),
     supabase.from('store_domains')
       .select('hostname').eq('store_id', membership.storeId)
