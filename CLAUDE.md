@@ -160,6 +160,10 @@ npm run test:unit                      # ٢٠٧ اختبارًا بنيويًّ�
 DB=nile_check ./scripts/test-db.sh     # كل اختبارات القاعدة + التزامن
 ```
 
+★ **فحص القاعدة يحتاج `pgvector`** منذ 0071 (مساعد الدعم). إن سقطت
+الهجرة بـ«extension "vector" is not available» فنصّبه:
+`apt-get install -y postgresql-16-pgvector`. (الإنتاج على ٠٫٨٫٢
+و`universe` يعطي ٠٫٦٫٠ — وكلاهما فيه HNSW.)
 ★ **لا تشغّل اختبارات الوحدة بـ`npx tsx --test`** — يترجم إلى CJS
 فيسقط على `top-level await` ويعطيك فشلًا كاذبًا.
 ★ `./scripts/test-db.sh` **يحذف قاعدة `nile_test` ويعيد بناءها**؛ مرّر
