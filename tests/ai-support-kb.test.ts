@@ -267,6 +267,39 @@ test('دالّات RPC محصورة بقائمة، والمنادى منها م�
   assert.ok(calls >= 1, 'لا نداء RPC مفحوص');
 });
 
+test('لا استثناء يخرج من `Deno.serve` عاريًا', () => {
+  // ★★★ العطل الذي يحرسه، وقع فعلًا على الإنتاج: `requireEnv` في أوّل
+  //    سطرٍ من المعالج رفعت قبل أي `try`، فردّ المشغّل «Internal Server
+  //    Error» نصًّا عاريًا بلا رمز ارتباط ولا JSON — ولم يُعرف السبب
+  //    إلا من سجلّ الدالّة. والقاعدة ٨: الفشل يُغلق ولا يصمت.
+  const code = stripComments(read(INGEST));
+  const body = code.match(/Deno\.serve\(async \(request\) => \{([\s\S]*?)\n\}\);/)?.[1];
+  assert.ok(body, 'لم أجد جسم المعالج');
+  assert.match(
+    body.trimStart(),
+    /^try\s*\{/,
+    'جسم المعالج لا يبدأ بـtry: أي رفعٍ قبلها يخرج عاريًا من المشغّل',
+  );
+  const caught = body.match(/catch\s*\(error\)\s*\{([\s\S]*)$/)?.[1];
+  assert.ok(caught, 'لا مُلتقِط للاستثناء');
+  // ★ ورمزٌ ثابت (أو فارغ) ليس رمز ارتباط: لا يُفرّق بين عطلين.
+  assert.match(
+    caught,
+    /reference\s*=\s*crypto\.randomUUID\(\)/,
+    'رمز الارتباط ليس قيمة فريدة لكل فشل',
+  );
+  assert.match(caught, /console\.error[\s\S]*reference/, 'الرمز لا يُسجَّل خادميًّا');
+  assert.match(caught, /reference\s*\}/, 'الرمز لا يُعاد للمستدعي');
+  assert.match(body, /'INGEST_FAILED'/, 'الجواب عند الفشل ليس JSON بشفرة معروفة');
+  // ★ وقراءة السرّ يجب أن تبقى **داخل** ما تحميه الـtry.
+  const guarded = code.indexOf('async function handle');
+  assert.ok(guarded > 0, 'المعالج ليس دالّةً منفصلة');
+  assert.ok(
+    code.indexOf("requireEnv('SUPPORT_INGEST_SECRET')") > guarded,
+    'قراءة السرّ خارج الدالّة المحميّة',
+  );
+});
+
 test('مسار القياس `probe` لا يكتب شيئًا', () => {
   const code = stripComments(read(INGEST));
   const exit = code.search(/return jsonResponse\(\{\s*probe:/);
