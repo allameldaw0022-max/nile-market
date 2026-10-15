@@ -184,3 +184,61 @@ select t.no_effect('update support_tickets set status = ''resolved'' where id = 
 rollback;
 
 \echo '── تمّ: مساعد الدعم ──'
+
+-- ═══════════════════════════════════════════════════════════════════
+-- المحفّز الذي يوقظ المساعد (0074)
+-- ═══════════════════════════════════════════════════════════════════
+
+begin;
+-- يُزرع السرّان في بديل Vault المحلّي ليسلك المحفّز مساره الكامل.
+insert into vault.decrypted_secrets (name, decrypted_secret) values
+  ('support_agent_url',    'https://example.test/functions/v1/support-agent'),
+  ('support_agent_secret', 'secret-for-test')
+on conflict (name) do update set decrypted_secret = excluded.decrypted_secret;
+
+select t.login(:'ownerA');
+select ticket_id as tid7 from create_support_ticket(
+  'سؤال يوقظ المساعد', 'technical', 'نصّ المشكلة هنا بالتفصيل')
+\gset
+select t.reset();
+
+select t.ok((select count(*) = 1 from net._http_queue),
+            '★★★ أوّل رسالة من التاجر توقظ المساعد — بلا هذا لا يعمل شيء');
+select t.ok((select headers->>'x-support-secret' = 'secret-for-test'
+             from net._http_queue order by id desc limit 1),
+            '★★★ والسرّ من Vault لا مكتوبًا في الهجرة');
+select t.ok((select body->'record'->>'ticket_id' = :'tid7'
+             from net._http_queue order by id desc limit 1),
+            '★★ ويُمرَّر معرّف **التذكرة** لا معرّف الرسالة');
+
+-- ★★★ ردّ المساعد يُكتب `staff`: بلا شرط `when` يوقظ المساعدُ نفسَه
+--   في حلقة لا تنتهي، وكل دورة تدفع ثمن نموذج.
+set local role service_role;
+select count(*) as ai7 from public.ai_support_reply(:'tid7', 'ردّ المساعد على التذكرة.')
+\gset
+reset role;
+select t.ok((select count(*) = 1 from net._http_queue),
+            '★★★ وردُّ المساعد لا يوقظ المساعد — لا حلقة');
+
+-- ورسالة الموظّف كذلك لا توقظه.
+select t.login(:'adminSup');
+select reply_to_ticket(:'tid7', 'ردّ بشريّ على نفس التذكرة.');
+select t.reset();
+select t.ok((select count(*) = 1 from net._http_queue),
+            '★★ ولا ردُّ الموظّف — المحفّز لرسائل أصحاب التذاكر وحدهم');
+rollback;
+
+-- ═══════════════════════════════════════════════════════════════════
+-- فشلُ النداء لا يُسقط رسالة التاجر
+-- ═══════════════════════════════════════════════════════════════════
+
+begin;
+delete from vault.decrypted_secrets where name like 'support_agent%';
+
+select t.login(:'ownerA');
+-- ★★★ محفّز `after` يرفع ⇒ تُلغى المعاملة ⇒ تاجرٌ يكتب رسالته فيُقال
+--   له «فشل» لأنّ سرًّا ناقص. والدعم إضافة لا شرطٌ لفتح تذكرة.
+select t.ok((select ticket_number like 'NM-%' from create_support_ticket(
+               'تذكرة بلا سرّ', 'other', 'نصّ المشكلة هنا بالتفصيل')),
+            '★★★ سرٌّ ناقص في Vault لا يمنع التاجر من فتح تذكرة');
+rollback;

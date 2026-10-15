@@ -122,3 +122,49 @@ end $$;
 grant usage on schema storage to anon, authenticated, service_role;
 grant select, insert, update, delete on storage.objects to anon, authenticated, service_role;
 grant select on storage.buckets to anon, authenticated, service_role;
+
+-- ═══════════════════════════════════════════════════════════════════
+-- بدائل `pg_net` و`Vault` — للاختبار المحلّي وحده (0074)
+-- ═══════════════════════════════════════════════════════════════════
+--
+-- ★★ الإضافتان من Supabase ولا تتوفّران في Postgres عاديّ. والبديل
+-- هنا **يسجّل النداء ولا يُرسله**: فاختبار القاعدة يتحقّق من أنّ
+-- المحفّز نادى بالسرّ الصحيح وبالجسم الصحيح، بلا شبكة. والإرسال
+-- الحقيقي ليس من شأن القاعدة.
+--
+-- ★★★ وهذا الملفّ **لا يُطبَّق على الإنتاج**: `scripts/db-test.sh`
+-- وحده يشغّله قبل الهجرات. فلا خطر من بديلٍ أضعف من الحقيقة.
+
+create schema if not exists net;
+create schema if not exists vault;
+
+-- ما يُزرع في Vault محلّيًّا — فارغٌ افتراضًا، فيسلك المحفّز مسار
+-- «سرّ ناقص» ويخرج بهدوء كما يفعل على الإنتاج لو غاب السرّ.
+create table if not exists vault.decrypted_secrets (
+  id               uuid primary key default extensions.gen_random_uuid(),
+  name             text unique,
+  decrypted_secret text
+);
+
+-- سجلّ النداءات — تقرؤه الاختبارات بدل الشبكة.
+create table if not exists net._http_queue (
+  id      bigserial primary key,
+  url     text,
+  body    jsonb,
+  headers jsonb,
+  created timestamptz not null default now()
+);
+
+create or replace function net.http_post(
+  url                  text,
+  body                 jsonb default '{}'::jsonb,
+  params               jsonb default '{}'::jsonb,
+  headers              jsonb default '{}'::jsonb,
+  timeout_milliseconds integer default 5000
+) returns bigint
+language sql
+as $$
+  insert into net._http_queue (url, body, headers)
+  values (url, body, headers)
+  returning id;
+$$;
