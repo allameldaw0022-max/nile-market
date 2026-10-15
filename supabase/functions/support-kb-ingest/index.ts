@@ -3,7 +3,7 @@
  *
  * الطلب: POST مع ترويسة `x-support-secret` وأحد شكلين:
  *   فهرسة: { source: "docs/…md", markdown: "…", dryRun?: true }
- *   قياس:  { probe: ["سؤال", …] }        ← قراءةٌ محضة، لا كتابة
+ *   قياس:  { probe: ["سؤال", …], matchCount?: 8 }   ← قراءةٌ محضة، لا كتابة
  *
  * ★★★ ترتيب العمليات مقصود: إدراجٌ ناجحٌ **ثم** حذف القديم. لو حُذف
  * أولًا وفشل حساب المتجهات (مفتاح منتهٍ، حدّ معدّل) لبقيت قاعدة
@@ -37,6 +37,7 @@ import { type KbRow, planIngest } from '../_shared/kb-plan.ts';
 
 const MAX_MARKDOWN = 400_000;
 const MAX_PROBE = 10;
+const MAX_MATCH_COUNT = 10;
 
 type KbMatch = { section: string; content: string; similarity: number };
 
@@ -66,7 +67,10 @@ async function handle(request: Request): Promise<Response> {
   );
   if (denied) return denied;
 
-  let body: { source?: unknown; markdown?: unknown; dryRun?: unknown; probe?: unknown };
+  let body: {
+    source?: unknown; markdown?: unknown; dryRun?: unknown;
+    probe?: unknown; matchCount?: unknown;
+  };
   try {
     body = await request.json();
   } catch {
@@ -80,6 +84,11 @@ async function handle(request: Request): Promise<Response> {
   const source = typeof body.source === 'string' ? body.source.trim() : '';
   const markdown = typeof body.markdown === 'string' ? body.markdown : '';
   const dryRun = body.dryRun === true;
+  // ★ عدد النتائج قابل للضبط: المرحلة ٤ تُمرّر عدّةَ مقاطع للنموذج،
+  //   وعتبةُ القبول تُعايَر على ما يظهر في أوّل ثمانيةٍ لا أوّل خمسة.
+  const matchCount = Number.isInteger(body.matchCount)
+    ? Math.min(Math.max(body.matchCount as number, 1), MAX_MATCH_COUNT)
+    : 5;
 
   if (probe.length > MAX_PROBE) return jsonResponse({ error: 'TOO_MANY_PROBES' }, 400);
 
@@ -97,7 +106,7 @@ async function handle(request: Request): Promise<Response> {
     for (let i = 0; i < probe.length; i += 1) {
       const matches = await rest.rpc<KbMatch[]>('match_support_kb', {
         p_query_embedding: toVectorLiteral(vectors[i]),
-        p_match_count: 5,
+        p_match_count: matchCount,
         // ★ بلا عتبة: الغرض رؤية الأرقام كما هي لنختار العتبة،
         //   لا ترشيحها بعتبةٍ لم تُعايَر بعد.
         p_min_similarity: 0,

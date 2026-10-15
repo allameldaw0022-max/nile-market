@@ -94,8 +94,13 @@ test('لا مقطع أصغر من أن يُجيب ولا أكبر من أن يد
   //    يجوز في الملفّ نفسه.
   for (const chunk of chunks) {
     assert.ok(chunk.words <= 400, `مقطع ضخم (${chunk.words} كلمة): ${chunk.section}`);
+    // ★★★ والقزم أخطر من الضخم: مقطعٌ من سطر عنوانٍ وحده (جُرِّب:
+    //    «### الباقات» بلا جدوله) يحتلّ مرتبةً في أقرب النتائج ثم لا
+    //    يحمل جوابًا — فيُزاح المقطع الذي يحمله. والحدّ الأدنى هو ما
+    //    يمنعه، لا حجم المقطع.
+    assert.ok(chunk.words >= 25, `مقطع قزم (${chunk.words} كلمة): ${chunk.section}`);
   }
-  assert.ok(chunks.length >= 20, `المقاطع أقلّ من المتوقَّع: ${chunks.length}`);
+  assert.ok(chunks.length >= 30, `المقاطع أقلّ من المتوقَّع: ${chunks.length}`);
 });
 
 test('القسم الأكبر من الحدّ يُقسَم ويبقى كل جزء معنونًا', () => {
@@ -311,6 +316,18 @@ test('مسار القياس `probe` لا يكتب شيئًا', () => {
     !/planIngest\(/.test(code.slice(0, exit)),
     'مسار القياس يقطّع الملفّ: عملٌ وكلفةٌ بلا داعٍ',
   );
+});
+
+test('عدد النتائج المطلوب محصورٌ بحدّ', () => {
+  // ★ `matchCount: 100000` من مستدعٍ (أو من خطأٍ في كودنا لاحقًا) يجعل
+  //   الدالّة تُعيد قاعدة المعرفة كلّها في جوابٍ واحد. والحصر رقمٌ
+  //   واحد، وغيابه لا يرفع خطأً — فالحارس هو الكاشف.
+  const code = stripComments(read(INGEST));
+  const assignment = code.match(/const matchCount =[\s\S]*?;\n/)?.[0];
+  assert.ok(assignment, 'لا ضبط لعدد النتائج');
+  assert.match(assignment, /Math\.min\([\s\S]*MAX_MATCH_COUNT/, 'لا حدّ أعلى لعدد النتائج');
+  assert.match(assignment, /Math\.max\([\s\S]*,\s*1\)/, 'لا حدّ أدنى لعدد النتائج');
+  assert.match(code, /const MAX_MATCH_COUNT = \d+;/, 'الحدّ غير معلَن');
 });
 
 test('السؤال يُمثَّل كسؤال والمقطع كمستند', () => {
