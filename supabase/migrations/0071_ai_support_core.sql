@@ -196,6 +196,14 @@ begin
     raise exception 'VALIDATION: التذكرة مغلقة' using errcode = 'P0001';
   end if;
 
+  -- ★★★ علمُ الجلسة: يُعلن أن هذه الكتابة من مسار المساعد لا من
+  --   متصفّح، فيسمح له الحارس بنقل الحالة (البوّابة في 0072).
+  --   و`set local` ⇒ ينتهي بانتهاء المعاملة فلا يتسرّب إلى غيرها.
+  --   ★ ولا يستطيع مستخدم PostgREST ضبطه: `set_config` في `pg_catalog`
+  --     ولا تكشفها PostgREST، والترويسات تذهب إلى `request.*` وحدها.
+  --     وهو نفس نمط `app.inventory_movement` في 0004 حرفيًّا.
+  perform set_config('app.ai_support', 'on', true);
+
   insert into public.support_messages (ticket_id, author_id, author_kind, body)
   values (p_ticket_id, null, 'staff', trim(p_body))
   returning id into v_msg;
@@ -223,6 +231,12 @@ begin
   insert into public.support_events (ticket_id, actor_id, event, to_value)
   values (p_ticket_id, null, 'ai_replied',
           case when v_changed then 'waiting_customer' else v_ticket.status::text end);
+
+  -- ★★ يُطفأ العلم فور انتهاء حاجته: `set local` يمتدّ إلى آخر
+  --    **المعاملة** لا إلى آخر الدالّة، فلو نُوديت هذه الدالّة داخل
+  --    معاملة أوسع لبقيت البوّابة مفتوحة لما بعدها. وإطفاؤه هنا
+  --    يُضيّق النافذة إلى هذه الجمل وحدها.
+  perform set_config('app.ai_support', '', true);
 
   perform app.notify(v_ticket.requester_id, 'support.reply',
     'رد جديد على تذكرتك ' || v_ticket.ticket_number,
