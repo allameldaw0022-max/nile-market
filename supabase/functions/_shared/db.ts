@@ -49,7 +49,18 @@ const assertAllowedRpc = (fn: string): void => {
 
 export type Rest = {
   select: <T>(table: AllowedTable, query: string) => Promise<T[]>;
-  upsert: <T>(table: AllowedTable, rows: unknown[], onConflict: string, query?: string) => Promise<T[]>;
+  /**
+   * `prefer` يُبدّل سلوك التعارض.
+   * ★★★ الافتراضي `merge-duplicates` (تحديثُ الموجود) ومسار المطالبة
+   *    يحتاج `ignore-duplicates` ليعود **صفر صفوف** عند التعارض —
+   *    وهي الإشارة التي تُبنى عليها الذرّية في `support-agent`.
+   */
+  upsert: <T>(
+    table: AllowedTable, rows: unknown[], onConflict: string,
+    query?: string, prefer?: string,
+  ) => Promise<T[]>;
+  /** تحديثٌ جزئيّ لصفوفٍ قائمة — لا يُنشئ شيئًا. */
+  patch: <T>(table: AllowedTable, query: string, fields: Record<string, unknown>) => Promise<T[]>;
   remove: <T>(table: AllowedTable, query: string) => Promise<T[]>;
   rpc: <T>(fn: AllowedRpc, args: Record<string, unknown>) => Promise<T>;
 };
@@ -88,12 +99,21 @@ export function restClient(): Rest {
       rows: unknown[],
       onConflict: string,
       query = 'select=id',
+      prefer = 'resolution=merge-duplicates,return=representation',
     ) => {
       assertAllowed(table);
       return (await send(
         `/${table}?on_conflict=${encodeURIComponent(onConflict)}&${query}`,
         { method: 'POST', body: JSON.stringify(rows) },
-        'resolution=merge-duplicates,return=representation',
+        prefer,
+      )) as T[];
+    },
+    patch: async <T>(table: AllowedTable, query: string, fields: Record<string, unknown>) => {
+      assertAllowed(table);
+      return (await send(
+        `/${table}?${query}`,
+        { method: 'PATCH', body: JSON.stringify(fields) },
+        'return=representation',
       )) as T[];
     },
     remove: async <T>(table: AllowedTable, query: string) => {
