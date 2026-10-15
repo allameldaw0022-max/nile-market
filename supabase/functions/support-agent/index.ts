@@ -31,6 +31,8 @@ import { restClient } from '../_shared/db.ts';
 import { embedTexts, toVectorLiteral } from '../_shared/embeddings.ts';
 import { askModel } from '../_shared/llm.ts';
 import { SYSTEM_PROMPT, buildUserPrompt } from '../_shared/prompt.ts';
+import { buildDraftMessage, buildEscalationMessage } from '../_shared/telegram-update.ts';
+import { sendMessage } from '../_shared/telegram.ts';
 import {
   type AgentMode,
   type KbHit,
@@ -58,6 +60,31 @@ type TicketRow = {
 };
 
 type MessageRow = { author_kind: string; body: string; created_at: string };
+
+/**
+ * تنبيه صاحب المنصّة.
+ *
+ * ★★★ لا يُسقط العملية: المسوّدة محفوظة في `support_ai_logs` **قبل**
+ * هذا النداء، فلو سقط تلغرام بقيت المسوّدة قابلةً للإرسال. لكنه لا
+ * يصمت كذلك (قاعدة ٨): الفشل يُسجَّل خادميًّا ويُكتب في صفّ السجلّ،
+ * فتنبيهٌ ضائع يُشخَّص بدل أن يُفسَّر «المساعد لم يعمل».
+ */
+async function notifyOwner(
+  text: string,
+  keyboard: unknown | undefined,
+  logId: string,
+  rest: { patch: (table: 'support_ai_logs', query: string, fields: Record<string, unknown>) => Promise<unknown> },
+): Promise<void> {
+  const result = await sendMessage(text, keyboard ? { keyboard } : {});
+  if (result.ok) return;
+  console.error(JSON.stringify({
+    event: 'telegram_notify_failed', logId, detail: result.detail,
+  }));
+  await rest.patch('support_ai_logs', `id=eq.${logId}`, {
+    error: `TELEGRAM_FAILED: ${result.detail.slice(0, 200)}`,
+    updated_at: new Date().toISOString(),
+  });
+}
 
 Deno.serve(async (request) => {
   try {
@@ -98,6 +125,7 @@ async function handle(request: Request): Promise<Response> {
   const mode: AgentMode = optionalEnv('AI_MODE', 'draft') === 'auto' ? 'auto' : 'draft';
   const minConfidence = numberEnv('AI_MIN_CONFIDENCE', 0.75);
   const minSimilarity = numberEnv('AI_MIN_SIMILARITY', 0.65);
+  const siteUrl = optionalEnv('SITE_URL', 'https://nilemarket.online').replace(/\/+$/, '');
 
   const rest = restClient();
 
@@ -166,10 +194,21 @@ async function handle(request: Request): Promise<Response> {
   };
 
   try {
-    if (gate.kind === 'escalate') {
-      await finish({ action: 'escalate', status: 'escalated', reason: gate.reason });
-      return jsonResponse({ ticketId, action: 'escalate', reason: gate.reason });
-    }
+    const escalate = async (reason: string) => {
+      await finish({ action: 'escalate', status: 'escalated', reason });
+      await notifyOwner(
+        buildEscalationMessage({
+          ticketNumber: ticket.ticketNumber,
+          subject: ticket.subject,
+          reason,
+          ticketUrl: `${siteUrl}/admin/support/${ticketId}`,
+        }),
+        undefined, logId, rest,
+      );
+      return jsonResponse({ ticketId, action: 'escalate', reason });
+    };
+
+    if (gate.kind === 'escalate') return await escalate(gate.reason);
 
     const [queryVector] = await embedTexts([gate.question], 'query');
     const hits = await rest.rpc<KbHit[]>('match_support_kb', {
@@ -179,10 +218,7 @@ async function handle(request: Request): Promise<Response> {
     });
 
     const context = gateContext(hits, minSimilarity);
-    if (context.kind === 'escalate') {
-      await finish({ action: 'escalate', status: 'escalated', reason: context.reason });
-      return jsonResponse({ ticketId, action: 'escalate', reason: context.reason });
-    }
+    if (context.kind === 'escalate') return await escalate(context.reason);
 
     const { answer, usage } = await askModel(
       SYSTEM_PROMPT,
@@ -202,13 +238,34 @@ async function handle(request: Request): Promise<Response> {
 
     if (decision.action === 'escalate') {
       await finish({ ...common, action: 'escalate', status: 'escalated' });
+      await notifyOwner(
+        buildEscalationMessage({
+          ticketNumber: ticket.ticketNumber,
+          subject: ticket.subject,
+          reason: decision.reason,
+          ticketUrl: `${siteUrl}/admin/support/${ticketId}`,
+        }),
+        undefined, logId, rest,
+      );
       return jsonResponse({ ticketId, action: 'escalate', reason: decision.reason });
     }
 
     if (decision.action === 'draft') {
-      // ★ المسوّدة تبقى `pending`: المرحلة ٥ ترسلها إلى صاحب المنصّة
-      //   في تلغرام، وهو من يحوّلها إلى `sent` بزرّ «أرسل».
+      // ★★★ الصفّ يُكتب **قبل** التنبيه لا بعده: لو انعكس الترتيب وسقط
+      //    التنبيه لبقي الصفّ على ما كان، فيُعاد نداء المساعد فيُحسب
+      //    نموذجٌ ثانٍ — أو تبقى المسوّدة `pending` بلا نصّ فلا يجد
+      //    زرُّ «أرسل» ما يرسله.
       await finish({ ...common, action: 'draft', status: 'pending' });
+      const { text, keyboard } = buildDraftMessage({
+        ticketNumber: ticket.ticketNumber,
+        subject: ticket.subject,
+        category: answer.category,
+        confidence: answer.confidence,
+        draft: answer.answer,
+        logId,
+        ticketUrl: `${siteUrl}/admin/support/${ticketId}`,
+      });
+      await notifyOwner(text, keyboard, logId, rest);
       return jsonResponse({
         ticketId, action: 'draft', reason: decision.reason,
         confidence: answer.confidence, draft: answer.answer,
