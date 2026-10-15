@@ -179,3 +179,38 @@ test('★★ ومتجرٌ بلا شعار ينحدر إلى أيقونة الم�
   assert.match(route, /log\.error\('store_icon_failed'/,
     'فشل التوليد يُبتلع بلا أثر (قاعدة ٨) — شعارٌ لا يُفكّ يراه كل زبون');
 });
+
+/**
+ * ★★★ العطل الذي يحرسه — ولقطةُ شاشةٍ من هاتف صاحب المنصّة أثبتته
+ * مرّتين: أيقونات المنصّة كانت العلامةَ على خلفيةٍ بيضاء **بهوامش**،
+ * ثم يُصغّرها مشغّل أندرويد داخل مربّعه هو ⇒ شعارٌ ضائع في وسط بياض.
+ * وهو نفس عطل أيقونات التجار، باقيًا في أيقونات المنصّة نفسها.
+ *
+ * فالأيقونة تملأ إطارها: `any` ≥ ٨٥٪، و`maskable` ≥ ٧٠٪ (أضيق لأن
+ * المشغّل يقصّ أطرافها، فالعلامة داخل منطقة الأمان والخلفية تمتدّ).
+ */
+test('★★★ وأيقونات المنصّة تملأ إطارها — لا علامةٌ صغيرة في وسط بياض', async () => {
+  const sharp = (await import('sharp')).default;
+  const cases: [string, number][] = [
+    ['public/icons/icon-192.png', 0.85],
+    ['public/icons/icon-512.png', 0.85],
+    ['public/icons/apple-touch-icon.png', 0.85],
+    ['src/app/icon.png', 0.85],
+    ['src/app/apple-icon.png', 0.85],
+    ['public/icons/maskable-192.png', 0.70],
+    ['public/icons/maskable-512.png', 0.70],
+  ];
+  for (const [file, min] of cases) {
+    const path = new URL(file, root).pathname;
+    const meta = await sharp(path).metadata();
+    const trimmed = await sharp(path).trim({ threshold: 6 })
+      .toBuffer({ resolveWithObject: true });
+    const cover = Math.max(
+      trimmed.info.width / (meta.width ?? 1),
+      trimmed.info.height / (meta.height ?? 1),
+    );
+    assert.ok(cover >= min,
+      `${file}: العلامة تملأ ${(cover * 100).toFixed(0)}٪ من الإطار والمطلوب ` +
+      `${(min * 100).toFixed(0)}٪ — المشغّل سيُصغّرها مرّةً أخرى`);
+  }
+});
