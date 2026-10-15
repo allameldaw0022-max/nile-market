@@ -22,9 +22,28 @@ export const ALLOWED_TABLES = [
 
 export type AllowedTable = (typeof ALLOWED_TABLES)[number];
 
+/**
+ * ★★ ودالّات RPC محصورة كذلك: `rest.rpc` تتجاوز قائمة الجداول بطبعها
+ * (الاسم في المسار لا في الجدول)، فلولا هذه القائمة لصار نداء أي
+ * دالّةٍ ممنوحةٍ لـ`service_role` — وفيها ما يكتب في الطلبات والمخزون
+ * — سطرًا واحدًا بعيدًا عن مسار المساعد.
+ */
+export const ALLOWED_RPCS = [
+  'match_support_kb',
+  'ai_support_reply',
+] as const;
+
+export type AllowedRpc = (typeof ALLOWED_RPCS)[number];
+
 const assertAllowed = (table: string): void => {
   if (!(ALLOWED_TABLES as readonly string[]).includes(table)) {
     throw new Error(`TABLE_NOT_ALLOWED: ${table}`);
+  }
+};
+
+const assertAllowedRpc = (fn: string): void => {
+  if (!(ALLOWED_RPCS as readonly string[]).includes(fn)) {
+    throw new Error(`RPC_NOT_ALLOWED: ${fn}`);
   }
 };
 
@@ -32,7 +51,7 @@ export type Rest = {
   select: <T>(table: AllowedTable, query: string) => Promise<T[]>;
   upsert: <T>(table: AllowedTable, rows: unknown[], onConflict: string, query?: string) => Promise<T[]>;
   remove: <T>(table: AllowedTable, query: string) => Promise<T[]>;
-  rpc: <T>(fn: string, args: Record<string, unknown>) => Promise<T>;
+  rpc: <T>(fn: AllowedRpc, args: Record<string, unknown>) => Promise<T>;
 };
 
 export function restClient(): Rest {
@@ -85,7 +104,9 @@ export function restClient(): Rest {
         'return=representation',
       )) as T[];
     },
-    rpc: async <T>(fn: string, args: Record<string, unknown>) =>
-      (await send(`/rpc/${fn}`, { method: 'POST', body: JSON.stringify(args) })) as T,
+    rpc: async <T>(fn: AllowedRpc, args: Record<string, unknown>) => {
+      assertAllowedRpc(fn);
+      return (await send(`/rpc/${fn}`, { method: 'POST', body: JSON.stringify(args) })) as T;
+    },
   };
 }

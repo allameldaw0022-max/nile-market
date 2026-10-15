@@ -1,8 +1,9 @@
 /**
  * فهرسة قاعدة معرفة الدعم.
  *
- * الطلب: POST مع ترويسة `x-support-secret` وجسم
- *   { source: "docs/support-knowledge-base.md", markdown: "…", dryRun?: true }
+ * الطلب: POST مع ترويسة `x-support-secret` وأحد شكلين:
+ *   فهرسة: { source: "docs/…md", markdown: "…", dryRun?: true }
+ *   قياس:  { probe: ["سؤال", …] }        ← قراءةٌ محضة، لا كتابة
  *
  * ★★★ ترتيب العمليات مقصود: إدراجٌ ناجحٌ **ثم** حذف القديم. لو حُذف
  * أولًا وفشل حساب المتجهات (مفتاح منتهٍ، حدّ معدّل) لبقيت قاعدة
@@ -15,6 +16,11 @@
  *
  * ★ والنصّ يُرسَل في الجسم لا يُقرأ من GitHub: فلا رمز وصولٍ لمستودعٍ
  *   خاصّ داخل الدالّة، ولا نفاذ شبكيّ زائد.
+ *
+ * ★★ ومسار `probe` هو اختبار الاسترجاع الحقيقي: يُمثّل السؤال
+ * بـ`RETRIEVAL_QUERY` ويعيد أقرب المقاطع ودرجة تشابهها — فتُعايَر
+ * `AI_MIN_SIMILARITY` على أرقامٍ مقيسة لا مُقدَّرة. ويخرج **قبل**
+ * قراءة الملفّ وقبل أي كتابة، فلا يستطيع لمس صفٍّ ولو أُرسل معه نصّ.
  */
 
 import { requireEnv } from '../_shared/env.ts';
@@ -24,6 +30,9 @@ import { embedTexts, toVectorLiteral } from '../_shared/embeddings.ts';
 import { type KbRow, planIngest } from '../_shared/kb-plan.ts';
 
 const MAX_MARKDOWN = 400_000;
+const MAX_PROBE = 10;
+
+type KbMatch = { section: string; content: string; similarity: number };
 
 Deno.serve(async (request) => {
   if (request.method !== 'POST') return jsonResponse({ error: 'METHOD_NOT_ALLOWED' }, 405);
@@ -35,23 +44,55 @@ Deno.serve(async (request) => {
   );
   if (denied) return denied;
 
-  let body: { source?: unknown; markdown?: unknown; dryRun?: unknown };
+  let body: { source?: unknown; markdown?: unknown; dryRun?: unknown; probe?: unknown };
   try {
     body = await request.json();
   } catch {
     return jsonResponse({ error: 'INVALID_JSON' }, 400);
   }
 
+  const probe = Array.isArray(body.probe)
+    ? body.probe.filter((q): q is string => typeof q === 'string' && q.trim().length > 0)
+      .map((q) => q.trim())
+    : [];
   const source = typeof body.source === 'string' ? body.source.trim() : '';
   const markdown = typeof body.markdown === 'string' ? body.markdown : '';
   const dryRun = body.dryRun === true;
 
-  if (!source || source.length > 200) return jsonResponse({ error: 'INVALID_SOURCE' }, 400);
-  if (!markdown.trim()) return jsonResponse({ error: 'EMPTY_MARKDOWN' }, 400);
-  if (markdown.length > MAX_MARKDOWN) return jsonResponse({ error: 'MARKDOWN_TOO_LARGE' }, 413);
+  if (probe.length > MAX_PROBE) return jsonResponse({ error: 'TOO_MANY_PROBES' }, 400);
+
+  if (!probe.length) {
+    if (!source || source.length > 200) return jsonResponse({ error: 'INVALID_SOURCE' }, 400);
+    if (!markdown.trim()) return jsonResponse({ error: 'EMPTY_MARKDOWN' }, 400);
+    if (markdown.length > MAX_MARKDOWN) return jsonResponse({ error: 'MARKDOWN_TOO_LARGE' }, 413);
+  }
 
   try {
     const rest = restClient();
+
+    if (probe.length) {
+      const vectors = await embedTexts(probe, 'query');
+      const results = [];
+      for (let i = 0; i < probe.length; i += 1) {
+        const matches = await rest.rpc<KbMatch[]>('match_support_kb', {
+          p_query_embedding: toVectorLiteral(vectors[i]),
+          p_match_count: 5,
+          // ★ بلا عتبة: الغرض رؤية الأرقام كما هي لنختار العتبة،
+          //   لا ترشيحها بعتبةٍ لم تُعايَر بعد.
+          p_min_similarity: 0,
+        });
+        results.push({
+          question: probe[i],
+          matches: matches.map((row) => ({
+            section: row.section,
+            similarity: Number(row.similarity.toFixed(4)),
+            head: row.content.replace(/\s+/g, ' ').slice(0, 110),
+          })),
+        });
+      }
+      return jsonResponse({ probe: results });
+    }
+
     const filter = `source=eq.${encodeURIComponent(source)}`;
     const existing = await rest.select<KbRow>(
       'support_kb_chunks',

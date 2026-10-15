@@ -4,7 +4,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 
 import { chunkMarkdown, contentHash } from '../supabase/functions/_shared/chunk.ts';
 import { planIngest } from '../supabase/functions/_shared/kb-plan.ts';
-import { ALLOWED_TABLES } from '../supabase/functions/_shared/db.ts';
+import { ALLOWED_RPCS, ALLOWED_TABLES } from '../supabase/functions/_shared/db.ts';
 import {
   buildGeminiRequest,
   normalize,
@@ -184,7 +184,12 @@ test('`dryRun` يسبق كل كتابةٍ وكل حساب متجه', () => {
   const code = stripComments(read(INGEST));
   const dry = code.search(/if\s*\(dryRun\)\s*return/);
   assert.ok(dry > 0, 'لا مسار تجريبي');
-  for (const call of ['embedTexts', 'rest.upsert', 'rest.remove']) {
+  // ★ النداء المقصود هو تمثيل المقاطع لا تمثيل سؤال القياس: مسار
+  //   `probe` يُمثّل قبل هذا المخرج بحقّ، فالحارس يسمّي الوسيط.
+  const embedPlan = code.search(/embedTexts\(\s*plan\.toEmbed/);
+  assert.ok(embedPlan > 0, 'لا تمثيل للمقاطع في مسار الفهرسة');
+  assert.ok(dry < embedPlan, 'حساب متجهات المقاطع قبل مخرج dryRun');
+  for (const call of ['rest.upsert', 'rest.remove']) {
     assert.ok(dry < callIndex(code, call), `${call} قبل مخرج dryRun`);
   }
 });
@@ -237,6 +242,50 @@ test('كل جدول يُنادى في الدوالّ الطرفية مُعلَن
     }
   }
   assert.ok(calls >= 3, `نداءات القاعدة المفحوصة قليلة: ${calls}`);
+});
+
+test('دالّات RPC محصورة بقائمة، والمنادى منها معلَن', () => {
+  // ★★★ `rest.rpc` تتجاوز قائمة الجداول بطبعها: الاسم في المسار لا في
+  //    الجدول. فلولا قائمةٌ ثانية لصار نداء `create_order` أو
+  //    `adjust_inventory` — وكلّها ممنوحة لـ`service_role` — سطرًا
+  //    واحدًا بعيدًا عن مسار المساعد.
+  for (const fn of ALLOWED_RPCS) {
+    assert.ok(
+      /^(match_support_kb|ai_support_reply)$/.test(fn),
+      `دالّة خارج نطاق الدعم في قائمة RPC: ${fn}`,
+    );
+  }
+  const allowed = new Set<string>(ALLOWED_RPCS);
+  let calls = 0;
+  for (const file of functionFiles()) {
+    const code = stripComments(read(file));
+    for (const match of code.matchAll(/rest\.rpc(?:<[^>]*>)?\(\s*'([^']+)'/g)) {
+      calls += 1;
+      assert.ok(allowed.has(match[1]), `${file}: دالّة غير معلَنة ${match[1]}`);
+    }
+  }
+  assert.ok(calls >= 1, 'لا نداء RPC مفحوص');
+});
+
+test('مسار القياس `probe` لا يكتب شيئًا', () => {
+  const code = stripComments(read(INGEST));
+  const exit = code.search(/return jsonResponse\(\{\s*probe:/);
+  assert.ok(exit > 0, 'لا مسار قياس للاسترجاع');
+  for (const call of ['rest.upsert', 'rest.remove']) {
+    assert.ok(exit < callIndex(code, call), `${call} قبل مخرج probe`);
+  }
+  assert.ok(
+    !/planIngest\(/.test(code.slice(0, exit)),
+    'مسار القياس يقطّع الملفّ: عملٌ وكلفةٌ بلا داعٍ',
+  );
+});
+
+test('السؤال يُمثَّل كسؤال والمقطع كمستند', () => {
+  const code = stripComments(read(INGEST));
+  // ★★ خطأٌ لا يرفع استثناءً: فهرسةٌ بنوعٍ وبحثٌ بالنوع نفسه تُنقص
+  //    الدقّة وحدها. فالحارس على موضع النداء هو الكاشف.
+  assert.match(code, /embedTexts\(\s*probe\s*,\s*'query'\s*\)/, 'السؤال لا يُمثَّل بـquery');
+  assert.match(code, /embedTexts\([\s\S]{0,120}?,\s*'document'\s*\)/, 'المقطع لا يُمثَّل بـdocument');
 });
 
 test('لا طلب PostgREST خارج `_shared/db.ts`', () => {
